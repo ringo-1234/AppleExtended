@@ -1,3 +1,16 @@
+/*
+ * Copyright (C) 2025 Applepie
+ * This file is part of AppleExtended.
+ *
+ * AppleExtended includes patches derived from "fixRTM"
+ * Copyright (c) 2020 anatawa12 and other authors.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ */
+
 package jp.ngt.rtm.modelpack;
 import java.awt.image.BufferedImage;
 import java.io.File;
