@@ -23,6 +23,5 @@ run
 
 # Files from Forge MDK
 forge*changelog.txt
-.DS_Store
 .gitattributes
-.java-version
+.DS_Store
