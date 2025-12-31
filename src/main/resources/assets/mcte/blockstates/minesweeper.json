@@ -1,0 +1,18 @@
+{
+  "variants":{
+    "type=num0":{"model":"mcte:minesweeper_num0"},
+    "type=num1":{"model":"mcte:minesweeper_num1"},
+    "type=num2":{"model":"mcte:minesweeper_num2"},
+    "type=num3":{"model":"mcte:minesweeper_num3"},
+    "type=num4":{"model":"mcte:minesweeper_num4"},
+    "type=num5":{"model":"mcte:minesweeper_num5"},
+    "type=num6":{"model":"mcte:minesweeper_num6"},
+    "type=num7":{"model":"mcte:minesweeper_num7"},
+    "type=num8":{"model":"mcte:minesweeper_num8"},
+    "type=n"   :{"model":"mcte:minesweeper_n"},
+    "type=none":{"model":"mcte:minesweeper_none"},
+    "type=mine":{"model":"mcte:minesweeper_mine"},
+    "type=none_flag":{"model":"mcte:minesweeper_none_flag"},
+    "type=mine_flag":{"model":"mcte:minesweeper_mine_flag"}
+  }
+}

@@ -1,0 +1,21 @@
+﻿//Souto35(NGTLib2.2.9)
+item.protection_key.name=保护钥匙
+
+usage.item.protection_key=右击方块或实体以便保护它
+
+message.version=发现%s的新版本
+message.regKey.0=网址错误
+message.regKey.1=无法连接到激活服务器,请确认您的VPN是否开启
+message.regKey.2=您不可以激活
+message.regKey.3=您可以激活
+message.regKey.4=产品激活成功
+message.regKey.5=激活码错误
+message.usage=物品的使用方法通过/usage指令来确认。(ngt5479)
+
+commands.ngt.usage=/ngt '激活码'
+commands.ngt.invalid_command=命令语法不正确
+commands.permit.usage=/permit : 使用方法
+commands.protect.usage=/protect <任意暗码> : 获取保护钥匙
+commands.usage.usage=/usage : 显示手持的物品和乘车中的载具的使用方法
+
+gui.warning=请输入激活码！

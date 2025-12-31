@@ -1,0 +1,41 @@
+package jp.ngt.rtm.sound;
+
+import jp.ngt.ngtlib.sound.MovingSoundCustom;
+import jp.ngt.rtm.RTMCore;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
+
+@SideOnly(Side.CLIENT)
+public class MovingSoundTileEntity extends MovingSoundCustom
+{
+	protected final TileEntity entity;
+
+	protected MovingSoundTileEntity(TileEntity par1Entity, String par2Sound, boolean par3Repeat)
+	{
+		super(par2Sound, par3Repeat);
+		this.entity = par1Entity;
+
+		this.xPosF = (float)this.entity.getPos().getX() + 0.5F;
+		this.yPosF = (float)this.entity.getPos().getY() + 0.5F;
+		this.zPosF = (float)this.entity.getPos().getZ() + 0.5F;
+	}
+
+	@Override
+	public void setVolume(float par1)
+	{
+		super.setVolume(par1 * RTMCore.trainSoundVol);
+	}
+
+	@Override
+	public void update()
+	{
+		super.update();
+
+		if(this.entity.isInvalid())
+		{
+			this.donePlaying = true;
+			return;
+		}
+	}
+}

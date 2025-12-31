@@ -1,0 +1,21 @@
+﻿//YihGe一哥
+item.protection_key.name=保護鑰匙
+
+usage.item.protection_key=右鍵點擊任何方塊或實體, 防止玩家破壞它
+
+message.version=發現%s的新版本
+message.regKey.0=網址錯誤
+message.regKey.1=無法連接到伺服器
+message.regKey.2=拒絕驗證
+message.regKey.3=允許驗證
+message.regKey.4=驗證成功
+message.regKey.5=驗證碼錯誤
+message.usage=您可以通過 /usage 查看物品的使用方法 (ngt5479)
+
+commands.ngt.usage=/ngt <驗證碼>
+commands.ngt.invalid_command=命令字符不正確
+commands.permit.usage=/permit : 顯示使用方式
+commands.protect.usage=/protect <任意代碼> : 獲得保護鑰匙
+commands.usage.usage=/usage : 顯示如何使用手中的物品和車輛
+
+gui.warning=請輸入驗證碼!!

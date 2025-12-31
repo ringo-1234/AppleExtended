@@ -1,0 +1,62 @@
+﻿//Souto35(MCTE2.2.7)
+tile.mcte:port_in.name=输入端口
+tile.mcte:port_out.name=输出端口
+
+item.mcte:editor.name=编辑器
+item.mcte:generator.name=地形生成器
+item.mcte:painter.name=喷漆
+item.mcte:itemMiniature.name=迷你方块
+
+usage.block.port_in=在迷你方块内部边界放置、外部红石输入时内部输出红石
+usage.block.port_out=在迷你方块内部边界放置、内部红石输入时外部输出红石
+usage.item.editor.0=菜单 : K 键
+usage.item.editor.1=模式 : M 键
+usage.item.editor.2=削除 : Delete 键
+usage.item.editor.3=撤销 : Z 键
+usage.item.editor.4=剪切 : X 键
+usage.item.editor.5=复制 : C 键
+usage.item.editor.6=粘贴 : V 键
+usage.item.editor.7=填充 : B 键
+usage.item.editor.8=清除选区 : N 键
+usage.item.generator=右击打开设置画面
+usage.painter=菜单 : K 键
+
+editor.fill.0=立方体
+editor.fill.1=椭圆体
+editor.fill.2=圆柱(X)
+editor.fill.3=圆柱(Y)
+editor.fill.4=圆柱(Z)
+
+gui.mcte.select=选择
+gui.mcte.terrainImage=地形的图像
+gui.mcte.biomesImage=生物群系的图像
+gui.mcte.blocksImage=方块的图像
+gui.mcte.baseBlock=构成方块
+gui.mcte.minY=Y的最小值
+gui.mcte.yScale=Y的倍数
+gui.mcte.seaLevel=海平面高度
+gui.mcte.generate=生成
+gui.mcte.miniature.select=选择文件
+gui.mcte.miniature.export=保存文件
+gui.mcte.miniature.miniature=迷你模型
+gui.mcte.miniature.sculpture=雕刻
+gui.mcte.miniature.original=实物
+
+generator.pictorial=图像的
+
+mcte.key=MCTE
+mcte.editor.menu=菜单(MCTE)
+mcte.editor.mode=模式(MCTE)
+mcte.editor.delete=删除(MCTE)
+mcte.editor.cut=切去(MCTE)
+mcte.editor.copy=复制(MCTE)
+mcte.editor.paste=粘贴(MCTE)
+mcte.editor.fill=填充(MCTE)
+mcte.editor.clear=清除(MCTE)
+
+tips.editor.fill=填满右侧方块
+tips.editor.replace=替换右侧方块
+tips.editor.filter=选择滤波器
+tips.editor.do=执行滤波器
+
+commands.mcte.usage=/mcte : 使用方法

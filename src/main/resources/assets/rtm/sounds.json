@@ -1,0 +1,29 @@
+{
+	"block.crossing_gate": {
+		"category": "master",
+		"sounds": [
+			{
+				"name": "rtm:block/crossing_gate",
+				"stream": false
+			}
+		]
+	},
+	"item.gun": {
+		"category": "master",
+		"sounds": [
+			{
+				"name": "rtm:item/gun",
+				"stream": false
+			}
+		]
+	},
+	"block.metal": {
+		"category": "master",
+		"sounds": [
+			{
+				"name": "rtm:block/metal",
+				"stream": false
+			}
+		]
+	}
+}

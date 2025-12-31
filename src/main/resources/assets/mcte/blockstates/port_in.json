@@ -1,0 +1,20 @@
+{
+  "variants":{
+    "meta=0":{"model":"mcte:port_in"},
+    "meta=1":{"model":"mcte:port_in"},
+    "meta=2":{"model":"mcte:port_in"},
+    "meta=3":{"model":"mcte:port_in"},
+    "meta=4":{"model":"mcte:port_in"},
+    "meta=5":{"model":"mcte:port_in"},
+    "meta=6":{"model":"mcte:port_in"},
+    "meta=7":{"model":"mcte:port_in"},
+    "meta=8":{"model":"mcte:port_in"},
+    "meta=9":{"model":"mcte:port_in"},
+    "meta=10":{"model":"mcte:port_in"},
+    "meta=11":{"model":"mcte:port_in"},
+    "meta=12":{"model":"mcte:port_in"},
+    "meta=13":{"model":"mcte:port_in"},
+    "meta=14":{"model":"mcte:port_in"},
+    "meta=15":{"model":"mcte:port_in"}
+  }
+}

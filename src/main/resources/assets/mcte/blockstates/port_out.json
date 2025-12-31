@@ -1,0 +1,20 @@
+{
+  "variants":{
+    "meta=0":{"model":"mcte:port_out"},
+    "meta=1":{"model":"mcte:port_out"},
+    "meta=2":{"model":"mcte:port_out"},
+    "meta=3":{"model":"mcte:port_out"},
+    "meta=4":{"model":"mcte:port_out"},
+    "meta=5":{"model":"mcte:port_out"},
+    "meta=6":{"model":"mcte:port_out"},
+    "meta=7":{"model":"mcte:port_out"},
+    "meta=8":{"model":"mcte:port_out"},
+    "meta=9":{"model":"mcte:port_out"},
+    "meta=10":{"model":"mcte:port_out"},
+    "meta=11":{"model":"mcte:port_out"},
+    "meta=12":{"model":"mcte:port_out"},
+    "meta=13":{"model":"mcte:port_out"},
+    "meta=14":{"model":"mcte:port_out"},
+    "meta=15":{"model":"mcte:port_out"}
+  }
+}
