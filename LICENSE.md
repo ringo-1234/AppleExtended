@@ -16,7 +16,7 @@ see LICENSE-FOR-ORIGINAL-AUTHOR.txt for more about this exception
 
 ==== COPYRIGHT NOTICE ====
 
-(c) Applepie and other authors 2025
+(c) Applepie and other authors 2025<br>
 (c) anatawa12 and other authors 2020
 
 ==== GNU LESSER GENERAL PUBLIC LICENSE ====
