@@ -43,8 +43,8 @@ import jp.ngt.ngtlib.renderer.model.ModelLoader;
 import jp.ngt.ngtlib.renderer.model.NGTOModel;
 import jp.ngt.ngtlib.renderer.model.NGTZModel;
 import jp.ngt.ngtlib.renderer.model.VecAccuracy;
+import jp.ngt.ngtlib.NGTCore;
 import jp.ngt.ngtlib.util.NGTUtil;
-import jp.ngt.ngtlib.util.NGTUtilClient;
 import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.RTMResource;
 import jp.ngt.rtm.block.tt.TimeTableManager;
@@ -85,7 +85,7 @@ public final class ModelPackManager
 	private ModelPackManager(){}
 	public void load(ModelPackLoadThread par1)
 	{
-		if(NGTUtilClient.getMinecraft() != null)
+		if(!NGTCore.proxy.isServer())
 		{
 			this.registerResourcePacks();
 		}
@@ -149,10 +149,11 @@ public final class ModelPackManager
 		par1.loadFinished = true;
 		this.modelLoaded = true;
 	}
+	@SideOnly(Side.CLIENT)
 	private void registerResourcePacks()
 	{
 		List<File> modsDirs = NGTFileLoader.getModsDir();
-		List<IResourcePack> defaultPacks = ObfuscationReflectionHelper.getPrivateValue(net.minecraft.client.Minecraft.class, NGTUtilClient.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
+		List<IResourcePack> defaultPacks = ObfuscationReflectionHelper.getPrivateValue(net.minecraft.client.Minecraft.class, net.minecraft.client.Minecraft.getMinecraft(), "defaultResourcePacks", "field_110449_ao");
 		boolean added = false;
 		for(File modsDir : modsDirs)
 		{
@@ -182,7 +183,7 @@ public final class ModelPackManager
 		}
 		if(added)
 		{
-			NGTUtilClient.getMinecraft().addScheduledTask(() -> NGTUtilClient.getMinecraft().refreshResources());
+			net.minecraft.client.Minecraft.getMinecraft().addScheduledTask(() -> net.minecraft.client.Minecraft.getMinecraft().refreshResources());
 		}
 	}
 	public void registerType(ResourceType type)

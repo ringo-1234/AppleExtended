@@ -3,6 +3,6 @@
   "modid": "apple-extended",
   "name": "Apple Extended",
   "version": "${version}",
-  "mcversion": "${mcversion}",
+  "mcversion": "${mcversion}"
 }
 ]

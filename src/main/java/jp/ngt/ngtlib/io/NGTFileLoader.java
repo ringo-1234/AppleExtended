@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -34,8 +36,9 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.apache.commons.io.IOUtils;
 import jp.ngt.ngtlib.NGTCore;
-import jp.ngt.ngtlib.util.NGTUtilClient;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 public final class NGTFileLoader
 {
 	public static final String NO_ZIP = "no_zip";
@@ -188,25 +191,32 @@ public final class NGTFileLoader
 		MODS_DIR = new ArrayList<>();
 		try
 		{
-			File modsDir2 = new File(Thread.currentThread().getContextClassLoader().getResource("").getPath());
-			if(!modsDir2.getAbsolutePath().contains("mods"))
+			URL url = Thread.currentThread().getContextClassLoader().getResource("");
+			if(url != null)
 			{
-				MODS_DIR.add(modsDir2);
-				NGTLog.debug("[NGTFL] Add mods dir : " + modsDir2.getAbsolutePath());
+				File modsDir2 = new File(URLDecoder.decode(url.getPath(), "UTF-8"));
+				if(!modsDir2.getAbsolutePath().contains("mods"))
+				{
+					MODS_DIR.add(modsDir2);
+					NGTLog.debug("[NGTFL] Add mods dir : " + modsDir2.getAbsolutePath());
+				}
 			}
 		}
-		catch (NullPointerException e)
+		catch (Exception e)
 		{
 			;
 		}
 		File modsDir = NGTCore.proxy.getMinecraftDirectory("mods");
-		String modsDirPath = modsDir.getAbsolutePath();
-		if(modsDirPath.contains(".") && !modsDirPath.contains(".minecraft"))
+		try
 		{
-			modsDirPath = modsDirPath.replace("\\.", "");
+			modsDir = modsDir.getCanonicalFile();
 		}
-		MODS_DIR.add(new File(modsDirPath));
-		NGTLog.debug("[NGTFL] Add mods dir : " + modsDirPath);
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		MODS_DIR.add(modsDir);
+		NGTLog.debug("[NGTFL] Add mods dir : " + modsDir.getAbsolutePath());
 		return MODS_DIR;
 	}
 	private static JFileChooser getCustomChooser(String title)
@@ -269,7 +279,7 @@ public final class NGTFileLoader
 	{
 		if(!NGTCore.proxy.isServer())
 		{
-			return NGTUtilClient.getMinecraft().getResourceManager().getResource(par1).getInputStream();
+			return ClientLoader.getInputStream(par1);
 		}
 		int index = par1.getResourcePath().lastIndexOf("/");
 		String fileName = par1.getResourcePath().substring(index + 1);
@@ -352,5 +362,14 @@ public final class NGTFileLoader
         FileOutputStream out = new FileOutputStream(tempFile);
         IOUtils.copy(is, out);
         return tempFile;
+	}
+
+	@SideOnly(Side.CLIENT)
+	private static class ClientLoader
+	{
+		public static InputStream getInputStream(ResourceLocation par1) throws IOException
+		{
+			return net.minecraft.client.Minecraft.getMinecraft().getResourceManager().getResource(par1).getInputStream();
+		}
 	}
 }
