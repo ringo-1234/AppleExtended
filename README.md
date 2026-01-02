@@ -22,5 +22,5 @@ AppleExtended は RealTrainMod(RTM),NGTLib,MCTE の非公式改造物です。
 
 ## 謝辞
 
-公開にあたり、配布許可を頂いた[NGT-547](https://twitter.com/ngt5479) 様に、この場をお借りして感謝申し上げます。<br>
+公開にあたり、配布許可を頂いた[NGT-5479](https://twitter.com/ngt5479) 様に、この場をお借りして感謝申し上げます。<br>
 また、当改造物の開発にあたり、多大なる助言と支援を 頂いた[anatawa12](https://x.com/kakerigawa) 様に、この場をお借りして感謝申し上げます。

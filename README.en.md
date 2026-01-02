@@ -26,5 +26,5 @@ Please visit our [website](ringo-1234.github.io).
 
 ## Acknowledgments
 
-I would like to take this opportunity to thank [NGT-547](https://twitter.com/ngt5479) for granting me permission to distribute this work.
+I would like to take this opportunity to thank [NGT-5479](https://twitter.com/ngt5479) for granting me permission to distribute this work.
 I would also like to thank [anatawa12](https://x.com/kakerigawa) for his generous advice and support in developing this mod.
