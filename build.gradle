@@ -1,0 +1,81 @@
+buildscript {
+    repositories {
+        maven { url = 'https://maven.minecraftforge.net' }
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+
+version = '2.0.0'
+group = 'jp.apple.rtm'
+archivesBaseName = 'AppleExtended-forge1.12.2'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+minecraft {
+    mappings channel: 'snapshot', version: '20171003-1.12'
+    accessTransformer = file('src/main/resources/META-INF/fix-rtm_at.cfg')
+
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+        }
+    }
+}
+
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
+
+    compileOnly files('libs/core.jar')
+
+    implementation 'io.sigpipe:jbsdiff:1.0'
+    implementation 'org.sejda.imageio:webp-imageio:0.1.6'
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from(sourceSets.main.resources.srcDirs) {
+        include '**/*.class'
+        include '**/*.kotlin_module'
+        include 'assets/**'
+        include 'META-INF/services/**'
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'mcmod.info'
+    }
+
+    manifest {
+        attributes([
+                "Specification-Title": "apple-rtm",
+                "Specification-Vendor": "apple-rtm",
+                "Specification-Version": "1",
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"apple-rtm",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "FMLCorePlugin": "com.anatawa12.fixRtm.asm.FixRtmCorePlugin;com.anatawa12.fixRtm.asm.patching.PatchingFixRtmCorePlugin;com.anatawa12.fixRtm.asm.hooking.HookingFixRtmCorePlugin",
+                "FMLCorePluginContainsFMLMod": "true",
+                "ForceLoadAsMod": "true",
+                "FMLAT": "fix-rtm_at.cfg"
+        ])
+    }
+}
+
+jar.finalizedBy('reobfJar')
+
+task copyJarToTest(type: Copy) {
+    dependsOn 'reobfJar'
+    from "build/libs"
+    into "/Users/S/Documents/マイクラ/てすと/mods"
+    include "${archivesBaseName}-${version}.jar"
+}
+build.dependsOn copyJarToTest

@@ -1,0 +1,73 @@
+﻿//YihGe一哥
+tile.mcte:port_in.name=RS 端口 (IN)
+tile.mcte:port_out.name=RS 端口 (OUT)
+
+item.mcte:editor.name=編輯器
+item.mcte:generator.name=生成器
+item.mcte:painter.name=畫筆
+item.mcte:itemMiniature.name=小型方塊
+
+usage.block.port_in=如果安裝在縮圖的末端，從外部取得RS輸入
+usage.block.port_out=當安裝在縮圖的末端時，將RS輸出到外部
+usage.item.editor.0=菜單: K key
+usage.item.editor.1=模式: M key
+usage.item.editor.2=刪除: Delete key
+usage.item.editor.3=返回: Z key
+usage.item.editor.4=剪下: X key
+usage.item.editor.5=複製: C key
+usage.item.editor.6=貼上: V key
+usage.item.editor.7=填充: B key
+usage.item.editor.8=取消: N key
+usage.item.generator=右鍵點擊打開設定畫面
+usage.item.painter=菜單: K key
+
+usage.editor.0=刪除: Z key
+usage.editor.1=剪下: X key
+usage.editor.2=複製: C key
+usage.editor.3=貼上: V key
+usage.editor.4=填充: B key
+usage.editor.5=取消: N key
+usage.editor.6=模式: M key
+usage.editor.7=菜單: K key
+usage.painter=菜單: K key
+
+editor.fill.0=立方體
+editor.fill.1=橢圓體
+editor.fill.2=圓柱(X)
+editor.fill.3=圓柱(Y)
+editor.fill.4=圓柱(Z)
+
+gui.mcte.select=選擇
+gui.mcte.terrainImage=地形用圖像
+gui.mcte.biomesImage=生態群用圖像
+gui.mcte.blocksImage=方塊用圖像
+gui.mcte.baseBlock=底座方塊
+gui.mcte.minY=Y的最小質
+gui.mcte.yScale=Y的倍率
+gui.mcte.seaLevel=海平面
+gui.mcte.generate=生成
+gui.mcte.miniature.select=選擇文件
+gui.mcte.miniature.export=導出文件
+gui.mcte.miniature.miniature=小型
+gui.mcte.miniature.sculpture=雕塑
+gui.mcte.miniature.original=原始
+
+generator.pictorial=畫報
+
+mcte.key=MCTE
+mcte.editor.undo=撤銷(MCTE)
+mcte.editor.menu=菜單(MCTE)
+mcte.editor.mode=模式(MCTE)
+mcte.editor.delete=刪除(MCTE)
+mcte.editor.cut=剪下(MCTE)
+mcte.editor.copy=複製(MCTE)
+mcte.editor.paste=貼上(MCTE)
+mcte.editor.fill=填滿(MCTE)
+mcte.editor.clear=清除(MCTE)
+
+tips.editor.fill=填滿在右側的方塊
+tips.editor.replace=替換右側的方塊
+tips.editor.filter=選擇過濾器
+tips.editor.do=執行過濾器
+
+commands.mcte.usage=/mcte : 顯示用法

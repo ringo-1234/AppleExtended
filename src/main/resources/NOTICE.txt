@@ -1,0 +1,23 @@
+==== 外部ライブラリの著作権表示 (Third-party Licenses) ====
+
+このModは以下のライブラリを含んでいます。
+This mod contains the following third-party libraries:
+
+1. Kotlin Standard Library / kotlinx-coroutines
+   - License: Apache License 2.0
+   - (c) JetBrains s.r.o.
+
+2. jbsdiff (io.sigpipe:jbsdiff)
+   - License: GNU LGPL v3
+   - (c) 2013-2015, Salvatore Valente
+
+3. webp-imageio
+   - License: Apache License 2.0
+   - (c) 2016-2023, The Sejda-ImageIO Project
+
+4. Sai (com.anatawa12.sai)
+   - License: GNU LGPL v3
+   - (c) anatawa12
+
+これらのライブラリの多くは fixRTM プロジェクト経由で提供・同梱されたものです。
+Many of these libraries are provided/bundled via the fixRTM project.
