@@ -22,7 +22,7 @@ Download the mod and place it into your `mods` folder.
 
 ## For more details
 
-Please visit our [website](ringo-1234.github.io).
+Please visit our [website](https://github.com/ringo-1234/AppleExtended/wiki).
 
 ## Acknowledgments
 
