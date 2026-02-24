@@ -17,12 +17,15 @@ package jp.ngt.mcte.network;
 import io.netty.buffer.ByteBuf;
 import jp.ngt.ngtlib.block.BlockUtil;
 import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
+
+import jp.apple.log.AppleLogger;
 
 public class PacketGenerator implements IMessage, IMessageHandler<PacketGenerator, IMessage>
 {
@@ -67,10 +70,19 @@ public class PacketGenerator implements IMessage, IMessageHandler<PacketGenerato
 	@Override
     public IMessage onMessage(PacketGenerator message, MessageContext ctx)
 	{
+		EntityPlayer player = ctx.getServerHandler().player;
 		World world = ctx.getServerHandler().player.world;
 		Block block = Block.getBlockFromName(message.blockName);
 		if(block != null && world.isBlockLoaded(new BlockPos(message.x, message.y, message.z), false))
 		{
+			//ここからカラカラ
+			AppleLogger.logBlockChange(
+					player,
+					new BlockPos(message.x, message.y, message.z),
+					block.getStateFromMeta(message.metadata),
+					"MCTE_GEN"
+			);
+			//終わりンゴンゴンゴ
 			BlockUtil.setBlock(world, message.x, message.y, message.z, block, message.metadata, 2);
 			return null;
 		}

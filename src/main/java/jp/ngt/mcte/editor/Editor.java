@@ -44,6 +44,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 
+import jp.apple.log.AppleLogger;
+
 public class Editor
 {
 	//public static final byte EditType_Delete = 0;
@@ -406,7 +408,20 @@ public class Editor
 	public void setBlock(int px, int py, int pz, BlockSet blockSet, boolean syncClient)
 	{
 		World world = this.getWorld();
-
+		/*
+		ここからAppleLibLoggerだよ
+		 */
+		if (!world.isRemote) {
+			AppleLogger.logBlockChange(
+					this.getEntity().getPlayer(),
+					new BlockPos(px, py, pz),
+					blockSet.toBlockState(),
+					"MCTE_SET"
+			);
+		}
+		/*
+		終わり
+		 */
 		int meta = blockSet.metadata;
 		if(blockSet.block instanceof BlockLeaves && (meta < 4 || meta > 7))
 		{

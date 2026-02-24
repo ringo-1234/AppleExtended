@@ -16,6 +16,7 @@ package jp.ngt.mcte.item;
 
 import java.util.List;
 
+import jp.apple.log.AppleLogger;
 import jp.ngt.mcte.MCTE;
 import jp.ngt.mcte.block.MiniatureBlockState;
 import jp.ngt.mcte.block.TileEntityMiniature;
@@ -95,7 +96,7 @@ public class ItemMiniature extends ItemCustom
 
 					if(mode == MiniatureMode.original)
 					{
-						this.setOriginalBlocks(world, newPos, object);
+						this.setOriginalBlocks(player, world, newPos, object);
 					}
 					else
 					{
@@ -125,7 +126,7 @@ public class ItemMiniature extends ItemCustom
 		return holder.success();
     }
 
-	private void setOriginalBlocks(World world, BlockPos pos, NGTObject ngto)
+	private void setOriginalBlocks(EntityPlayer player, World world, BlockPos pos, NGTObject ngto)
 	{
 		for(int i = 0; i < ngto.xSize; ++i)
 		{
@@ -134,6 +135,15 @@ public class ItemMiniature extends ItemCustom
 				for(int k = 0; k < ngto.zSize; ++k)
 				{
 					BlockSet set = ngto.getBlockSet(i, j, k);
+					BlockPos targetPos = pos.add(i, j, k);
+					//ここからああ
+					AppleLogger.logBlockChange(
+							player,
+							targetPos,
+							set.toBlockState(),
+							"MCTE_DEPLOY"
+					);
+					//終わりいい
 					BlockUtil.setBlock(world, pos.add(i, j, k), set.block, set.metadata, 3);
 				}
 			}

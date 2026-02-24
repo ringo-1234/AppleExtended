@@ -29,6 +29,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 
+import jp.apple.log.AppleLogger;
+
 public class BlockMinesweeper extends BlockContainerCustom
 {
 	public static final PropertyEnum<MinesweeperType> TYPE = PropertyEnum.create("type", MinesweeperType.class, MinesweeperType.values());

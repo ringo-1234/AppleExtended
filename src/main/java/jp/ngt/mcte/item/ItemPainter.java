@@ -33,6 +33,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import jp.apple.log.AppleLogger;
+
 public class ItemPainter extends ItemCustom
 {
 	public ItemPainter()
@@ -90,22 +92,20 @@ public class ItemPainter extends ItemCustom
 	@Override
 	public void onUsingTick(ItemStack stack, EntityLivingBase living, int count)
     {
-		if(!living.getEntityWorld().isRemote)
+		if(!living.getEntityWorld().isRemote && living instanceof EntityPlayer)
 		{
-			if(living instanceof EntityPlayer)
-			{
+			EntityPlayer player = (EntityPlayer)living;
 				PainterSetting setting = PainterSetting.getPainterSettingFromItem(stack);
 				RayTraceResult target = ItemEditor.getTarget((EntityPlayer)living, setting.drawMode == 0, false);
 	    		if(target != null && setting != null)
 	        	{
 	    			BlockPos pos = target.getBlockPos();
-	    			this.placeBlocks(setting, living.world, pos.getX(), pos.getY(), pos.getZ());
-	        	}
+	    			this.placeBlocks(player, setting, living.world, pos.getX(), pos.getY(), pos.getZ());
 			}
 		}
     }
 
-	private void placeBlocks(PainterSetting setting, World world, int x, int y, int z)
+	private void placeBlocks(EntityPlayer player, PainterSetting setting, World world, int x, int y, int z)
 	{
 		int size = setting.size - 1;
 		for(int i = -size; i <= size; ++i)
@@ -126,6 +126,20 @@ public class ItemPainter extends ItemCustom
 						boolean flag2 = setting.rewrite && targetBlock != Blocks.BEDROCK && (setting.rewriteBlock.block == Blocks.AIR || (setting.rewriteBlock.block == targetBlock && setting.rewriteBlock.metadata == targetMetadata));
 						if(flag1 || flag2)
 						{
+						/*
+						ここからAppleLibLoggerだよ
+						 */
+							if (!world.isRemote) {
+								AppleLogger.logBlockChange(
+										player,
+										new BlockPos(x0, y0, z0),
+										setting.fillBlock.toBlockState(),
+										"MCTE_PAINT"
+								);
+							}
+						/*
+						終わり
+						 */
 							BlockUtil.setBlock(world, x0, y0, z0, setting.fillBlock.block, setting.fillBlock.metadata, 2);
 						}
 					}

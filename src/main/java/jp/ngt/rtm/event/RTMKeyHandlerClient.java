@@ -31,6 +31,7 @@ import jp.ngt.rtm.entity.vehicle.EntityVehicleBase;
 import jp.ngt.rtm.modelpack.cfg.TrainConfig;
 import jp.ngt.rtm.modelpack.modelset.ModelSetTrain;
 import jp.ngt.rtm.network.PacketRTMKey;
+import jp.ngt.rtm.entity.train.util.TrainState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
@@ -46,6 +47,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public final class RTMKeyHandlerClient
 {
+	private int notchTimer = 0;
+
 	private static final String CATG_RTM = "key.rtm.category";
 	public static final RTMKeyHandlerClient INSTANCE = new RTMKeyHandlerClient();
 	public static final KeyBinding KEY_HORN =  new KeyBinding("key.rtm.horn",  Keyboard.KEY_P, CATG_RTM);
@@ -54,6 +57,8 @@ public final class RTMKeyHandlerClient
 	public static final KeyBinding KEY_EB =    new KeyBinding("key.rtm.eb",    Keyboard.KEY_5, CATG_RTM);
 	public static final KeyBinding KEY_CHIME_NEXT = new KeyBinding("key.rtm.chime_next", Keyboard.KEY_RIGHT, CATG_RTM);
 	public static final KeyBinding KEY_CHIME_PREV = new KeyBinding("key.rtm.chime_prev", Keyboard.KEY_LEFT, CATG_RTM);
+	public static final KeyBinding KEY_ROLE_UP = new KeyBinding("key.rtm.role_up", Keyboard.KEY_UP, CATG_RTM);
+	public static final KeyBinding KEY_ROLE_DOWN = new KeyBinding("key.rtm.role_down", Keyboard.KEY_DOWN, CATG_RTM);
 
 	private RTMKeyHandlerClient(){}
 
@@ -65,6 +70,8 @@ public final class RTMKeyHandlerClient
 		ClientRegistry.registerKeyBinding(KEY_EB);
 		ClientRegistry.registerKeyBinding(KEY_CHIME_NEXT);
 		ClientRegistry.registerKeyBinding(KEY_CHIME_PREV);
+		ClientRegistry.registerKeyBinding(KEY_ROLE_UP);
+		ClientRegistry.registerKeyBinding(KEY_ROLE_DOWN);
 	}
 
 	public void onTickStart()
@@ -86,6 +93,39 @@ public final class RTMKeyHandlerClient
 				{
 					this.sendKeyToServer(RTMCore.KEY_SNEAK, "");
 				}
+			}
+		}
+		if(player != null && player.isRiding() && player.getRidingEntity() instanceof EntityTrainBase)
+		{
+			EntityTrainBase train = (EntityTrainBase)player.getRidingEntity();
+			boolean isLeftDown = mc.gameSettings.keyBindLeft.isKeyDown();
+			boolean isRightDown = mc.gameSettings.keyBindRight.isKeyDown();
+
+			if(isLeftDown || isRightDown)
+			{
+				if(this.notchTimer == 0)
+				{
+					if(isLeftDown) train.syncNotch(-1);
+					else train.syncNotch(1);
+
+					this.notchTimer = 1;
+				}
+				else
+				{
+					this.notchTimer++;
+
+					if(this.notchTimer > jp.apple.config.AppleConfig.notchRepeatInterval)
+					{
+						if(isLeftDown) train.syncNotch(-1);
+						else train.syncNotch(1);
+
+						this.notchTimer = 1;
+					}
+				}
+			}
+			else
+			{
+				this.notchTimer = 0;
 			}
 		}
 	}
@@ -187,6 +227,30 @@ public final class RTMKeyHandlerClient
 				i0 = i0 < type.min ? type.max : (i0 > type.max ? 0 : i0);
 				train.syncVehicleState(type, (byte)i0);
 				NGTLog.showChatMessage(new TextComponentString("Prev chime"));
+			}
+			else if(KEY_ROLE_UP.isPressed())
+			{
+				TrainStateType type = TrainStateType.Role;
+				int current = train.getVehicleState(type);
+				int next = current - 1;
+				if(next >= type.getMin(train))
+				{
+					train.syncVehicleState(type, (byte)next);
+					train.syncVehicleState(TrainStateType.Notch, (byte)-8);
+					NGTLog.showChatMessage(new TextComponentString("Reverser: " + TrainState.getState(type, (byte)next).stateName));
+				}
+			}
+			else if(KEY_ROLE_DOWN.isPressed())
+			{
+				TrainStateType type = TrainStateType.Role;
+				int current = train.getVehicleState(type);
+				int next = current + 1;
+				if(next <= type.getMax(train))
+				{
+					train.syncVehicleState(type, (byte)next);
+					train.syncVehicleState(TrainStateType.Notch, (byte)-8);
+					NGTLog.showChatMessage(new TextComponentString("Reverser: " + TrainState.getState(type, (byte)next).stateName));
+				}
 			}
 		}
 	}

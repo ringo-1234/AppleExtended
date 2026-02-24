@@ -42,8 +42,15 @@ public class TrainConfig extends VehicleBaseConfig implements IConfigWithType
 
 	private float[][] bogiePos;
 	public float trainDistance;
-
+	/**
+	 * 加速度<br>
+	 * N km/h/s -> N x 0.0006944
+	 */
 	public float accelerateion;
+
+	/**
+	 * ノッチごとの速度上限(1~5段)
+	 */
 	public float[] maxSpeed;
 
 	public float rolling;

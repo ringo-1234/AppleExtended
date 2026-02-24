@@ -73,7 +73,7 @@ public final class ScriptUtil
 		if(SEM == null){init();}
 
 		com.anatawa12.fixRtm.ngtlib.io.ScriptUtil.INSTANCE.prepareSystemProperty();
-		ScriptEngine se = new jdk.nashorn.api.scripting.NashornScriptEngineFactory().getScriptEngine();
+		ScriptEngine se = new jdk.nashorn.api.scripting.NashornScriptEngineFactory().getScriptEngine("-doe", "--language=es6");
 
 		try
 		{

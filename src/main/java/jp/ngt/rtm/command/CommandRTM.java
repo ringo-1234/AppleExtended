@@ -13,10 +13,12 @@
  */
 
 package jp.ngt.rtm.command;
+
 import java.util.List;
 import jp.ngt.ngtlib.io.NGTLog;
 import jp.ngt.rtm.entity.train.EntityBogie;
 import jp.ngt.rtm.entity.train.EntityTrainBase;
+import jp.ngt.rtm.entity.train.util.TrainState.TrainStateType;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -24,7 +26,12 @@ import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.AxisAlignedBB;
+
 public class CommandRTM extends CommandBase {
+
+	private static final java.util.List<String> stateArray = java.util.Arrays.asList("door", "pan", "speed");
+
 	@Override
 	public String getName() {
 		return "rtm";
@@ -41,37 +48,82 @@ public class CommandRTM extends CommandBase {
 		try {
 			player = getCommandSenderAsPlayer(sender);
 		} catch (PlayerNotFoundException e) {
-			e.printStackTrace();
 			return;
 		}
 
 		if (args.length > 0) {
+			String subCommand = args[0].toLowerCase();
+
+			if (stateArray.contains(subCommand) && args.length >= 2) {
+				try {
+					float val = Float.parseFloat(args[1]);
+					double range = 16.0D; // プレイヤーからの半径
+
+					List<EntityTrainBase> list = player.world.getEntitiesWithinAABB(
+							EntityTrainBase.class,
+							new AxisAlignedBB(
+									player.posX - range, player.posY - range, player.posZ - range,
+									player.posX + range, player.posY + range, player.posZ + range));
+
+					for (EntityTrainBase train : list) {
+						if (subCommand.equals("door")) {
+							train.setVehicleState(TrainStateType.Door, (byte) val);
+						} else if (subCommand.equals("pan")) {
+							train.setVehicleState(TrainStateType.Pantograph, (byte) val);
+						} else if (subCommand.equals("speed")) {
+							train.setSpeed(val / 72.0F);
+						}
+					}
+					NGTLog.sendChatMessage(player, "Applied " + subCommand + " to " + list.size() + " trains.");
+				} catch (NumberFormatException e) {
+					NGTLog.sendChatMessage(player, "Invalid number format.");
+				}
+				return;
+			}
 			if (args[0].equals("delAllTrain")) {
 				int count = 0;
-				List list = player.world.loadedEntityList;
-				for (Object object : list) {
-					Entity entity = null;
-					if (object instanceof EntityTrainBase) {
-						entity = (EntityTrainBase) object;
+				List<Entity> list = player.world.loadedEntityList;
+				for (Entity entity : list) {
+					if (entity instanceof EntityTrainBase) {
+						entity.setDead();
 						++count;
-					} else if (object instanceof EntityBogie) {
-						entity = (EntityBogie) object;
-					}
-
-					if (entity != null && !entity.isDead) {
+					} else if (entity instanceof EntityBogie) {
 						entity.setDead();
 					}
 				}
-
-				NGTLog.sendChatMessage(player, "Delete " + count + "trains.");
-			} else if (args[0].equals("twitter_tag")) {
-			} else if (args[0].equals("dismount")) {
-				player.dismountRidingEntity();
+				NGTLog.sendChatMessage(player, "Delete " + count + " trains.");
+				return;
 			}
+			if (args[0].equalsIgnoreCase("drf")) {
+				if (player.getRidingEntity() instanceof EntityTrainBase) {
+					EntityTrainBase ridingTrain = (EntityTrainBase) player.getRidingEntity();
+					jp.ngt.rtm.entity.train.util.Formation formation = ridingTrain.getFormation();
 
-			return;
+					if (formation != null && formation.entries != null) {
+						int count = 0;
+						for (jp.ngt.rtm.entity.train.util.FormationEntry entry : formation.entries) {
+							if (entry != null && entry.train != null) {
+								entry.train.setDead();
+								count++;
+							}
+						}
+						NGTLog.sendChatMessage(player, "Deleted riding formation (" + count + " trains).");
+					} else {
+						ridingTrain.setDead();
+						NGTLog.sendChatMessage(player, "Deleted riding train.");
+					}
+				} else {
+					NGTLog.sendChatMessage(player, "You are not riding a train.");
+				}
+				return;
+			}
+			if (args[0].equals("dismount")) {
+				player.dismountRidingEntity();
+				return;
+			}
 		}
-
+		NGTLog.sendChatMessage(sender, "/rtm <door|pan|speed> <value> : Control nearby trains");
+		NGTLog.sendChatMessage(sender, "/rtm drf : Delete riding formation");
 		NGTLog.sendChatMessage(sender, "/rtm delAllTrain : Delete all train");
 		NGTLog.sendChatMessage(sender, "/rtm dismount : Dismount player from vehicle");
 	}

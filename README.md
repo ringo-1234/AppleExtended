@@ -6,6 +6,8 @@
 
 # 最新版のダウンロードは[こちら](https://github.com/ringo-1234/AppleExtended/releases/latest) から
 
+## 追加機能は[こちら](https://github.com/ringo-1234/AppleExtended/wiki/Added-Features.ja)
+
 ## この Mod はなにか
 
 AppleExtended は RealTrainMod(RTM),NGTLib,MCTE の非公式改造物です。

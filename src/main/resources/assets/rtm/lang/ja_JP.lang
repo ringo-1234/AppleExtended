@@ -218,6 +218,8 @@ key.rtm.ats=ATS確認
 key.rtm.eb=非常ブレーキ
 key.rtm.chime_next=次放送
 key.rtm.chime_prev=前放送
+key.rtm.role_up=レバーサ+1
+key.rtm.role_down=レバーサ-1
 
 usage.entity.train=アイテムの説明を参照
 usage.entity.vehicle=アイテムの説明を参照
