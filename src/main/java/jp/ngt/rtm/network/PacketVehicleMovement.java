@@ -30,7 +30,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVehicleMovement, IMessage>
 {
-	private static final double SAMPLING = 32.0D;
+	private static final double SAMPLING =256.0D;
 	private static final double DIV_32 = 1.0D / SAMPLING;
 
 	public int entityId;
@@ -56,7 +56,7 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
 			this.vehicleRoll = ((EntityVehicleBase)par1).getRoll();
 			this.vehicleSpeed = ((EntityVehicleBase)par1).getSpeed();
 		}
-		else//bogie
+		else
 		{
 			this.vehicleRoll = ((EntityBogie)par1).rotationRoll;
 		}
@@ -98,36 +98,40 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
 	@Override
 	public IMessage onMessage(PacketVehicleMovement message, MessageContext ctx)
 	{
-		com.anatawa12.fixRtm.ThreadUtil.runOnClientThread(() -> this.doMessage(message));
-		return null;
-	}
-
-	private void doMessage(PacketVehicleMovement message) {
 		World world = NGTUtil.getClientWorld();
-		if (world == null) {
-			return;
-		} else if (message.vehicleY < 0) {
-			this.deleteEntity(world, message.entityId);
-		} else {
-			Entity entity = world.getEntityByID(message.entityId);
-			if (entity != null && !entity.isDead) {
-				double x = (double)message.vehicleX * DIV_32;
-				double y = (double)message.vehicleY * DIV_32;
-				double z = (double)message.vehicleZ * DIV_32;
-				entity.serverPosX = EntityTracker.getPositionLong(x);
-				entity.serverPosY = EntityTracker.getPositionLong(y);
-				entity.serverPosZ = EntityTracker.getPositionLong(z);
-				entity.setPositionAndRotationDirect(x, y, z, message.vehicleYaw, message.vehiclePitch, RTMEntity.FREQ_VEHICLE, false);
+		if(world == null){return null;}
 
-				if (entity instanceof EntityVehicleBase) {
-					((EntityVehicleBase)entity).setRollAndSpeed(message.vehicleSpeed, message.vehicleRoll);
-				} else {
-					((EntityBogie)entity).setRoll(message.vehicleRoll);
-				}
-			} else {
-				NGTLog.debug("[PVM] Entity is null or dead %d", message.entityId);
+		if(message.vehicleY < 0)
+		{
+			this.deleteEntity(world, message.entityId);
+			return null;
+		}
+
+		Entity entity = world.getEntityByID(message.entityId);
+		if(entity != null && !entity.isDead)
+		{
+			double x = (double)message.vehicleX * DIV_32;
+			double y = (double)message.vehicleY * DIV_32;
+			double z = (double)message.vehicleZ * DIV_32;
+			entity.serverPosX = EntityTracker.getPositionLong(x);
+			entity.serverPosY = EntityTracker.getPositionLong(y);
+			entity.serverPosZ = EntityTracker.getPositionLong(z);
+			entity.setPositionAndRotationDirect(x, y, z, message.vehicleYaw, message.vehiclePitch, RTMEntity.FREQ_VEHICLE, false);
+
+			if(entity instanceof EntityVehicleBase)
+			{
+				((EntityVehicleBase)entity).setRollAndSpeed(message.vehicleSpeed, message.vehicleRoll);
+			}
+			else
+			{
+				((EntityBogie)entity).setRoll(message.vehicleRoll);
 			}
 		}
+		else
+		{
+			NGTLog.debug("[PVM] Entity is null or dead %d", message.entityId);
+		}
+		return null;
 	}
 
 	private void deleteEntity(World world, int id)
@@ -147,6 +151,7 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
 
 		if(entity != null)
 		{
+			
 			entity.setDead();
 		}
 	}
