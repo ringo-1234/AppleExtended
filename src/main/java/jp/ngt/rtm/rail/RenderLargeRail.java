@@ -53,8 +53,7 @@ public class RenderLargeRail extends TileEntitySpecialRenderer<TileEntityLargeRa
 	{
 		this.renderTileEntityLargeRail(tileEntity, d0, d1, d2, f);
 	}
-
-	//カメラ範囲外の描画
+	
 	@Override
 	public final boolean isGlobalRenderer(TileEntityLargeRailCore tileEntity)
     {
@@ -63,6 +62,7 @@ public class RenderLargeRail extends TileEntitySpecialRenderer<TileEntityLargeRa
 
 	private void renderTileEntityLargeRail(TileEntityLargeRailCore rail, double par2, double par4, double par6, float par8)
 	{
+		jp.apple.replaymod.compat.ReplaySyncManager.checkRailModel(rail);
 		if(!rail.isLoaded()){return;}
 
 		GL11.glPushMatrix();

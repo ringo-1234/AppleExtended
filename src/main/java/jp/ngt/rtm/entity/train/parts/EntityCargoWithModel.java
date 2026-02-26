@@ -28,6 +28,7 @@
 
 package jp.ngt.rtm.entity.train.parts;
 
+import jp.apple.replaymod.compat.ReplaySyncManager;
 import jp.ngt.ngtlib.network.PacketNBT;
 import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.entity.vehicle.EntityVehicleBase;
@@ -63,6 +64,8 @@ public abstract class EntityCargoWithModel<T extends ModelSetBase> extends Entit
 	@Override
 	protected void entityInit()
 	{
+		ReplaySyncManager.registerData(this);
+
 		super.entityInit();
 	}
 
@@ -97,6 +100,11 @@ public abstract class EntityCargoWithModel<T extends ModelSetBase> extends Entit
 		}
 		return false;
 	}
+	@Override
+	public void onUpdate() {
+		super.onUpdate();
+		ReplaySyncManager.syncModel(this, false);
+	}
 
 	@Override
 	public ResourceState<T> getResourceState()
@@ -111,6 +119,8 @@ public abstract class EntityCargoWithModel<T extends ModelSetBase> extends Entit
 		{
 			this.writeCargoToItem();
 			PacketNBT.sendToClient(this);
+
+			ReplaySyncManager.syncModel(this, true);
 
 			if(this.getVehicle() != null)
 			{

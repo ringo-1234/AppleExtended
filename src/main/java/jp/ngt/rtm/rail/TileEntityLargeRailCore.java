@@ -85,6 +85,8 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
 
 	@Override
 	public void readFromNBT(NBTTagCompound nbt) {
+		jp.apple.replaymod.compat.ReplaySyncManager.patchRailMetadata(this, nbt);
+
 		super.readFromNBT(nbt);
 		this.readRailStates(nbt);
 		this.readRailData(nbt);

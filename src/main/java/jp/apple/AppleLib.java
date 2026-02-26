@@ -17,6 +17,7 @@ package jp.apple;
 import jp.apple.config.AppleConfig;
 import jp.apple.log.AppleLogger;
 import jp.apple.log.BlockLogHandler;
+import jp.apple.replaymod.compat.ReplaySyncManager;
 import jp.apple.util.AppleDir;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -44,5 +45,6 @@ public class AppleLib {
         AppleLogger.init();
         AppleConfig.init(event.getSuggestedConfigurationFile());
         MinecraftForge.EVENT_BUS.register(new BlockLogHandler());
+        ReplaySyncManager.init();
     }
 }

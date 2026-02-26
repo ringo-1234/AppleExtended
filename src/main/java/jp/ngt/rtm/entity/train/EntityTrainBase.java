@@ -137,6 +137,8 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 		this.getDataManager().register(BOGIE_ID1, Integer.valueOf(0));
 		this.getDataManager().register(TRAIN_SPEED, 0.0f);
 		this.getDataManager().register(CAB_DIRECTION, false);
+
+		jp.apple.replaymod.compat.ReplaySyncManager.registerData(this);
 	}
 
 	@Override
@@ -168,6 +170,7 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 	@Override
 	protected void readEntityFromNBT(NBTTagCompound nbt)
 	{
+		jp.apple.replaymod.compat.ReplaySyncManager.patchMetadata(this, nbt);
 		super.readEntityFromNBT(nbt);
 
 		NBTTagCompound nbttagcompound = nbt.getCompoundTag("FormationEntry");
@@ -236,6 +239,8 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 	@Override
 	public void onVehicleUpdate()
 	{
+		jp.apple.replaymod.compat.ReplaySyncManager.syncModel(this, false);
+
 		this.updateSpeed();
 
 		if(this.existBogies())
@@ -835,6 +840,8 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 	@Override
 	public void updateResourceState()
 	{
+		jp.apple.replaymod.compat.ReplaySyncManager.syncModel(this, true);
+
 		super.updateResourceState();
 		this.updateTrainSize();
 	}

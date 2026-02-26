@@ -43,7 +43,7 @@ public class GuiTextFieldCustom extends GuiTextField {
     private final GuiScreen screen;
     private final List<String> tips = new ArrayList<>();
     protected boolean isDisplayMode;
-    private jp.ngt.ngtlib.gui.GuiTextFieldCustom.TextFieldListner listner;
+    private TextFieldListner listner;
 
     public GuiTextFieldCustom(int id, FontRenderer par1, int x, int y, int w, int h, GuiScreen pScr) {
         super(id, par1, x, y, w, h);
@@ -56,7 +56,7 @@ public class GuiTextFieldCustom extends GuiTextField {
         this.screen = pScr;
     }
 
-    public void setListner(jp.ngt.ngtlib.gui.GuiTextFieldCustom.TextFieldListner par1) {
+    public void setListner(TextFieldListner par1) {
         this.listner = par1;
     }
 
@@ -608,7 +608,7 @@ public class GuiTextFieldCustom extends GuiTextField {
         this.visible = par1;
     }
 
-    public jp.ngt.ngtlib.gui.GuiTextFieldCustom addTips(String par1) {
+    public GuiTextFieldCustom addTips(String par1) {
         this.tips.add(par1);
         return this;
     }
@@ -617,12 +617,12 @@ public class GuiTextFieldCustom extends GuiTextField {
         void onClick();
     }
     public interface TextFieldListener {
-        void onChange(jp.ngt.ngtlib.gui.GuiTextFieldCustom field);
+        void onChange(GuiTextFieldCustom field);
     }
 
-    private jp.ngt.ngtlib.gui.GuiTextFieldCustom.TextFieldListener listener;
+    private TextFieldListener listener;
 
-    public void setListener(jp.ngt.ngtlib.gui.GuiTextFieldCustom.TextFieldListener listener) {
+    public void setListener(TextFieldListener listener) {
         this.listener = listener;
     }
 
