@@ -12,20 +12,6 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.block.tileentity;
 
 import jp.ngt.rtm.RTMResource;
@@ -33,45 +19,37 @@ import jp.ngt.rtm.modelpack.ResourceType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ITickable;
 
-public class TileEntityFluorescent extends TileEntityOrnament implements ITickable
-{
+public class TileEntityFluorescent extends TileEntityOrnament implements ITickable {
     private int count = 0;
     public byte dirF;
 
     @Override
-    public void readFromNBT(NBTTagCompound nbt)
-    {
+    public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
         this.dirF = nbt.getByte("dir");
     }
 
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound nbt)
-    {
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
         nbt.setByte("dir", this.dirF);
         return nbt;
     }
 
-    public byte getDir()
-    {
+    public byte getDir() {
         return this.dirF;
     }
 
-    public void setDir(byte byte0)
-    {
+    public void setDir(byte byte0) {
         this.dirF = byte0;
 
     }
 
     @Override
-    public void update()
-    {
-        if(this.getBlockMetadata() == 2)
-        {
+    public void update() {
+        if (this.getBlockMetadata() == 2) {
             ++this.count;
-            if(this.count == 3)
-            {
+            if (this.count == 3) {
                 //明るさ更新
                 this.world.checkLight(this.getPos());
                 this.count = 0;
@@ -80,8 +58,7 @@ public class TileEntityFluorescent extends TileEntityOrnament implements ITickab
     }
 
     @Override
-    public ResourceType getSubType()
-    {
+    public ResourceType getSubType() {
         return RTMResource.ORNAMENT_LAMP;
     }
 

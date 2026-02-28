@@ -12,25 +12,8 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.modelpack.modelset;
 
-import javax.script.ScriptEngine;
-
-import jp.ngt.ngtlib.io.ScriptUtil;
 import jp.ngt.rtm.modelpack.ModelPackManager;
 import jp.ngt.rtm.modelpack.cfg.VehicleBaseConfig;
 import jp.ngt.rtm.render.BasicVehiclePartsRenderer;
@@ -41,74 +24,64 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class ModelSetVehicleBase<T extends VehicleBaseConfig> extends ModelSetBase<T>
-{
-	@SideOnly(Side.CLIENT)
-	public ResourceLocation rollsignTexture;
-	@SideOnly(Side.CLIENT)
-	public ScriptEngine soundSE;
+import javax.script.ScriptEngine;
 
-	public ModelSetVehicleBase()
-	{
-		super();
-	}
+public abstract class ModelSetVehicleBase<T extends VehicleBaseConfig> extends ModelSetBase<T> {
+    @SideOnly(Side.CLIENT)
+    public ResourceLocation rollsignTexture;
+    @SideOnly(Side.CLIENT)
+    public ScriptEngine soundSE;
 
-	public ModelSetVehicleBase(T par1)
-	{
-		super(par1);
-	}
+    public ModelSetVehicleBase() {
+        super();
+    }
 
-	@Override
-	public void constructOnServer()
-	{
-		super.constructOnServer();
-	}
+    public ModelSetVehicleBase(T par1) {
+        super(par1);
+    }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void constructOnClient()
-	{
-		super.constructOnClient();
+    @Override
+    public void constructOnServer() {
+        super.constructOnServer();
+    }
 
-		if(this.isDummy())
-		{
-			this.modelObj = ModelObject.getDummy();
-			this.buttonTexture = ModelPackManager.INSTANCE.getResource("textures/train/hoge.png");
-			this.rollsignTexture = null;
-		}
-		else
-		{
-			PartsRenderer renderer = (!PartsRenderer.validPath(cfg.getModel().rendererPath)) ? new BasicVehiclePartsRenderer(String.valueOf(true)) : null;
-			this.modelObj = new ModelObject(cfg.getModel(), this, renderer, "vehicle");
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void constructOnClient() {
+        super.constructOnClient();
 
-			this.buttonTexture = ModelPackManager.INSTANCE.getResource(cfg.buttonTexture);
-			this.rollsignTexture = cfg.rollsignTexture == null ? null : ModelPackManager.INSTANCE.getResource(cfg.rollsignTexture);
+        if (this.isDummy()) {
+            this.modelObj = ModelObject.getDummy();
+            this.buttonTexture = ModelPackManager.INSTANCE.getResource("textures/train/hoge.png");
+            this.rollsignTexture = null;
+        } else {
+            PartsRenderer renderer = (!PartsRenderer.validPath(cfg.getModel().rendererPath)) ? new BasicVehiclePartsRenderer(String.valueOf(true)) : null;
+            this.modelObj = new ModelObject(cfg.getModel(), this, renderer, "vehicle");
 
-			if(this.cfg.soundScriptPath != null)
-			{
-				this.soundSE = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(this.getConfig().soundScriptPath);
-			}
-		}
-	}
+            this.buttonTexture = ModelPackManager.INSTANCE.getResource(cfg.buttonTexture);
+            this.rollsignTexture = cfg.rollsignTexture == null ? null : ModelPackManager.INSTANCE.getResource(cfg.rollsignTexture);
 
-	@Override
-	public T getConfig()
-	{
-		return this.cfg;
-	}
+            if (this.cfg.soundScriptPath != null) {
+                this.soundSE = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(this.getConfig().soundScriptPath);
+            }
+        }
+    }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void renderModelInGui(Minecraft par1)
-	{
-		VehicleBaseConfig cfg = (VehicleBaseConfig)this.cfg;
-		this.modelObj.render(null, cfg, 0, 0.0F);
-		this.modelObj.render(null, cfg, 1, 0.0F);
-		this.renderPartsInGui(par1);
-	}
+    @Override
+    public T getConfig() {
+        return this.cfg;
+    }
 
-	@SideOnly(Side.CLIENT)
-	protected void renderPartsInGui(Minecraft par1)
-	{
-	}
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void renderModelInGui(Minecraft par1) {
+        VehicleBaseConfig cfg = (VehicleBaseConfig) this.cfg;
+        this.modelObj.render(null, cfg, 0, 0.0F);
+        this.modelObj.render(null, cfg, 1, 0.0F);
+        this.renderPartsInGui(par1);
+    }
+
+    @SideOnly(Side.CLIENT)
+    protected void renderPartsInGui(Minecraft par1) {
+    }
 }

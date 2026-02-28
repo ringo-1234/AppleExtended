@@ -12,20 +12,6 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.entity;
 
 import jp.ngt.ngtlib.entity.EntityCustom;
@@ -48,173 +34,146 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class EntityInstalledObject extends EntityCustom implements IResourceSelector
-{
-	private ResourceState<ModelSetMachine> state = new ResourceState<>(this.getSubType(), this);
-	private ScriptExecuter executer = new ScriptExecuter();
+public abstract class EntityInstalledObject extends EntityCustom implements IResourceSelector {
+    private ResourceState<ModelSetMachine> state = new ResourceState<>(this.getSubType(), this);
+    private ScriptExecuter executer = new ScriptExecuter();
 
-	public float rotationRoll;
+    public float rotationRoll;
 
-	public EntityInstalledObject(World world)
-	{
-		super(world);
-	}
+    public EntityInstalledObject(World world) {
+        super(world);
+    }
 
-	@Override
-	public boolean shouldRenderInPass(int pass)
-    {
+    @Override
+    public boolean shouldRenderInPass(int pass) {
         return pass >= 0;
     }
 
-	@Override
-	protected void entityInit()
-	{
-		;
-	}
-
-	@Override
-	public void syncData()
-	{
-		this.updateResourceState();
-	}
-
-	@Override
-	protected void readEntityFromNBT(NBTTagCompound nbt)
-    {
-		this.state.readFromNBT(nbt.getCompoundTag("State"));
-		this.rotationRoll = nbt.getFloat("RotationRoll");
+    @Override
+    protected void entityInit() {
+        ;
     }
 
-	@Override
-	protected void writeEntityToNBT(NBTTagCompound nbt)
-    {
-		nbt.setTag("State", this.state.writeToNBT());
-		nbt.setFloat("RotationRoll", this.rotationRoll);
+    @Override
+    public void syncData() {
+        this.updateResourceState();
     }
 
-	@Override
-	public AxisAlignedBB getCollisionBoundingBox()
-    {
+    @Override
+    protected void readEntityFromNBT(NBTTagCompound nbt) {
+        this.state.readFromNBT(nbt.getCompoundTag("State"));
+        this.rotationRoll = nbt.getFloat("RotationRoll");
+    }
+
+    @Override
+    protected void writeEntityToNBT(NBTTagCompound nbt) {
+        nbt.setTag("State", this.state.writeToNBT());
+        nbt.setFloat("RotationRoll", this.rotationRoll);
+    }
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox() {
         return this.getEntityBoundingBox();
     }
 
-	@Override
-	public boolean canBePushed()
-    {
+    @Override
+    public boolean canBePushed() {
         return false;
     }
 
-	@Override
-	public boolean canBeCollidedWith()
-    {
+    @Override
+    public boolean canBeCollidedWith() {
         return !this.isDead;
     }
 
-	@Override
-	protected boolean canTriggerWalking()
-    {
+    @Override
+    protected boolean canTriggerWalking() {
         return false;
     }
 
-	@Override
-    public void onUpdate()
-    {
-		super.onUpdate();
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
 
-		if(!this.getEntityWorld().isRemote)
-		{
-			this.executer.execScript(this);
-		}
+        if (!this.getEntityWorld().isRemote) {
+            this.executer.execScript(this);
+        }
     }
 
-	@Override
-	public boolean processInitialInteract(EntityPlayer player, EnumHand hand)
-    {
-		if(player.isSneaking())
-    	{
-			if(this.world.isRemote)
-	        {
-				player.openGui(RTMCore.instance, RTMCore.guiIdSelectEntityModel, player.world, this.getEntityId(), 0, 0);
-	        }
-			return true;
-		}
-		return true;
+    @Override
+    public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
+        if (player.isSneaking()) {
+            if (this.world.isRemote) {
+                player.openGui(RTMCore.instance, RTMCore.guiIdSelectEntityModel, player.world, this.getEntityId(), 0, 0);
+            }
+            return true;
+        }
+        return true;
     }
 
-	@Override
-    public boolean attackEntityFrom(DamageSource par1, float par2)
-    {
-		if(this.isEntityInvulnerable(par1) || this.isDead)
-        {
+    @Override
+    public boolean attackEntityFrom(DamageSource par1, float par2) {
+        if (this.isEntityInvulnerable(par1) || this.isDead) {
+            return false;
+        } else {
+            if (par1.getTrueSource() instanceof EntityPlayer) {
+                if (!this.world.isRemote) {
+                    this.markVelocityChanged();
+                    EntityPlayer entityplayer = (EntityPlayer) par1.getTrueSource();
+                    if (!entityplayer.capabilities.isCreativeMode) {
+                        this.dropItems();
+                    }
+                    this.getEntityWorld().playSound(this.posX, this.posY, this.posZ, SoundEvents.BLOCK_STONE_BREAK,
+                            SoundCategory.BLOCKS, 1.0F, 1.0F, true);
+                    this.setDead();
+                }
+                return true;
+            }
             return false;
         }
-        else
-        {
-        	if(par1.getTrueSource() instanceof EntityPlayer)
-        	{
-        		if(!this.world.isRemote)
-                {
-        			this.markVelocityChanged();
-            		EntityPlayer entityplayer = (EntityPlayer)par1.getTrueSource();
-            		if(!entityplayer.capabilities.isCreativeMode)
-                    {
-                		this.dropItems();
-                    }
-            		this.getEntityWorld().playSound(this.posX, this.posY, this.posZ, SoundEvents.BLOCK_STONE_BREAK,
-            				SoundCategory.BLOCKS, 1.0F, 1.0F, true);
-        			this.setDead();
-                }
-        		return true;
-        	}
-        	return false;
-        }
     }
 
-	protected abstract void dropItems();
+    protected abstract void dropItems();
 
-	@Override
-	public void move(MoverType type, double par1, double par3, double par5){}
+    @Override
+    public void move(MoverType type, double par1, double par3, double par5) {
+    }
 
-	@Override
-	public void addVelocity(double par1, double par3, double par5){}
+    @Override
+    public void addVelocity(double par1, double par3, double par5) {
+    }
 
-	@Override
-	@SideOnly(Side.CLIENT)
-    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int par9, boolean par10)
-    {
-		this.setPosition(x, y, z);
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int par9, boolean par10) {
+        this.setPosition(x, y, z);
         this.setRotation(yaw, pitch);
     }
 
-	/*=====================================================================================*/
+    /*=====================================================================================*/
 
-	@Override
-    public ResourceState<ModelSetMachine> getResourceState()
-    {
-    	return this.state;
+    @Override
+    public ResourceState<ModelSetMachine> getResourceState() {
+        return this.state;
     }
 
-	@Override
-	public void updateResourceState()
-	{
-		if(this.world == null || !this.world.isRemote)
-		{
-        	PacketNBT.sendToClient(this);
-		}
-	}
+    @Override
+    public void updateResourceState() {
+        if (this.world == null || !this.world.isRemote) {
+            PacketNBT.sendToClient(this);
+        }
+    }
 
-	@Override
-	public int[] getSelectorPos()
-	{
-		return new int[]{this.getEntityId(), -1, 0};
-	}
+    @Override
+    public int[] getSelectorPos() {
+        return new int[]{this.getEntityId(), -1, 0};
+    }
 
-	@Override
-	public boolean closeGui(ResourceState par1)
-	{
-		this.updateResourceState();
-		return true;
-	}
+    @Override
+    public boolean closeGui(ResourceState par1) {
+        this.updateResourceState();
+        return true;
+    }
 
-	protected abstract ResourceType getSubType();
+    protected abstract ResourceType getSubType();
 }

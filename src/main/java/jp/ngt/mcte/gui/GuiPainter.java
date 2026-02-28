@@ -12,25 +12,7 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.mcte.gui;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import jp.ngt.mcte.item.PainterSetting;
 import jp.ngt.ngtlib.gui.GuiScreenCustom;
@@ -50,45 +32,43 @@ import net.minecraft.util.NonNullList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.Iterator;
+
 @SideOnly(Side.CLIENT)
-public class GuiPainter extends GuiScreenCustom
-{
-	private final EntityPlayer player;
-	private final ItemStack painterItem;
-	private PainterSetting setting;
+public class GuiPainter extends GuiScreenCustom {
+    private final EntityPlayer player;
+    private final ItemStack painterItem;
+    private PainterSetting setting;
 
-	private GuiButtonItem buttonFillBlock;
-	private GuiButtonItem buttonRewriteBlock;
-	private GuiButton buttonFill;
-	private GuiButton buttonRewrite;
-	private GuiButton buttonDrawMode;
-	private GuiTextField fieldSize;
+    private GuiButtonItem buttonFillBlock;
+    private GuiButtonItem buttonRewriteBlock;
+    private GuiButton buttonFill;
+    private GuiButton buttonRewrite;
+    private GuiButton buttonDrawMode;
+    private GuiTextField fieldSize;
 
-	public GuiPainter(EntityPlayer par1)
-	{
-		this.player = par1;
-		this.painterItem = par1.inventory.getCurrentItem();
-		this.setting = PainterSetting.getPainterSettingFromItem(this.painterItem);
-	}
+    public GuiPainter(EntityPlayer par1) {
+        this.player = par1;
+        this.painterItem = par1.inventory.getCurrentItem();
+        this.setting = PainterSetting.getPainterSettingFromItem(this.painterItem);
+    }
 
-	@Override
-	public void initGui()
-    {
-		super.initGui();
+    @Override
+    public void initGui() {
+        super.initGui();
 
-		this.buttonList.clear();
-		this.buttonList.add(new GuiButton(0, this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("gui.done", new Object[0])));
+        this.buttonList.clear();
+        this.buttonList.add(new GuiButton(0, this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("gui.done", new Object[0])));
         this.buttonList.add(new GuiButton(1, this.width / 2 + 5, this.height - 28, 150, 20, I18n.format("gui.cancel", new Object[0])));
 
-        if(this.buttonFillBlock == null)//ブロック選択画面での内容の保持のため
+        if (this.buttonFillBlock == null)//ブロック選択画面での内容の保持のため
         {
-        	this.buttonFillBlock = new GuiButtonItem(10, 30, 10, 60, "fill", this.setting.fillBlock);
+            this.buttonFillBlock = new GuiButtonItem(10, 30, 10, 60, "fill", this.setting.fillBlock);
         }
         this.buttonList.add(this.buttonFillBlock);
 
-        if(this.buttonRewriteBlock == null)
-        {
-        	this.buttonRewriteBlock = new GuiButtonItem(11, 30, 30, 60, "rewrite", this.setting.rewriteBlock);
+        if (this.buttonRewriteBlock == null) {
+            this.buttonRewriteBlock = new GuiButtonItem(11, 30, 30, 60, "rewrite", this.setting.rewriteBlock);
         }
         this.buttonList.add(this.buttonRewriteBlock);
 
@@ -103,105 +83,79 @@ public class GuiPainter extends GuiScreenCustom
         this.fieldSize = this.setTextField(30, 110, 60, 20, String.valueOf(this.setting.size));
     }
 
-	@Override
-	protected void actionPerformed(GuiButton button)
-    {
-		if(button.id == 0)
-        {
-			this.sendPacket();
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        if (button.id == 0) {
+            this.sendPacket();
             this.mc.displayGuiScreen(null);
-        }
-		else if(button.id == 1)
-        {
+        } else if (button.id == 1) {
             this.mc.displayGuiScreen(null);
-        }
-		else if(button.id == 10)
-        {
-			this.selectBlock(this.buttonFillBlock);
-        }
-		else if(button.id == 11)
-        {
-			this.selectBlock(this.buttonRewriteBlock);
-        }
-		else if(button.id == 20)
-        {
-			this.setting.fill = !this.setting.fill;
-			this.buttonFill.displayString = "Fill:" + this.setting.fill;
-        }
-		else if(button.id == 21)
-        {
-			this.setting.rewrite = !this.setting.rewrite;
-			this.buttonRewrite.displayString = "Rewrite:" + this.setting.rewrite;
-        }
-		else if(button.id == 22)
-        {
-			this.setting.drawMode = (byte)((this.setting.drawMode + 1) % 2);
-			this.buttonDrawMode.displayString = "DrawMode:" + this.setting.drawMode;
+        } else if (button.id == 10) {
+            this.selectBlock(this.buttonFillBlock);
+        } else if (button.id == 11) {
+            this.selectBlock(this.buttonRewriteBlock);
+        } else if (button.id == 20) {
+            this.setting.fill = !this.setting.fill;
+            this.buttonFill.displayString = "Fill:" + this.setting.fill;
+        } else if (button.id == 21) {
+            this.setting.rewrite = !this.setting.rewrite;
+            this.buttonRewrite.displayString = "Rewrite:" + this.setting.rewrite;
+        } else if (button.id == 22) {
+            this.setting.drawMode = (byte) ((this.setting.drawMode + 1) % 2);
+            this.buttonDrawMode.displayString = "DrawMode:" + this.setting.drawMode;
         }
     }
 
-	private void sendPacket()
-	{
-		this.setting.fillBlock = this.buttonFillBlock.getBlockSet();
-		this.setting.rewriteBlock = this.buttonRewriteBlock.getBlockSet();
+    private void sendPacket() {
+        this.setting.fillBlock = this.buttonFillBlock.getBlockSet();
+        this.setting.rewriteBlock = this.buttonRewriteBlock.getBlockSet();
 
-		try
-		{
-			this.setting.size = Integer.parseInt(this.fieldSize.getText());
-		}
-		catch(NumberFormatException e)
-		{
-			this.fieldSize.setText(String.valueOf(this.setting.size));
-		}
+        try {
+            this.setting.size = Integer.parseInt(this.fieldSize.getText());
+        } catch (NumberFormatException e) {
+            this.fieldSize.setText(String.valueOf(this.setting.size));
+        }
 
-		this.writeNBT();
-		PacketNBT.sendToServer(this.player, this.painterItem);
-	}
+        this.writeNBT();
+        PacketNBT.sendToServer(this.player, this.painterItem);
+    }
 
-	private void writeNBT()
-	{
-		this.setting.writePainterSettingToItem(this.painterItem);
-	}
+    private void writeNBT() {
+        this.setting.writePainterSettingToItem(this.painterItem);
+    }
 
-	@Override
-	public void drawScreen(int par1, int par2, float par3)
-    {
-		this.drawDefaultBackground();
+    @Override
+    public void drawScreen(int par1, int par2, float par3) {
+        this.drawDefaultBackground();
         super.drawScreen(par1, par2, par3);
     }
 
-	private void selectBlock(final GuiButtonItem button)
-	{
-		Iterator<Block> iterator0 = Block.REGISTRY.iterator();
-		NonNullList<ItemStack> list0 = NonNullList.create();
-		while(iterator0.hasNext())
-		{
-			Block block = iterator0.next();
-			Item item = Item.getItemFromBlock(block);
-			if(item != null)
-			{
-				block.getSubBlocks(CreativeTabs.SEARCH, list0);
-			}
-		}
+    private void selectBlock(final GuiButtonItem button) {
+        Iterator<Block> iterator0 = Block.REGISTRY.iterator();
+        NonNullList<ItemStack> list0 = NonNullList.create();
+        while (iterator0.hasNext()) {
+            Block block = iterator0.next();
+            Item item = Item.getItemFromBlock(block);
+            if (item != null) {
+                block.getSubBlocks(CreativeTabs.SEARCH, list0);
+            }
+        }
 
-		ISelector selector = new ISelector()
-		{
-			@Override
-			public void select(Object par1)
-			{
-				button.setItem((ItemStack)par1);
-			}
+        ISelector selector = new ISelector() {
+            @Override
+            public void select(Object par1) {
+                button.setItem((ItemStack) par1);
+            }
 
-		};
+        };
 
-		SlotElementItem[] slots = new SlotElementItem[list0.size()];
-		for(int i = 0; i < slots.length; ++i)
-		{
-			ItemStack stack = list0.get(i);
-			String s = stack.getDisplayName();
-			slots[i] = new SlotElementItem<ItemStack>(selector, stack, s, stack);
-		}
+        SlotElementItem[] slots = new SlotElementItem[list0.size()];
+        for (int i = 0; i < slots.length; ++i) {
+            ItemStack stack = list0.get(i);
+            String s = stack.getDisplayName();
+            slots[i] = new SlotElementItem<ItemStack>(selector, stack, s, stack);
+        }
 
-		this.mc.displayGuiScreen(new GuiSelect(this, slots));
-	}
+        this.mc.displayGuiScreen(new GuiSelect(this, slots));
+    }
 }

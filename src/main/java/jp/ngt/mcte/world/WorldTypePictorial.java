@@ -12,20 +12,6 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.mcte.world;
 
 import jp.ngt.mcte.gui.GuiCreatePictorialWorld;
@@ -42,87 +28,70 @@ import net.minecraft.world.gen.layer.GenLayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class WorldTypePictorial extends WorldType
-{
-	public static WorldType PICTORIAL;
+public class WorldTypePictorial extends WorldType {
+    public static WorldType PICTORIAL;
 
-	public static void init()
-	{
-		//WorldTypeのコンストラクタで登録は行われる
-		//WorldType.parseWorldType()でサーバーのコンフィグからWorldTypeを取得(大小文字区別なし)
-		PICTORIAL = new WorldTypePictorial("pictorial");
-	}
-
-	public WorldTypePictorial(String name)
-	{
-		super(name);
-	}
-
-	@Override
-	public BiomeProvider getBiomeProvider(World world)
-	{
-		WorldData worldData = WorldData.getWorldData(world, world.getWorldInfo().getGeneratorOptions());
-
-		if(worldData == null || !worldData.getWorldGenerator().hasBiomesData())
-		{
-			NGTLog.debug("set default ChunkManager");
-			return new BiomeProvider(world.getWorldInfo());
-		}
-		else
-		{
-			return new ChunkManagerPictorialCustom(world, worldData);
-		}
-	}
-
-	@Override
-	public IChunkGenerator getChunkGenerator(World world, String generatorOptions)
-	{
-		WorldData worldData = WorldData.getWorldData(world, generatorOptions);
-
-		if(worldData == null || !worldData.getWorldGenerator().hasTerrainData())
-		{
-			NGTLog.debug("set default ChunkGenerator");
-			return new ChunkGeneratorOverworld(world, world.getSeed(), world.getWorldInfo().isMapFeaturesEnabled(), generatorOptions);
-		}
-		else
-		{
-			return new ChunkProviderPictorialCustom(world, world.getSeed(), world.getWorldInfo().isMapFeaturesEnabled(), worldData);
-		}
-	}
-
-	@Override
-	public int getMinimumSpawnHeight(World world)
-    {
-        return (int)this.getHorizon(world) + 1;
+    public static void init() {
+        //WorldTypeのコンストラクタで登録は行われる
+        //WorldType.parseWorldType()でサーバーのコンフィグからWorldTypeを取得(大小文字区別なし)
+        PICTORIAL = new WorldTypePictorial("pictorial");
     }
 
-	@Override
-    public double getHorizon(World world)
-    {
-    	WorldData worldData = WorldData.getWorldData(world, world.getWorldInfo().getGeneratorOptions());
-    	if(worldData != null)
-    	{
-    		return worldData.seaLevel;
-    	}
+    public WorldTypePictorial(String name) {
+        super(name);
+    }
+
+    @Override
+    public BiomeProvider getBiomeProvider(World world) {
+        WorldData worldData = WorldData.getWorldData(world, world.getWorldInfo().getGeneratorOptions());
+
+        if (worldData == null || !worldData.getWorldGenerator().hasBiomesData()) {
+            NGTLog.debug("set default ChunkManager");
+            return new BiomeProvider(world.getWorldInfo());
+        } else {
+            return new ChunkManagerPictorialCustom(world, worldData);
+        }
+    }
+
+    @Override
+    public IChunkGenerator getChunkGenerator(World world, String generatorOptions) {
+        WorldData worldData = WorldData.getWorldData(world, generatorOptions);
+
+        if (worldData == null || !worldData.getWorldGenerator().hasTerrainData()) {
+            NGTLog.debug("set default ChunkGenerator");
+            return new ChunkGeneratorOverworld(world, world.getSeed(), world.getWorldInfo().isMapFeaturesEnabled(), generatorOptions);
+        } else {
+            return new ChunkProviderPictorialCustom(world, world.getSeed(), world.getWorldInfo().isMapFeaturesEnabled(), worldData);
+        }
+    }
+
+    @Override
+    public int getMinimumSpawnHeight(World world) {
+        return (int) this.getHorizon(world) + 1;
+    }
+
+    @Override
+    public double getHorizon(World world) {
+        WorldData worldData = WorldData.getWorldData(world, world.getWorldInfo().getGeneratorOptions());
+        if (worldData != null) {
+            return worldData.seaLevel;
+        }
         return 63.0D;
     }
 
-	@Override
-	public boolean isCustomizable()
-	{
-	    return true;
-	}
+    @Override
+    public boolean isCustomizable() {
+        return true;
+    }
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void onCustomizeButton(Minecraft instance, GuiCreateWorld guiCreateWorld)
-	{
-		instance.displayGuiScreen(new GuiCreatePictorialWorld(guiCreateWorld));
-	}
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void onCustomizeButton(Minecraft instance, GuiCreateWorld guiCreateWorld) {
+        instance.displayGuiScreen(new GuiCreatePictorialWorld(guiCreateWorld));
+    }
 
-	@Override
-	public GenLayer getBiomeLayer(long worldSeed, GenLayer parentLayer, ChunkGeneratorSettings chunkSettings)
-    {
-		return new GenLayerPictorialCustom(worldSeed);
+    @Override
+    public GenLayer getBiomeLayer(long worldSeed, GenLayer parentLayer, ChunkGeneratorSettings chunkSettings) {
+        return new GenLayerPictorialCustom(worldSeed);
     }
 }

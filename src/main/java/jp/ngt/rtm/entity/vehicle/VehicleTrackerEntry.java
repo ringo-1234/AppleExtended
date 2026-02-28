@@ -13,10 +13,7 @@
  */
 
 package jp.ngt.rtm.entity.vehicle;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import jp.ngt.ngtlib.io.NGTLog;
+
 import jp.ngt.ngtlib.network.PacketNBT;
 import jp.ngt.ngtlib.util.NGTUtil;
 import jp.ngt.rtm.RTMCore;
@@ -37,6 +34,11 @@ import net.minecraft.network.play.server.SPacketSetPassengers;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 public final class VehicleTrackerEntry extends EntityTrackerEntry {
     private Entity trackedEntity;
     /**
@@ -45,8 +47,6 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
     private int updateFrequency;
     private boolean updatedPlayerVisibility;
     private List<Entity> passengers = Collections.<Entity>emptyList();
-
-
 
 
     private double posX, posY, posZ;
@@ -58,7 +58,7 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
         super(par2, 256, 256, RTMEntity.FREQ_VEHICLE, false);
         this.trackedEntity = par2;
         this.updateFrequency = RTMEntity.FREQ_VEHICLE;
-        
+
         this.isTrain = (this.trackedEntity instanceof EntityTrainBase || this.trackedEntity instanceof EntityBogie);
     }
 
@@ -90,15 +90,14 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
             this.updatePlayerEntities(par1);
         }
 
-        
+
         List<Entity> list = this.trackedEntity.getPassengers();
         if (!list.equals(this.passengers)) {
             this.passengers = list;
             this.sendPacketToTrackedPlayers(new SPacketSetPassengers(this.trackedEntity));
         }
 
-        if (this.updateCounter % this.updateFrequency == 0)
-        {
+        if (this.updateCounter % this.updateFrequency == 0) {
             if (this.trackedEntity.getRidingEntity() == null) {
                 RTMCore.NETWORK_WRAPPER.sendToAll(new PacketVehicleMovement(this.trackedEntity, false));
 
@@ -141,7 +140,6 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
         this.sendPacketToTrackedPlayers(packetIn);
     }
 
-    
 
     @Override
     public void sendDestroyEntityPacketToTrackedPlayers() {
@@ -206,7 +204,6 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
     }
 
 
-
     /**
      * @param par1 EntityVehicleBase or EntityBogie
      */
@@ -215,23 +212,23 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
             WorldServer world = (WorldServer) par1.world;
             EntityTracker tracker = world.getEntityTracker();
 
-            
+
             EntityTrackerEntry entry = tracker.trackedEntityHashTable.lookup(par1.getEntityId());
 
             if (entry != null && !(entry instanceof VehicleTrackerEntry)) {
-                
+
                 VehicleTrackerEntry newEntry = new VehicleTrackerEntry(par1);
 
-                
+
                 newEntry.trackingPlayers.addAll(entry.trackingPlayers);
 
-                
+
                 java.util.Set<EntityTrackerEntry> entries = getTrackedEntities(tracker);
                 if (entries != null) {
                     entries.remove(entry);
                     entries.add(newEntry);
                 }
-                
+
                 tracker.trackedEntityHashTable.addKey(par1.getEntityId(), newEntry);
 
                 return true;

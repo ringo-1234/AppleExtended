@@ -12,92 +12,62 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.ngtlib.io;
 
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
+
+import javax.tools.*;
+import javax.tools.JavaFileObject.Kind;
 import java.io.IOException;
 import java.security.SecureClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.tools.DiagnosticListener;
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
+public class VirtualFileManager extends ForwardingJavaFileManager<JavaFileManager> {
+    protected final Map<String, ByteCodeObject> map = new HashMap<String, ByteCodeObject>();
+    protected ClassLoader loader = null;
 
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
+    public VirtualFileManager(JavaCompiler compiler, DiagnosticListener<? super JavaFileObject> listener) {
+        super(compiler.getStandardFileManager(listener, null, null));
+    }
 
-public class VirtualFileManager extends ForwardingJavaFileManager<JavaFileManager>
-{
-	protected final Map<String, ByteCodeObject> map = new HashMap<String, ByteCodeObject>();
-	protected ClassLoader loader = null;
+    @Override
+    public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
+        ByteCodeObject co = new ByteCodeObject(className, kind);
+        this.map.put(className, co);
+        return co;
+    }
 
-	public VirtualFileManager(JavaCompiler compiler, DiagnosticListener<? super JavaFileObject> listener)
-	{
-		super(compiler.getStandardFileManager(listener, null, null));
-	}
+    @Override
+    public ClassLoader getClassLoader(Location location) {
+        if (this.loader == null) {
+            this.loader = new Loader();
+        }
+        return this.loader;
+    }
 
-	@Override
-	public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException
-	{
-		ByteCodeObject co = new ByteCodeObject(className, kind);
-		this.map.put(className, co);
-		return co;
-	}
+    public byte[] getByteData(String className) {
+        return this.map.get(className).getBytes();
+    }
 
-	@Override
-	public ClassLoader getClassLoader(Location location)
-	{
-		if(this.loader == null)
-		{
-			this.loader = new Loader();
-		}
-		return this.loader;
-	}
+    private class Loader extends SecureClassLoader {
+        public final LaunchClassLoader parent = Launch.classLoader;
 
-	public byte[] getByteData(String className)
-	{
-		return this.map.get(className).getBytes();
-	}
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            ByteCodeObject co = VirtualFileManager.this.map.get(name);
+            if (co == null) {
+                return super.findClass(name);
+            }
 
-	private class Loader extends SecureClassLoader
-	{
-		public final LaunchClassLoader parent = Launch.classLoader;
-
-		@Override
-		protected Class<?> findClass(String name) throws ClassNotFoundException
-		{
-			ByteCodeObject co = VirtualFileManager.this.map.get(name);
-			if(co == null)
-			{
-				return super.findClass(name);
-			}
-
-			Class<?> c = co.getDefinedClass();
-			if(c == null)
-			{
-				byte[] b = co.getBytes();
-				c = super.defineClass(name, b, 0, b.length);
-				co.setDefinedClass(c);
-			}
-			return c;
-		}
-	}
+            Class<?> c = co.getDefinedClass();
+            if (c == null) {
+                byte[] b = co.getBytes();
+                c = super.defineClass(name, b, 0, b.length);
+                co.setDefinedClass(c);
+            }
+            return c;
+        }
+    }
 }

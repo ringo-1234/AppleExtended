@@ -12,27 +12,7 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.render;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.lwjgl.opengl.GL11;
 
 import jp.ngt.ngtlib.renderer.model.GroupObject;
 import jp.ngt.ngtlib.renderer.model.NGTOModel;
@@ -43,146 +23,128 @@ import jp.ngt.rtm.modelpack.modelset.ModelSetVehicleBase;
 import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
 
-/**独自のPartsRendererがない場合に使用(乗り物専用)*/
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * 独自のPartsRendererがない場合に使用(乗り物専用)
+ */
 @SideOnly(Side.CLIENT)
-public class BasicVehiclePartsRenderer extends VehiclePartsRenderer
-{
-	private Parts body;
-	private PartsWithChildren[] doorLeft, doorRight;
-	private PartsWithChildren[] pantographFront, pantographBack;
+public class BasicVehiclePartsRenderer extends VehiclePartsRenderer {
+    private Parts body;
+    private PartsWithChildren[] doorLeft, doorRight;
+    private PartsWithChildren[] pantographFront, pantographBack;
 
-	public BasicVehiclePartsRenderer(String... par1)
-	{
-		super(par1);
-	}
+    public BasicVehiclePartsRenderer(String... par1) {
+        super(par1);
+    }
 
-	@Override
-	public void init(ModelSetVehicleBase par1, ModelObject par2)
-	{
-		VehicleBaseConfig cfg = par1.getConfig();
-		List<String> list = new ArrayList<String>();
+    @Override
+    public void init(ModelSetVehicleBase par1, ModelObject par2) {
+        VehicleBaseConfig cfg = par1.getConfig();
+        List<String> list = new ArrayList<String>();
 
-		this.doorLeft = (cfg.door_left != null) ? this.getParts(list, cfg.door_left) : new PartsWithChildren[0];
-		this.doorRight = (cfg.door_right != null) ? this.getParts(list, cfg.door_right) : new PartsWithChildren[0];
-		this.pantographFront = (cfg.pantograph_front != null) ? this.getParts(list, cfg.pantograph_front) : new PartsWithChildren[0];
-		this.pantographBack = (cfg.pantograph_back != null) ? this.getParts(list, cfg.pantograph_back) : new PartsWithChildren[0];
+        this.doorLeft = (cfg.door_left != null) ? this.getParts(list, cfg.door_left) : new PartsWithChildren[0];
+        this.doorRight = (cfg.door_right != null) ? this.getParts(list, cfg.door_right) : new PartsWithChildren[0];
+        this.pantographFront = (cfg.pantograph_front != null) ? this.getParts(list, cfg.pantograph_front) : new PartsWithChildren[0];
+        this.pantographBack = (cfg.pantograph_back != null) ? this.getParts(list, cfg.pantograph_back) : new PartsWithChildren[0];
 
-		List<GroupObject> goList = par2.model.getGroupObjects();
-		List<String> bodyParts = new ArrayList<String>();
-		for(GroupObject obj : goList)
-		{
-			if(!list.contains(obj.name))
-			{
-				bodyParts.add(obj.name);
-			}
-		}
+        List<GroupObject> goList = par2.model.getGroupObjects();
+        List<String> bodyParts = new ArrayList<String>();
+        for (GroupObject obj : goList) {
+            if (!list.contains(obj.name)) {
+                bodyParts.add(obj.name);
+            }
+        }
 
-		if(bodyParts.isEmpty() && par2.model instanceof NGTOModel)
-		{
-			bodyParts.add(NGTOModel.GROUP_NAME);
-		}
-		this.body = new Parts(bodyParts.toArray(new String[list.size()]));
+        if (bodyParts.isEmpty() && par2.model instanceof NGTOModel) {
+            bodyParts.add(NGTOModel.GROUP_NAME);
+        }
+        this.body = new Parts(bodyParts.toArray(new String[list.size()]));
 
-		this.partsList.addAll(Arrays.asList(this.doorLeft));
-		this.partsList.addAll(Arrays.asList(this.doorRight));
-		this.partsList.addAll(Arrays.asList(this.pantographFront));
-		this.partsList.addAll(Arrays.asList(this.pantographBack));
-		this.partsList.add(this.body);
+        this.partsList.addAll(Arrays.asList(this.doorLeft));
+        this.partsList.addAll(Arrays.asList(this.doorRight));
+        this.partsList.addAll(Arrays.asList(this.pantographFront));
+        this.partsList.addAll(Arrays.asList(this.pantographBack));
+        this.partsList.add(this.body);
 
-		super.init(par1, par2);
+        super.init(par1, par2);
 
-	}
+    }
 
-	private PartsWithChildren[] getParts(List<String> list, VehicleParts[] parts)
-	{
-		PartsWithChildren[] array = new PartsWithChildren[parts.length];
-		for(int i = 0; i < parts.length; ++i)
-		{
-			array[i] = new PartsWithChildren(parts[i].objects);
-			NGTUtil.addArray(list, parts[i].objects);
-			if(parts[i].childParts != null)
-			{
-				NGTUtil.addArray(array[i].childParts, this.getParts(list, parts[i].childParts));
-			}
-		}
-		return array;
-	}
+    private PartsWithChildren[] getParts(List<String> list, VehicleParts[] parts) {
+        PartsWithChildren[] array = new PartsWithChildren[parts.length];
+        for (int i = 0; i < parts.length; ++i) {
+            array[i] = new PartsWithChildren(parts[i].objects);
+            NGTUtil.addArray(list, parts[i].objects);
+            if (parts[i].childParts != null) {
+                NGTUtil.addArray(array[i].childParts, this.getParts(list, parts[i].childParts));
+            }
+        }
+        return array;
+    }
 
-	@Override
-	public void render(Entity entity, RenderPass pass, float par3)
-	{
-		this.body.render(this);
-		VehicleBaseConfig cfg = this.modelSet.getConfig();
+    @Override
+    public void render(Entity entity, RenderPass pass, float par3) {
+        this.body.render(this);
+        VehicleBaseConfig cfg = this.modelSet.getConfig();
 
-		if(cfg.door_left != null)
-		{
-			float move = this.getDoorMovementL(entity);
-			for(int j = 0; j < cfg.door_left.length; ++j)
-			{
-				this.renderParts(this.sigmoid(move), cfg.door_left[j], this.doorLeft[j]);
-			}
-		}
+        if (cfg.door_left != null) {
+            float move = this.getDoorMovementL(entity);
+            for (int j = 0; j < cfg.door_left.length; ++j) {
+                this.renderParts(this.sigmoid(move), cfg.door_left[j], this.doorLeft[j]);
+            }
+        }
 
-		if(cfg.door_right != null)
-		{
-			float move = this.getDoorMovementR(entity);
-			for(int j = 0; j < cfg.door_right.length; ++j)
-			{
-				this.renderParts(this.sigmoid(move), cfg.door_right[j], this.doorRight[j]);
-			}
-		}
+        if (cfg.door_right != null) {
+            float move = this.getDoorMovementR(entity);
+            for (int j = 0; j < cfg.door_right.length; ++j) {
+                this.renderParts(this.sigmoid(move), cfg.door_right[j], this.doorRight[j]);
+            }
+        }
 
-		if(cfg.pantograph_front != null)
-		{
-			float move = this.getPantographMovementFront(entity);
-			for(int j = 0; j < cfg.pantograph_front.length; ++j)
-			{
-				//架線追従のため、シグモ使えない
-				//this.renderParts(this.sigmoid(move), cfg.pantograph_front[j], this.pantographFront[j]);
-				this.renderParts(move, cfg.pantograph_front[j], this.pantographFront[j]);
-			}
-		}
+        if (cfg.pantograph_front != null) {
+            float move = this.getPantographMovementFront(entity);
+            for (int j = 0; j < cfg.pantograph_front.length; ++j) {
+                //架線追従のため、シグモ使えない
+                //this.renderParts(this.sigmoid(move), cfg.pantograph_front[j], this.pantographFront[j]);
+                this.renderParts(move, cfg.pantograph_front[j], this.pantographFront[j]);
+            }
+        }
 
-		if(cfg.pantograph_back != null)
-		{
-			float move = this.getPantographMovementBack(entity);
-			for(int j = 0; j < cfg.pantograph_back.length; ++j)
-			{
-				//架線追従のため、シグモ使えない
-				//this.renderParts(this.sigmoid(move), cfg.pantograph_back[j], this.pantographBack[j]);
-				this.renderParts(move, cfg.pantograph_back[j], this.pantographBack[j]);
-			}
-		}
-	}
+        if (cfg.pantograph_back != null) {
+            float move = this.getPantographMovementBack(entity);
+            for (int j = 0; j < cfg.pantograph_back.length; ++j) {
+                //架線追従のため、シグモ使えない
+                //this.renderParts(this.sigmoid(move), cfg.pantograph_back[j], this.pantographBack[j]);
+                this.renderParts(move, cfg.pantograph_back[j], this.pantographBack[j]);
+            }
+        }
+    }
 
-	private void renderParts(float move, VehicleParts parts, PartsWithChildren parts2)
-	{
-		GL11.glPushMatrix();
-		GL11.glTranslatef(parts.pos[0], parts.pos[1], parts.pos[2]);
-		for(int i = 0; i < parts.transform.length; ++i)
-		{
-			float[] fa = parts.transform[i];
-			if(fa.length == 3)
-			{
-				GL11.glTranslatef(fa[0] * move, fa[1] * move, fa[2] * move);
-			}
-			else if(fa.length == 4)
-			{
-				GL11.glRotatef(fa[0] * move, fa[1], fa[2], fa[3]);
-			}
-		}
-		GL11.glTranslatef(-parts.pos[0], -parts.pos[1], -parts.pos[2]);
-		parts2.render(this);
+    private void renderParts(float move, VehicleParts parts, PartsWithChildren parts2) {
+        GL11.glPushMatrix();
+        GL11.glTranslatef(parts.pos[0], parts.pos[1], parts.pos[2]);
+        for (int i = 0; i < parts.transform.length; ++i) {
+            float[] fa = parts.transform[i];
+            if (fa.length == 3) {
+                GL11.glTranslatef(fa[0] * move, fa[1] * move, fa[2] * move);
+            } else if (fa.length == 4) {
+                GL11.glRotatef(fa[0] * move, fa[1], fa[2], fa[3]);
+            }
+        }
+        GL11.glTranslatef(-parts.pos[0], -parts.pos[1], -parts.pos[2]);
+        parts2.render(this);
 
-		if(parts.childParts != null)
-		{
-			for(int i = 0; i < parts.childParts.length; ++i)
-			{
-				this.renderParts(move, parts.childParts[i], (PartsWithChildren)parts2.childParts.get(i));
-			}
-		}
+        if (parts.childParts != null) {
+            for (int i = 0; i < parts.childParts.length; ++i) {
+                this.renderParts(move, parts.childParts[i], (PartsWithChildren) parts2.childParts.get(i));
+            }
+        }
 
-		GL11.glPopMatrix();
-	}
+        GL11.glPopMatrix();
+    }
 }

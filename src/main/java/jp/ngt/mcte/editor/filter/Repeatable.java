@@ -12,25 +12,10 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.mcte.editor.filter;
 
 import jp.ngt.ngtlib.math.AABBInt;
 
-public interface Repeatable
-{
-	void processing(AABBInt box, int index, int rep, int x, int y, int z);
+public interface Repeatable {
+    void processing(AABBInt box, int index, int rep, int x, int y, int z);
 }

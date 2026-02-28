@@ -12,31 +12,13 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.item;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import jp.ngt.ngtlib.item.ItemArgHolderBase.ItemArgHolder;
 import jp.ngt.ngtlib.math.NGTMath;
 import jp.ngt.ngtlib.math.PooledVec3;
 import jp.ngt.ngtlib.math.Vec3;
 import jp.ngt.ngtlib.util.NGTUtil;
-import jp.ngt.rtm.RTMBlock;
 import jp.ngt.rtm.RTMItem;
 import jp.ngt.rtm.RTMResource;
 import jp.ngt.rtm.modelpack.ModelPackManager;
@@ -67,240 +49,216 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemRail extends ItemWithModel
-{
-	public ItemRail()
-	{
-		super();
-		this.setMaxStackSize(1);
-	}
+import java.util.ArrayList;
+import java.util.List;
 
-	@Override
-	protected ActionResult<ItemStack> onItemUse(ItemArgHolder holder, float hitX, float hitY, float hitZ)
-	{
-		World world = holder.getWorld();
-		IBlockState blockState = world.getBlockState(holder.getBlockPos());
-		if(blockState.getBlock() instanceof BlockMarker){return holder.pass();}
+public class ItemRail extends ItemWithModel {
+    public ItemRail() {
+        super();
+        this.setMaxStackSize(1);
+    }
 
-		if(world.isRemote)
-		{
-		}
-		else
-		{
-			TileEntityLargeRailCore core = BlockLargeRailBase.getCore(world, holder.getBlockPos());
-			if(core != null)
-			{
-				ResourceStateRail state = this.getModelState(holder.getItemStack());
-				if(holder.getPlayer().isSneaking())
-				{
-					core.replaceRail(state);
-				}
-				else
-				{
-					core.addSubRail(state);
-				}
-			}
-			else
-			{
-				BlockPos newPos = holder.getBlockPos().up();
-				this.placeRail(world, newPos, holder.getItemStack(), holder.getPlayer());
-			}
-		}
-		return holder.success();
-	}
+    @Override
+    protected ActionResult<ItemStack> onItemUse(ItemArgHolder holder, float hitX, float hitY, float hitZ) {
+        World world = holder.getWorld();
+        IBlockState blockState = world.getBlockState(holder.getBlockPos());
+        if (blockState.getBlock() instanceof BlockMarker) {
+            return holder.pass();
+        }
 
-	@Override
-	public ResourceStateRail getModelState(ItemStack itemStack)
-	{
-		ResourceType type = this.getModelType(itemStack);
-		if(type != null)
-		{
-			ResourceStateRail state = new ResourceStateRail(type, null);
-			if(itemStack.hasTagCompound())
-			{
-				state.readFromNBT(itemStack.getTagCompound().getCompoundTag("State"));
-			}
-			else
-			{
-				state.setResourceName(type.defaultName);
-				NBTTagCompound nbt = new NBTTagCompound();
-				nbt.setTag("State", state.writeToNBT());
-				itemStack.setTagCompound(nbt);
-			}
-			return state;
-		}
-		return null;
-	}
+        if (world.isRemote) {
+        } else {
+            TileEntityLargeRailCore core = BlockLargeRailBase.getCore(world, holder.getBlockPos());
+            if (core != null) {
+                ResourceStateRail state = this.getModelState(holder.getItemStack());
+                if (holder.getPlayer().isSneaking()) {
+                    core.replaceRail(state);
+                } else {
+                    core.addSubRail(state);
+                }
+            } else {
+                BlockPos newPos = holder.getBlockPos().up();
+                this.placeRail(world, newPos, holder.getItemStack(), holder.getPlayer());
+            }
+        }
+        return holder.success();
+    }
 
-	@Override
-	@SideOnly(Side.CLIENT)
-	public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list)
-	{
-		if(!this.isInCreativeTab(tab)){return;}
+    @Override
+    public ResourceStateRail getModelState(ItemStack itemStack) {
+        ResourceType type = this.getModelType(itemStack);
+        if (type != null) {
+            ResourceStateRail state = new ResourceStateRail(type, null);
+            if (itemStack.hasTagCompound()) {
+                state.readFromNBT(itemStack.getTagCompound().getCompoundTag("State"));
+            } else {
+                state.setResourceName(type.defaultName);
+                NBTTagCompound nbt = new NBTTagCompound();
+                nbt.setTag("State", state.writeToNBT());
+                itemStack.setTagCompound(nbt);
+            }
+            return state;
+        }
+        return null;
+    }
 
-		List<ResourceSet> rails = ModelPackManager.INSTANCE.getModelList(RTMResource.RAIL);
-		for(ResourceSet modelSet : rails)
-		{
-			RailConfig cfg = (RailConfig)modelSet.getConfig();
-			if(cfg.defaultBallast == null){continue;}
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
+        if (!this.isInCreativeTab(tab)) {
+            return;
+        }
 
-			for(BallastSet set : cfg.defaultBallast)
-			{
-				Block block = Block.getBlockFromName(set.blockName);
-				int meta = set.blockMetadata;
-				float h = set.height <= 0.0F ? 0.0625F : set.height;
-				if(block == null)
-				{
-					block = Blocks.AIR;
-				}
+        List<ResourceSet> rails = ModelPackManager.INSTANCE.getModelList(RTMResource.RAIL);
+        for (ResourceSet modelSet : rails) {
+            RailConfig cfg = (RailConfig) modelSet.getConfig();
+            if (cfg.defaultBallast == null) {
+                continue;
+            }
 
-				ItemStack itemStack = new ItemStack(RTMItem.itemLargeRail, 1, 0);
-				ResourceStateRail state = (ResourceStateRail)this.getModelState(itemStack);
-				state.setResourceName(cfg.getName());
-				state.setBlock(block, meta);
-				state.setHeight(h);
-				this.setModelState(itemStack, state);
-				list.add(itemStack);
-			}
-		}
-	}
+            for (BallastSet set : cfg.defaultBallast) {
+                Block block = Block.getBlockFromName(set.blockName);
+                int meta = set.blockMetadata;
+                float h = set.height <= 0.0F ? 0.0625F : set.height;
+                if (block == null) {
+                    block = Blocks.AIR;
+                }
 
-	@Override
-	public String getItemStackDisplayName(ItemStack itemStack)
-	{
-		String s = super.getItemStackDisplayName(itemStack);
-		ResourceStateRail state = (ResourceStateRail)this.getModelState(itemStack);
-		if(state == null){return s;}
+                ItemStack itemStack = new ItemStack(RTMItem.itemLargeRail, 1, 0);
+                ResourceStateRail state = (ResourceStateRail) this.getModelState(itemStack);
+                state.setResourceName(cfg.getName());
+                state.setBlock(block, meta);
+                state.setHeight(h);
+                this.setModelState(itemStack, state);
+                list.add(itemStack);
+            }
+        }
+    }
 
-		String localizedName = "";
-		if(I18n.canTranslate(state.unlocalizedName))
-		{
-			localizedName = ", " + NGTUtil.translate(state.unlocalizedName);
-		}
-		return s + "(" + state.getResourceSet().getConfig().getName() + localizedName + ")";
-	}
+    @Override
+    public String getItemStackDisplayName(ItemStack itemStack) {
+        String s = super.getItemStackDisplayName(itemStack);
+        ResourceStateRail state = (ResourceStateRail) this.getModelState(itemStack);
+        if (state == null) {
+            return s;
+        }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	protected void addInformation(ItemArgHolder holder, List list, ITooltipFlag flag)
-	{
-		super.addInformation(holder, list, flag);
-		ResourceStateRail state = (ResourceStateRail)this.getModelState(holder.getItemStack());
-		if(state == null){return;}
-		list.add(TextFormatting.GRAY + "Height:" + state.blockHeight);
+        String localizedName = "";
+        if (I18n.canTranslate(state.unlocalizedName)) {
+            localizedName = ", " + NGTUtil.translate(state.unlocalizedName);
+        }
+        return s + "(" + state.getResourceSet().getConfig().getName() + localizedName + ")";
+    }
 
-		if(holder.getItemStack().hasTagCompound() && holder.getItemStack().getTagCompound().hasKey("ShapeName"))
-		{
-			String shape = holder.getItemStack().getTagCompound().getString("ShapeName");
-			list.add(TextFormatting.GRAY + shape);
-		}
-	}
+    @SideOnly(Side.CLIENT)
+    @Override
+    protected void addInformation(ItemArgHolder holder, List list, ITooltipFlag flag) {
+        super.addInformation(holder, list, flag);
+        ResourceStateRail state = (ResourceStateRail) this.getModelState(holder.getItemStack());
+        if (state == null) {
+            return;
+        }
+        list.add(TextFormatting.GRAY + "Height:" + state.blockHeight);
 
-	public static ItemStack getRailItem(ResourceStateRail prop)
-	{
-		ItemStack itemStack = new ItemStack(RTMItem.itemLargeRail, 1, 0);
-		((ItemRail)RTMItem.itemLargeRail).setModelState(itemStack, prop);
-		return itemStack;
-	}
+        if (holder.getItemStack().hasTagCompound() && holder.getItemStack().getTagCompound().hasKey("ShapeName")) {
+            String shape = holder.getItemStack().getTagCompound().getString("ShapeName");
+            list.add(TextFormatting.GRAY + shape);
+        }
+    }
 
-	public static ResourceStateRail getDefaultProperty()
-	{
-		ResourceStateRail state = new ResourceStateRail(RTMResource.RAIL, null);
-		state.setResourceToDefault();
-		return state;
-	}
+    public static ItemStack getRailItem(ResourceStateRail prop) {
+        ItemStack itemStack = new ItemStack(RTMItem.itemLargeRail, 1, 0);
+        ((ItemRail) RTMItem.itemLargeRail).setModelState(itemStack, prop);
+        return itemStack;
+    }
 
-	@Override
-	protected ResourceType getModelType(ItemStack itemStack)
-	{
-		return RTMResource.RAIL;
-	}
+    public static ResourceStateRail getDefaultProperty() {
+        ResourceStateRail state = new ResourceStateRail(RTMResource.RAIL, null);
+        state.setResourceToDefault();
+        return state;
+    }
 
-	@Override @SideOnly(Side.CLIENT) public net.minecraft.client.gui.GuiScreen newGuiScreen(ItemArgHolder holder) {
-		return newGuiSelectModel(holder);
-	}
+    @Override
+    protected ResourceType getModelType(ItemStack itemStack) {
+        return RTMResource.RAIL;
+    }
 
-	public int getGuiId(ItemStack stack)
-	{
-		return 0;
-	}
+    @Override
+    @SideOnly(Side.CLIENT)
+    public net.minecraft.client.gui.GuiScreen newGuiScreen(ItemArgHolder holder) {
+        return newGuiSelectModel(holder);
+    }
 
-	@Override
-	protected ResourceState getNewState(ItemStack itemStack, ResourceType type)
-	{
-		return new ResourceStateRail(type, (Object)null);
-	}
+    public int getGuiId(ItemStack stack) {
+        return 0;
+    }
 
-	private static List<RailPosition> getRPFromItem(ItemStack stack)
-	{
-		List<RailPosition> list = new ArrayList<>();
-		NBTTagCompound nbt = stack.getTagCompound();
-		if(nbt != null)
-		{
-			byte size = nbt.getByte("Size");
-			for(int i = 0; i < size; ++i)
-			{
-				list.add(RailPosition.readFromNBT(nbt.getCompoundTag("RP" + i)));
-			}
-		}
-		return list;
-	}
+    @Override
+    protected ResourceState getNewState(ItemStack itemStack, ResourceType type) {
+        return new ResourceStateRail(type, (Object) null);
+    }
 
-	private static void setRPToItem(ItemStack stack, RailPosition[] rps)
-	{
-		if(!stack.hasTagCompound())
-		{
-			stack.setTagCompound(new NBTTagCompound());
-		}
-		NBTTagCompound nbt = stack.getTagCompound();
+    private static List<RailPosition> getRPFromItem(ItemStack stack) {
+        List<RailPosition> list = new ArrayList<>();
+        NBTTagCompound nbt = stack.getTagCompound();
+        if (nbt != null) {
+            byte size = nbt.getByte("Size");
+            for (int i = 0; i < size; ++i) {
+                list.add(RailPosition.readFromNBT(nbt.getCompoundTag("RP" + i)));
+            }
+        }
+        return list;
+    }
 
-		nbt.setByte("Size", (byte)rps.length);
-		for(int i = 0; i < rps.length; ++i)
-		{
-			nbt.setTag("RP" + i, rps[i].writeToNBT());
-		}
-	}
+    private static void setRPToItem(ItemStack stack, RailPosition[] rps) {
+        if (!stack.hasTagCompound()) {
+            stack.setTagCompound(new NBTTagCompound());
+        }
+        NBTTagCompound nbt = stack.getTagCompound();
 
-	public static ItemStack copyItemFromRail(TileEntityLargeRailCore core)
-	{
-		ItemStack itemstack = getRailItem(core.getResourceState());
-		RailPosition[] arailposition = core.getRailPositions();
-		if (arailposition == null) return ItemStack.EMPTY;
-		setRPToItem(itemstack, arailposition);
-		String s = core.getRailShapeName();
-		itemstack.getTagCompound().setString("ShapeName", s);
-		return itemstack;
-	}
+        nbt.setByte("Size", (byte) rps.length);
+        for (int i = 0; i < rps.length; ++i) {
+            nbt.setTag("RP" + i, rps[i].writeToNBT());
+        }
+    }
 
-	private boolean placeRail(World world, BlockPos pos, ItemStack stack, EntityPlayer player)
-	{
-		List<RailPosition> list = getRPFromItem(stack);
-		if (list.isEmpty()) {
-			return false;
-		} else {
-			int i = BlockMarker.getMarkerDir(jp.ngt.rtm.RTMBlock.marker, com.anatawa12.fixRtm.rtm.rail.BlockMarker.getFaceMeta(player));
-			RailPosition railposition = list.get(0);
-			int j = i - railposition.direction;
-			int k = railposition.blockX;
-			int l = railposition.blockY;
-			int i1 = railposition.blockZ;
-			for(RailPosition rp : list)
-			{
-				double dif2X = (rp.blockX + 0.5D) - (k + 0.5D);
-				double dif2Y = (rp.blockY + 0.5D) - (l + 0.5D);
-				double dif2Z = (rp.blockZ + 0.5D) - (i1 + 0.5D);
-				Vec3 vec = PooledVec3.create(dif2X, dif2Y, dif2Z);
-				vec = vec.rotateAroundY(j * 45.0F);
-				rp.blockX = NGTMath.floor(pos.getX() + 0.5D + vec.getX());
-				rp.blockY = NGTMath.floor(pos.getY() + 0.5D + vec.getY());
-				rp.blockZ = NGTMath.floor(pos.getZ() + 0.5D + vec.getZ());
-				rp.direction = (byte)((rp.direction + j + 8) & 7);
-				rp.anchorYaw = NGTMath.wrapAngle(rp.anchorYaw + j * 45.0F);
-				rp.init();
-			}
-			ResourceStateRail state = this.getModelState(stack);
-			boolean isCreative = player.capabilities.isCreativeMode;
-			return BlockMarker.createRail(world, pos.getX(), pos.getY(), pos.getZ(), list, state, true, isCreative);
-		}
-	}
+    public static ItemStack copyItemFromRail(TileEntityLargeRailCore core) {
+        ItemStack itemstack = getRailItem(core.getResourceState());
+        RailPosition[] arailposition = core.getRailPositions();
+        if (arailposition == null) return ItemStack.EMPTY;
+        setRPToItem(itemstack, arailposition);
+        String s = core.getRailShapeName();
+        itemstack.getTagCompound().setString("ShapeName", s);
+        return itemstack;
+    }
+
+    private boolean placeRail(World world, BlockPos pos, ItemStack stack, EntityPlayer player) {
+        List<RailPosition> list = getRPFromItem(stack);
+        if (list.isEmpty()) {
+            return false;
+        } else {
+            int i = BlockMarker.getMarkerDir(jp.ngt.rtm.RTMBlock.marker, com.anatawa12.fixRtm.rtm.rail.BlockMarker.getFaceMeta(player));
+            RailPosition railposition = list.get(0);
+            int j = i - railposition.direction;
+            int k = railposition.blockX;
+            int l = railposition.blockY;
+            int i1 = railposition.blockZ;
+            for (RailPosition rp : list) {
+                double dif2X = (rp.blockX + 0.5D) - (k + 0.5D);
+                double dif2Y = (rp.blockY + 0.5D) - (l + 0.5D);
+                double dif2Z = (rp.blockZ + 0.5D) - (i1 + 0.5D);
+                Vec3 vec = PooledVec3.create(dif2X, dif2Y, dif2Z);
+                vec = vec.rotateAroundY(j * 45.0F);
+                rp.blockX = NGTMath.floor(pos.getX() + 0.5D + vec.getX());
+                rp.blockY = NGTMath.floor(pos.getY() + 0.5D + vec.getY());
+                rp.blockZ = NGTMath.floor(pos.getZ() + 0.5D + vec.getZ());
+                rp.direction = (byte) ((rp.direction + j + 8) & 7);
+                rp.anchorYaw = NGTMath.wrapAngle(rp.anchorYaw + j * 45.0F);
+                rp.init();
+            }
+            ResourceStateRail state = this.getModelState(stack);
+            boolean isCreative = player.capabilities.isCreativeMode;
+            return BlockMarker.createRail(world, pos.getX(), pos.getY(), pos.getZ(), list, state, true, isCreative);
+        }
+    }
 }

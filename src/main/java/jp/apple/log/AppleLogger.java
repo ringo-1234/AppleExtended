@@ -14,8 +14,8 @@
 
 package jp.apple.log;
 
-import jp.apple.util.AppleDir;
 import jp.apple.config.AppleConfig;
+import jp.apple.util.AppleDir;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;

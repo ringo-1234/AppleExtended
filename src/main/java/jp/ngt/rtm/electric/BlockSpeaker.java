@@ -12,20 +12,6 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.electric;
 
 import jp.ngt.ngtlib.block.BlockArgHolder;
@@ -41,56 +27,46 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class BlockSpeaker extends BlockMachineBase implements IBlockConnective
-{
-	public BlockSpeaker()
-	{
-		super(Material.GLASS);
-		this.setSoundType(SoundType.GLASS);
-	}
+public class BlockSpeaker extends BlockMachineBase implements IBlockConnective {
+    public BlockSpeaker() {
+        super(Material.GLASS);
+        this.setSoundType(SoundType.GLASS);
+    }
 
-	@Override
-	public TileEntity createNewTileEntity(World var1, int var2)
-	{
-		return new TileEntitySpeaker();
-	}
+    @Override
+    public TileEntity createNewTileEntity(World var1, int var2) {
+        return new TileEntitySpeaker();
+    }
 
-	@Override
-	protected ItemStack getItem(int meta)
-	{
-		return new ItemStack(RTMItem.installedObject, 1, IstlObjType.SPEAKER.id);
-	}
+    @Override
+    protected ItemStack getItem(int meta) {
+        return new ItemStack(RTMItem.installedObject, 1, IstlObjType.SPEAKER.id);
+    }
 
-	@Override
-	public boolean onBlockActivated(BlockArgHolder holder, float hitX, float hitY, float hitZ)
-	{
-		World world = holder.getWorld();
-		BlockPos pos = holder.getBlockPos();
-		int x = pos.getX();
-		int y = pos.getY();
-		int z = pos.getZ();
-		if(holder.getPlayer().isSneaking())
-		{
-			super.onBlockActivated(holder, hitX, hitY, hitZ);
-		}
-		else
-		{
-			if(world.isRemote)
-			{
-				holder.getPlayer().openGui(RTMCore.instance, RTMCore.instance.guiIdSpeaker, world, x, y, z);
-			}
-		}
-		return true;
-	}
+    @Override
+    public boolean onBlockActivated(BlockArgHolder holder, float hitX, float hitY, float hitZ) {
+        World world = holder.getWorld();
+        BlockPos pos = holder.getBlockPos();
+        int x = pos.getX();
+        int y = pos.getY();
+        int z = pos.getZ();
+        if (holder.getPlayer().isSneaking()) {
+            super.onBlockActivated(holder, hitX, hitY, hitZ);
+        } else {
+            if (world.isRemote) {
+                holder.getPlayer().openGui(RTMCore.instance, RTMCore.instance.guiIdSpeaker, world, x, y, z);
+            }
+        }
+        return true;
+    }
 
-	@Override
-	public boolean canConnect(World world, int x, int y, int z)
-	{
-		return true;
-	}
+    @Override
+    public boolean canConnect(World world, int x, int y, int z) {
+        return true;
+    }
 
-	@Override
-	public ItemStack getPickBlock(net.minecraft.block.state.IBlockState state, net.minecraft.util.math.RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
-		return com.anatawa12.fixRtm.rtm.block.BlockOrnamentMain.getPickBlock(world, pos, IstlObjType.SPEAKER);
-	}
+    @Override
+    public ItemStack getPickBlock(net.minecraft.block.state.IBlockState state, net.minecraft.util.math.RayTraceResult target, World world, BlockPos pos, EntityPlayer player) {
+        return com.anatawa12.fixRtm.rtm.block.BlockOrnamentMain.getPickBlock(world, pos, IstlObjType.SPEAKER);
+    }
 }

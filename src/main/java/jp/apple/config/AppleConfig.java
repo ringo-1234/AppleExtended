@@ -15,14 +15,19 @@
 package jp.apple.config;
 
 import net.minecraftforge.common.config.Configuration;
+
 import java.io.File;
 
 public class AppleConfig {
     public static final String CATEGORY_CONTROL = "control";
     public static final String CATEGORY_SECURITY = "security";
+    public static final String CATEGORY_SOUND = "sound";
 
     public static int notchRepeatInterval = 2;
     public static boolean enableBlockChangeLog = true;
+
+    public static boolean enableJointSound = true;
+    public static boolean enableNotchSound = true;
 
     public static void init(File file) {
         Configuration cfg = new Configuration(file);
@@ -35,6 +40,8 @@ public class AppleConfig {
                     true,
                     "Enable or disable the block change logger (AppleLib/log)"
             );
+            enableJointSound = cfg.getBoolean("enableJointSound", CATEGORY_SOUND, true, "Whether to enable RTM standard joint sounds");
+            enableNotchSound = cfg.getBoolean("enableNotchSound", CATEGORY_SOUND, true, "Whether to enable the RTM standard notch operation sound");
 
         } catch (Exception e) {
             e.printStackTrace();

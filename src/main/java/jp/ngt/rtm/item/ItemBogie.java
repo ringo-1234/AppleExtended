@@ -12,33 +12,17 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.item;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
-public class ItemBogie extends Item
-{
-	public ItemBogie()
-	{
-		super();
-		this.setHasSubtypes(true);
-		this.maxStackSize = 16;
-	}
+public class ItemBogie extends Item {
+    public ItemBogie() {
+        super();
+        this.setHasSubtypes(true);
+        this.maxStackSize = 16;
+    }
 
 	/*@Override
 	public boolean onItemUse(ItemStack itemStack, EntityPlayer player, World world, int x, int y, int z, int par7, float par8, float par9, float par10)
@@ -68,9 +52,8 @@ public class ItemBogie extends Item
         }
     }*/
 
-	@Override
-	public String getUnlocalizedName(ItemStack itemStack)
-    {
+    @Override
+    public String getUnlocalizedName(ItemStack itemStack) {
         return super.getUnlocalizedName() + "." + itemStack.getItemDamage();
     }
 }

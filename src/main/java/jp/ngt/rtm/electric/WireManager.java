@@ -12,26 +12,7 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.electric;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import jp.ngt.ngtlib.math.ILine;
 import jp.ngt.ngtlib.math.StraightLine;
@@ -39,177 +20,159 @@ import jp.ngt.ngtlib.math.Vec3;
 import jp.ngt.rtm.electric.Connection.ConnectionType;
 import jp.ngt.rtm.modelpack.cfg.WireConfig;
 
-public final class WireManager
-{
-	public static final WireManager INSTANCE = new WireManager();
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-	private static final int CHUNK_DIV = 64;
-	private static final int SPLIT = 512;
-	private static final double Y_TANGE = 2.0D;
-	private static final double XZ_TANGE = 1.0D;
+public final class WireManager {
+    public static final WireManager INSTANCE = new WireManager();
 
-	private final Map<WireChunk, List<WireEntry>> loadedWires = new HashMap<>();
+    private static final int CHUNK_DIV = 64;
+    private static final int SPLIT = 512;
+    private static final double Y_TANGE = 2.0D;
+    private static final double XZ_TANGE = 1.0D;
 
-	private WireManager(){}
+    private final Map<WireChunk, List<WireEntry>> loadedWires = new HashMap<>();
 
-	/**TEElectricalWiring.readFromNBT()で呼び出し*/
-	public void addWire(TileEntityElectricalWiring tileEntity, Connection connection)
-	{
-		this.editWire(tileEntity, connection, true);
-	}
+    private WireManager() {
+    }
 
-	public void removeWire(TileEntityElectricalWiring tileEntity, Connection connection)
-	{
-		this.editWire(tileEntity, connection, false);
-	}
+    /**
+     * TEElectricalWiring.readFromNBT()で呼び出し
+     */
+    public void addWire(TileEntityElectricalWiring tileEntity, Connection connection) {
+        this.editWire(tileEntity, connection, true);
+    }
 
-	private void editWire(TileEntityElectricalWiring tileEntity, Connection connection, boolean add)
-	{
-		if(connection.type == ConnectionType.WIRE)
-		{
-			TileEntityElectricalWiring te2 = connection.getElectricalWiring(tileEntity.getWorld());
-			if(tileEntity instanceof TileEntityConnectorBase && te2 instanceof TileEntityConnectorBase)
-			{
-				TileEntityConnectorBase con1 = (TileEntityConnectorBase)tileEntity;
-				TileEntityConnectorBase con2 = (TileEntityConnectorBase)te2;
-				con1.updateWirePos();
-				con2.updateWirePos();
-				Vec3 vec1 = con1.getWirePos();
-				vec1 = vec1.add(tileEntity.getX() + 0.5D, tileEntity.getY() + 0.5D, tileEntity.getZ() + 0.5D);
-				Vec3 vec2 = con2.getWirePos();
-				vec2 = vec2.add(te2.getX() + 0.5D, te2.getY() + 0.5D, te2.getZ() + 0.5D);
-				WireConfig cfg = connection.getResourceState().getResourceSet().getConfig();
+    public void removeWire(TileEntityElectricalWiring tileEntity, Connection connection) {
+        this.editWire(tileEntity, connection, false);
+    }
 
-				Vec3 startVec = vec1.getY() <= vec2.getY() ? vec1 : vec2;
-				Vec3 endVec = vec1.getY() > vec2.getY() ? vec1 : vec2;
-				int x1 = (int)(vec1.getX() <= vec2.getX() ? vec1.getX() : vec2.getX()) / CHUNK_DIV;
-				int x2 = (int)(vec1.getX() > vec2.getX() ? vec1.getX() : vec2.getX()) / CHUNK_DIV;
-				int z1 = (int)(vec1.getZ() <= vec2.getZ() ? vec1.getZ() : vec2.getZ()) / CHUNK_DIV;
-				int z2 = (int)(vec1.getZ() > vec2.getZ() ? vec1.getZ() : vec2.getZ()) / CHUNK_DIV;
-				double minY = startVec.getY() + cfg.yOffset;
-				double maxY = endVec.getY() + cfg.yOffset;
-				WireEntry entry = new WireEntry(new StraightLine(startVec.getZ(), startVec.getX(), endVec.getZ(), endVec.getX()), minY, maxY);
+    private void editWire(TileEntityElectricalWiring tileEntity, Connection connection, boolean add) {
+        if (connection.type == ConnectionType.WIRE) {
+            TileEntityElectricalWiring te2 = connection.getElectricalWiring(tileEntity.getWorld());
+            if (tileEntity instanceof TileEntityConnectorBase && te2 instanceof TileEntityConnectorBase) {
+                TileEntityConnectorBase con1 = (TileEntityConnectorBase) tileEntity;
+                TileEntityConnectorBase con2 = (TileEntityConnectorBase) te2;
+                con1.updateWirePos();
+                con2.updateWirePos();
+                Vec3 vec1 = con1.getWirePos();
+                vec1 = vec1.add(tileEntity.getX() + 0.5D, tileEntity.getY() + 0.5D, tileEntity.getZ() + 0.5D);
+                Vec3 vec2 = con2.getWirePos();
+                vec2 = vec2.add(te2.getX() + 0.5D, te2.getY() + 0.5D, te2.getZ() + 0.5D);
+                WireConfig cfg = connection.getResourceState().getResourceSet().getConfig();
 
-				for(int i = x1; i <= x2; ++i)
-				{
-					for(int j = z1; j <= z2; ++j)
-					{
-						WireChunk chunk = new WireChunk(i, j);
-						List<WireEntry> list = this.loadedWires.get(chunk);
-						if(list == null)
-						{
-							list = new ArrayList<>();
-							this.loadedWires.put(chunk, list);
-						}
+                Vec3 startVec = vec1.getY() <= vec2.getY() ? vec1 : vec2;
+                Vec3 endVec = vec1.getY() > vec2.getY() ? vec1 : vec2;
+                int x1 = (int) (vec1.getX() <= vec2.getX() ? vec1.getX() : vec2.getX()) / CHUNK_DIV;
+                int x2 = (int) (vec1.getX() > vec2.getX() ? vec1.getX() : vec2.getX()) / CHUNK_DIV;
+                int z1 = (int) (vec1.getZ() <= vec2.getZ() ? vec1.getZ() : vec2.getZ()) / CHUNK_DIV;
+                int z2 = (int) (vec1.getZ() > vec2.getZ() ? vec1.getZ() : vec2.getZ()) / CHUNK_DIV;
+                double minY = startVec.getY() + cfg.yOffset;
+                double maxY = endVec.getY() + cfg.yOffset;
+                WireEntry entry = new WireEntry(new StraightLine(startVec.getZ(), startVec.getX(), endVec.getZ(), endVec.getX()), minY, maxY);
 
-						if(add)
-						{
-							list.add(entry);
-						}
-						else
-						{
-							list.remove(entry);
-						}
-					}
-				}
-			}
-		}
-	}
+                for (int i = x1; i <= x2; ++i) {
+                    for (int j = z1; j <= z2; ++j) {
+                        WireChunk chunk = new WireChunk(i, j);
+                        List<WireEntry> list = this.loadedWires.get(chunk);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                            this.loadedWires.put(chunk, list);
+                        }
 
-	/**指定座標に最も近いワイヤの高さを取得*/
-	public double getWireY(double x, double y, double z)
-	{
-		List<WireEntry> list = this.loadedWires.get(new WireChunk(x, z));
-		if(list != null)
-		{
-			for(WireEntry entry : list)
-			{
-				if(entry.inRange(x, y, z))
-				{
-					int index = entry.lineXZ.getNearlestPoint(SPLIT, x, z);
-					double resY = entry.minY + (entry.maxY - entry.minY) * ((double)index / (double)SPLIT);
-					return resY;
-				}
-			}
-		}
-		return y;
-	}
+                        if (add) {
+                            list.add(entry);
+                        } else {
+                            list.remove(entry);
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-	public class WireEntry
-	{
-		public final ILine lineXZ;
-		public final double minX, maxX, minY, maxY, minZ, maxZ;
+    /**
+     * 指定座標に最も近いワイヤの高さを取得
+     */
+    public double getWireY(double x, double y, double z) {
+        List<WireEntry> list = this.loadedWires.get(new WireChunk(x, z));
+        if (list != null) {
+            for (WireEntry entry : list) {
+                if (entry.inRange(x, y, z)) {
+                    int index = entry.lineXZ.getNearlestPoint(SPLIT, x, z);
+                    double resY = entry.minY + (entry.maxY - entry.minY) * ((double) index / (double) SPLIT);
+                    return resY;
+                }
+            }
+        }
+        return y;
+    }
 
-		public WireEntry(ILine par1, double par2, double par3)
-		{
-			this.lineXZ = par1;
-			this.minY = par2;
-			this.maxY = par3;
+    public class WireEntry {
+        public final ILine lineXZ;
+        public final double minX, maxX, minY, maxY, minZ, maxZ;
 
-			double[] d1 = par1.getPoint(SPLIT, 0);
-			double[] d2 = par1.getPoint(SPLIT, SPLIT);
-			this.minX = d1[1] <= d2[1] ? d1[1] : d2[1];
-			this.maxX = d1[1] > d2[1] ? d1[1] : d2[1];
-			this.minZ = d1[0] <= d2[0] ? d1[0] : d2[0];
-			this.maxZ = d1[0] > d2[0] ? d1[0] : d2[0];
-		}
+        public WireEntry(ILine par1, double par2, double par3) {
+            this.lineXZ = par1;
+            this.minY = par2;
+            this.maxY = par3;
 
-		public boolean inRange(double x, double y, double z)
-		{
-			return x >= this.minX - XZ_TANGE && x <= this.maxX + XZ_TANGE
-					&& y >= this.minY - Y_TANGE && y <= this.maxY + Y_TANGE
-					&& z >= this.minZ - XZ_TANGE && z <= this.maxZ + XZ_TANGE;
-		}
+            double[] d1 = par1.getPoint(SPLIT, 0);
+            double[] d2 = par1.getPoint(SPLIT, SPLIT);
+            this.minX = d1[1] <= d2[1] ? d1[1] : d2[1];
+            this.maxX = d1[1] > d2[1] ? d1[1] : d2[1];
+            this.minZ = d1[0] <= d2[0] ? d1[0] : d2[0];
+            this.maxZ = d1[0] > d2[0] ? d1[0] : d2[0];
+        }
 
-		@Override
-		public boolean equals(Object obj)
-		{
-			if(obj instanceof WireEntry)
-			{
-				WireEntry entry = (WireEntry)obj;
-				return this.minY == entry.minY && this.maxY == entry.maxY && this.lineXZ.equals(entry.lineXZ);
-			}
-			return false;
-		}
+        public boolean inRange(double x, double y, double z) {
+            return x >= this.minX - XZ_TANGE && x <= this.maxX + XZ_TANGE
+                    && y >= this.minY - Y_TANGE && y <= this.maxY + Y_TANGE
+                    && z >= this.minZ - XZ_TANGE && z <= this.maxZ + XZ_TANGE;
+        }
 
-		@Override
-		public int hashCode()
-		{
-			return this.lineXZ.hashCode();
-		}
-	}
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof WireEntry) {
+                WireEntry entry = (WireEntry) obj;
+                return this.minY == entry.minY && this.maxY == entry.maxY && this.lineXZ.equals(entry.lineXZ);
+            }
+            return false;
+        }
 
-	public final class WireChunk
-	{
-		public final int chunkX, chunkZ;
+        @Override
+        public int hashCode() {
+            return this.lineXZ.hashCode();
+        }
+    }
 
-		public WireChunk(double x, double z)
-		{
-			this.chunkX = (int)(x / CHUNK_DIV);
-			this.chunkZ = (int)(z / CHUNK_DIV);
-		}
+    public final class WireChunk {
+        public final int chunkX, chunkZ;
 
-		public WireChunk(int x, int z)
-		{
-			this.chunkX = x;
-			this.chunkZ = z;
-		}
+        public WireChunk(double x, double z) {
+            this.chunkX = (int) (x / CHUNK_DIV);
+            this.chunkZ = (int) (z / CHUNK_DIV);
+        }
 
-		@Override
-		public boolean equals(Object obj)
-		{
-			if(obj instanceof WireChunk)
-			{
-				WireChunk chunk = (WireChunk)obj;
-				return this.chunkX == chunk.chunkX && this.chunkZ == chunk.chunkZ;
-			}
-			return false;
-		}
+        public WireChunk(int x, int z) {
+            this.chunkX = x;
+            this.chunkZ = z;
+        }
 
-		@Override
-		public int hashCode()
-		{
-			return (this.chunkX & 0xFFF) | ((this.chunkZ & 0xFFF) << 12);
-		}
-	}
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof WireChunk) {
+                WireChunk chunk = (WireChunk) obj;
+                return this.chunkX == chunk.chunkX && this.chunkZ == chunk.chunkZ;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return (this.chunkX & 0xFFF) | ((this.chunkZ & 0xFFF) << 12);
+        }
+    }
 }

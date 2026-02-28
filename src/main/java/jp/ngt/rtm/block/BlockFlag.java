@@ -12,20 +12,6 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.rtm.block;
 
 import jp.ngt.ngtlib.block.BlockArgHolder;
@@ -38,36 +24,31 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 
-public class BlockFlag extends BlockContainerCustom
-{
-	public BlockFlag()
-	{
-		super(Material.IRON);
-		this.setLightOpacity(0);
-		this.setAABB(new AxisAlignedBB(0.4375F, 0.0F, 0.4375F, 0.5625F, 1.0F, 0.5625F));
-	}
+public class BlockFlag extends BlockContainerCustom {
+    public BlockFlag() {
+        super(Material.IRON);
+        this.setLightOpacity(0);
+        this.setAABB(new AxisAlignedBB(0.4375F, 0.0F, 0.4375F, 0.5625F, 1.0F, 0.5625F));
+    }
 
-	@Override
-	public TileEntity createNewTileEntity(World world, int meta)
-	{
-		return new TileEntityFlag();
-	}
+    @Override
+    public TileEntity createNewTileEntity(World world, int meta) {
+        return new TileEntityFlag();
+    }
 
-	@Override
-	public boolean onBlockActivated(BlockArgHolder holder, float hitX, float hitY, float hitZ)
-	{
-		if(holder.getWorld().isRemote)
-		{
-			int x = holder.getBlockPos().getX();
-			int y = holder.getBlockPos().getY();
-			int z = holder.getBlockPos().getZ();
-			holder.getPlayer().openGui(RTMCore.instance, RTMCore.guiIdSelectTileEntityTexture, holder.getWorld(), x, y, z);
-		}
-		return true;
-	}
+    @Override
+    public boolean onBlockActivated(BlockArgHolder holder, float hitX, float hitY, float hitZ) {
+        if (holder.getWorld().isRemote) {
+            int x = holder.getBlockPos().getX();
+            int y = holder.getBlockPos().getY();
+            int z = holder.getBlockPos().getZ();
+            holder.getPlayer().openGui(RTMCore.instance, RTMCore.guiIdSelectTileEntityTexture, holder.getWorld(), x, y, z);
+        }
+        return true;
+    }
 
-	@Override
-	public net.minecraft.item.ItemStack getPickBlock(net.minecraft.block.state.IBlockState state, net.minecraft.util.math.RayTraceResult target, World world, net.minecraft.util.math.BlockPos pos, EntityPlayer player) {
-		return com.anatawa12.fixRtm.rtm.block.BlockOrnamentMain.getPickBlock(world, pos, jp.ngt.rtm.item.ItemInstalledObject.IstlObjType.FLAG);
-	}
+    @Override
+    public net.minecraft.item.ItemStack getPickBlock(net.minecraft.block.state.IBlockState state, net.minecraft.util.math.RayTraceResult target, World world, net.minecraft.util.math.BlockPos pos, EntityPlayer player) {
+        return com.anatawa12.fixRtm.rtm.block.BlockOrnamentMain.getPickBlock(world, pos, jp.ngt.rtm.item.ItemInstalledObject.IstlObjType.FLAG);
+    }
 }

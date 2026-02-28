@@ -12,20 +12,6 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.mcte;
 
 import jp.ngt.mcte.block.BlockMinesweeper.MinesweeperType;
@@ -48,48 +34,43 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class ClientProxy extends CommonProxy
-{
-	@Override
-    public void preInit()
-    {
-		VersionChecker.addToCheckList(new PackInfo(MCTE.metadata.name, MCTE.metadata.url, MCTE.metadata.updateUrl, MCTE.metadata.version));
+public class ClientProxy extends CommonProxy {
+    @Override
+    public void preInit() {
+        VersionChecker.addToCheckList(new PackInfo(MCTE.metadata.name, MCTE.metadata.url, MCTE.metadata.updateUrl, MCTE.metadata.version));
 
-		NGTUtilClient.registerEntityRender(EntityEditor.class, RenderEditor.class);
-		ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMiniature.class, RenderMiniature.INSTANCE);
+        NGTUtilClient.registerEntityRender(EntityEditor.class, RenderEditor.class);
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMiniature.class, RenderMiniature.INSTANCE);
 
-		String domain = "mcte";
-		for(MinesweeperType type : MinesweeperType.values())
-		{
-			String typeNameLC = type.toString().toLowerCase();
-			NGTUtilClient.registerItemModel(MCTE.minesweeper, type.id, domain, "minesweeper_" + typeNameLC);
-		}
-		this.registerModel(Item.getItemFromBlock(MCTE.portIn), 0, "port_in");
-		this.registerModel(Item.getItemFromBlock(MCTE.portOut), 0, "port_out");
-		this.registerModel(MCTE.editor,        0, "editor");
-		this.registerModel(MCTE.generator,     0, "generator");
-		this.registerModel(MCTE.painter,       0, "painter");
-		this.registerModel(MCTE.itemMiniature, 0, "item_miniature");
+        String domain = "mcte";
+        for (MinesweeperType type : MinesweeperType.values()) {
+            String typeNameLC = type.toString().toLowerCase();
+            NGTUtilClient.registerItemModel(MCTE.minesweeper, type.id, domain, "minesweeper_" + typeNameLC);
+        }
+        this.registerModel(Item.getItemFromBlock(MCTE.portIn), 0, "port_in");
+        this.registerModel(Item.getItemFromBlock(MCTE.portOut), 0, "port_out");
+        this.registerModel(MCTE.editor, 0, "editor");
+        this.registerModel(MCTE.generator, 0, "generator");
+        this.registerModel(MCTE.painter, 0, "painter");
+        this.registerModel(MCTE.itemMiniature, 0, "item_miniature");
 
-		NGTUtilClient.registerBuildinModel(MCTE.miniature, true);
+        NGTUtilClient.registerBuildinModel(MCTE.miniature, true);
 
-		//MinecraftForgeClient.registerItemRenderer(MCTE.itemMiniature, RenderItemMiniature.INSTANCE);
+        //MinecraftForgeClient.registerItemRenderer(MCTE.itemMiniature, RenderItemMiniature.INSTANCE);
 
-		MCTEKeyHandlerClient.init();
+        MCTEKeyHandlerClient.init();
     }
 
-	@Override
-    public void init()
-    {
-    	MinecraftForge.EVENT_BUS.register(new MCTEKeyHandlerClient());
-    	MinecraftForge.EVENT_BUS.register(RenderItemMiniature.INSTANCE);
-    	ItemRenderHandler.INSTANCE.register(MCTE.itemMiniature, RenderItemMiniature.INSTANCE);
-    	FilterManager.INSTANCE.loadFilters();//preInitではdevPathが設定できてないため
+    @Override
+    public void init() {
+        MinecraftForge.EVENT_BUS.register(new MCTEKeyHandlerClient());
+        MinecraftForge.EVENT_BUS.register(RenderItemMiniature.INSTANCE);
+        ItemRenderHandler.INSTANCE.register(MCTE.itemMiniature, RenderItemMiniature.INSTANCE);
+        FilterManager.INSTANCE.loadFilters();//preInitではdevPathが設定できてないため
     }
 
-	private void registerModel(Item item, int meta, String name)
-	{
-		//後でまとめてItemModelMesherに登録される
-		ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(MCTE.MODID + ":" + name, "inventory"));
-	}
+    private void registerModel(Item item, int meta, String name) {
+        //後でまとめてItemModelMesherに登録される
+        ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(MCTE.MODID + ":" + name, "inventory"));
+    }
 }

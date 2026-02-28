@@ -11,17 +11,25 @@
  *
  *
  */
-package jp.ngt.ngtlib.gui;import java.util.ArrayList;
 
-import java.util.List;import javax.annotation.Nullable;import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;import jp.ngt.ngtlib.renderer.NGTTessellator;
+package jp.ngt.ngtlib.gui;
+
+import jp.ngt.ngtlib.renderer.NGTTessellator;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;@SideOnly(Side.CLIENT)
+import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+
+@SideOnly(Side.CLIENT)
 
 public class GuiTextFieldCustom extends GuiTextField {
     protected final FontRenderer fontRenderer;
@@ -616,6 +624,7 @@ public class GuiTextFieldCustom extends GuiTextField {
     public interface TextFieldListner {
         void onClick();
     }
+
     public interface TextFieldListener {
         void onChange(GuiTextFieldCustom field);
     }

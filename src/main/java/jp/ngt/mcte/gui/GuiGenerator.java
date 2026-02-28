@@ -12,37 +12,7 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.mcte.gui;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.imageio.ImageIO;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import jp.ngt.mcte.world.TerrainData;
 import jp.ngt.ngtlib.block.BlockSet;
@@ -73,42 +43,51 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
 
 @SideOnly(Side.CLIENT)
-public class GuiGenerator extends GuiScreenCustom
-{
-	protected final int xPos;
-	protected final int yPos;
-	protected final int zPos;
-	TerrainData terrainData = new TerrainData();
-	private Thumbnail[] thumbnail = new Thumbnail[2];
-	private String[] imgName = {"", ""};
-	private GuiButton[] selectButtons = new GuiButton[2];
-	private GuiTextField yScaleTF;
-	private GuiSlotCustom slotCustom;
-	private SlotElement[] slotElements;
+public class GuiGenerator extends GuiScreenCustom {
+    protected final int xPos;
+    protected final int yPos;
+    protected final int zPos;
+    TerrainData terrainData = new TerrainData();
+    private Thumbnail[] thumbnail = new Thumbnail[2];
+    private String[] imgName = {"", ""};
+    private GuiButton[] selectButtons = new GuiButton[2];
+    private GuiTextField yScaleTF;
+    private GuiSlotCustom slotCustom;
+    private SlotElement[] slotElements;
 
-	{
-		this.slotElements = new SlotElement[1];
-		ItemStack stack = new ItemStack(Blocks.STONE, 1, 0);
-		SlotBlockColor element = new SlotBlockColor(this, 0x000000, stack);
-		this.slotElements[0] = element;
-	}
-
-	public GuiGenerator(World world, int x, int y, int z)
-	{
-		//super(new ContainerGenerator(world, x, y, z));
-		this.xPos = x;
-		this.yPos = y;
-		this.zPos = z;
-	}
-
-	@Override
-	public void initGui()
     {
-		this.buttonList.clear();
-		int i0 = ((this.height - 30) / this.thumbnail.length) + 80;
-		this.selectButtons[0] = new GuiButton(120, i0, 0, 40, 20, I18n.format("gui.mcte.select", new Object[0]));
+        this.slotElements = new SlotElement[1];
+        ItemStack stack = new ItemStack(Blocks.STONE, 1, 0);
+        SlotBlockColor element = new SlotBlockColor(this, 0x000000, stack);
+        this.slotElements[0] = element;
+    }
+
+    public GuiGenerator(World world, int x, int y, int z) {
+        //super(new ContainerGenerator(world, x, y, z));
+        this.xPos = x;
+        this.yPos = y;
+        this.zPos = z;
+    }
+
+    @Override
+    public void initGui() {
+        this.buttonList.clear();
+        int i0 = ((this.height - 30) / this.thumbnail.length) + 80;
+        this.selectButtons[0] = new GuiButton(120, i0, 0, 40, 20, I18n.format("gui.mcte.select", new Object[0]));
         this.buttonList.add(this.selectButtons[0]);
         this.selectButtons[1] = new GuiButton(121, i0, 20, 40, 20, I18n.format("gui.mcte.select", new Object[0]));
         this.buttonList.add(this.selectButtons[1]);
@@ -122,170 +101,144 @@ public class GuiGenerator extends GuiScreenCustom
         this.slotList.clear();
         int i1 = this.width - 55 - i0;
         this.slotCustom = new GuiSlotCustom(this, 0, this.height - 30, i0 + 45, this.width - 10, i1, 24, this.slotElements);
-		this.slotList.add(this.slotCustom);
+        this.slotList.add(this.slotCustom);
     }
 
-	@Override
-	protected void actionPerformed(GuiButton button)
-    {
-		if(button.id == 100)
-		{
-			this.terrainData.yScale = NGTMath.getFloatFromString(this.yScaleTF.getText(), 0.00390625F, 256.0F, 1.0F);
-			this.yScaleTF.setText(String.valueOf(this.terrainData.yScale));
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        if (button.id == 100) {
+            this.terrainData.yScale = NGTMath.getFloatFromString(this.yScaleTF.getText(), 0.00390625F, 256.0F, 1.0F);
+            this.yScaleTF.setText(String.valueOf(this.terrainData.yScale));
 
-			this.terrainData.generate(this.xPos, this.yPos, this.zPos);
-			this.mc.player.closeScreen();
-		}
-		else if(button.id == 101)
-		{
-			this.mc.player.closeScreen();
-		}
-		else if(button.id == 120)
-		{
-			this.selectImageFile(0);
-		}
-		else if(button.id == 121)
-		{
-			this.selectImageFile(1);
-		}
+            this.terrainData.generate(this.xPos, this.yPos, this.zPos);
+            this.mc.player.closeScreen();
+        } else if (button.id == 101) {
+            this.mc.player.closeScreen();
+        } else if (button.id == 120) {
+            this.selectImageFile(0);
+        } else if (button.id == 121) {
+            this.selectImageFile(1);
+        }
     }
 
-	private void selectImageFile(int par1)
-	{
-		File file = NGTFileLoader.selectFile(FileType.PNG);
-		if(file == null)
-		{
-			;
-		}
-		else
-		{
-			this.setImageFile(par1, file);
-		}
-	}
+    private void selectImageFile(int par1) {
+        File file = NGTFileLoader.selectFile(FileType.PNG);
+        if (file == null) {
+            ;
+        } else {
+            this.setImageFile(par1, file);
+        }
+    }
 
-	private void setImageFile(int index, File file)
-	{
-		if(this.imgName[index].equals(file.getAbsolutePath()))//同じファイルを選択した場合
-		{
-			return;
-		}
+    private void setImageFile(int index, File file) {
+        if (this.imgName[index].equals(file.getAbsolutePath()))//同じファイルを選択した場合
+        {
+            return;
+        }
 
-		try
-		{
-			BufferedImage image = ImageIO.read(file);
-			if(this.thumbnail[index] != null)
-			{
-				this.thumbnail[index].deleteTexture();
-			}
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if (this.thumbnail[index] != null) {
+                this.thumbnail[index].deleteTexture();
+            }
 
-			this.thumbnail[index] = new Thumbnail(image, 256, 256);
-			this.imgName[index] = file.getAbsolutePath();
-			if(index == 1)
-			{
-				this.setBlockButtons(image);
-			}
+            this.thumbnail[index] = new Thumbnail(image, 256, 256);
+            this.imgName[index] = file.getAbsolutePath();
+            if (index == 1) {
+                this.setBlockButtons(image);
+            }
 
-			switch(index)
-			{
-			case 0:this.terrainData.terrainFile = file;break;
-			case 1:this.terrainData.blocksFile = file;break;
-			}
-		}
-		catch(IOException e){}
-	}
+            switch (index) {
+                case 0:
+                    this.terrainData.terrainFile = file;
+                    break;
+                case 1:
+                    this.terrainData.blocksFile = file;
+                    break;
+            }
+        } catch (IOException e) {
+        }
+    }
 
-	private void setBlockButtons(BufferedImage image)
-	{
-		if(image.getType() != BufferedImage.TYPE_4BYTE_ABGR)
-		{
-			if(this.slotCustom != null)
-			{
-				this.slotList.remove(this.slotCustom);
-				this.slotElements = new SlotElement[0];
-			}
-			return;
-		}
+    private void setBlockButtons(BufferedImage image) {
+        if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
+            if (this.slotCustom != null) {
+                this.slotList.remove(this.slotCustom);
+                this.slotElements = new SlotElement[0];
+            }
+            return;
+        }
 
-		Map<Integer, BlockSet> map = new TreeMap<Integer, BlockSet>();
-		int[] ia = new int[4];//{RGBA}
-		for(int i = 0; i < image.getWidth(); ++i)
-		{
-			for(int j = 0; j < image.getHeight(); ++j)
-			{
-				image.getRaster().getPixel(i, j, ia);
-				int color = NGTImage.getIntFromARGB(ia[3], ia[0], ia[1], ia[2]) & 0xffffff;
-				if(!map.containsKey(color))
-				{
-					BlockSet b0 = new BlockSet(Blocks.STONE, 0);
+        Map<Integer, BlockSet> map = new TreeMap<Integer, BlockSet>();
+        int[] ia = new int[4];//{RGBA}
+        for (int i = 0; i < image.getWidth(); ++i) {
+            for (int j = 0; j < image.getHeight(); ++j) {
+                image.getRaster().getPixel(i, j, ia);
+                int color = NGTImage.getIntFromARGB(ia[3], ia[0], ia[1], ia[2]) & 0xffffff;
+                if (!map.containsKey(color)) {
+                    BlockSet b0 = new BlockSet(Blocks.STONE, 0);
 					/*if(this.terrainData.blockMap.containsKey(color))
 					{
 						b0 = this.terrainData.blockMap.get(color);
 					}*/
-					map.put(color, b0);
-				}
-			}
-		}
+                    map.put(color, b0);
+                }
+            }
+        }
 
-		int i0 = ((this.height - 30) / this.thumbnail.length) + 10;
-		int i = 0;
-		SlotBlockColor[] sb = new SlotBlockColor[map.size()];
-		Set<Entry<Integer, BlockSet>> set = map.entrySet();
-		for(Entry<Integer, BlockSet> entry : set)
-		{
-			BlockSet bs = entry.getValue();
-			sb[i] = new SlotBlockColor(this, entry.getKey(), new ItemStack(bs.block, 1, bs.metadata));
-			++i;
-		}
+        int i0 = ((this.height - 30) / this.thumbnail.length) + 10;
+        int i = 0;
+        SlotBlockColor[] sb = new SlotBlockColor[map.size()];
+        Set<Entry<Integer, BlockSet>> set = map.entrySet();
+        for (Entry<Integer, BlockSet> entry : set) {
+            BlockSet bs = entry.getValue();
+            sb[i] = new SlotBlockColor(this, entry.getKey(), new ItemStack(bs.block, 1, bs.metadata));
+            ++i;
+        }
 
-		this.slotCustom.setElements(sb);
-		this.slotElements = sb;
-	}
+        this.slotCustom.setElements(sb);
+        this.slotElements = sb;
+    }
 
-	@Override
-	public void drawScreen(int par1, int par2, float par3)
-    {
-		this.drawDefaultBackground();
+    @Override
+    public void drawScreen(int par1, int par2, float par3) {
+        this.drawDefaultBackground();
 
-		int i0 = (this.height - 30) / this.thumbnail.length;
-		this.drawString(this.fontRenderer, I18n.format("gui.mcte.terrainImage", new Object[0]), i0 + 5, 5, 0xffffff);
+        int i0 = (this.height - 30) / this.thumbnail.length;
+        this.drawString(this.fontRenderer, I18n.format("gui.mcte.terrainImage", new Object[0]), i0 + 5, 5, 0xffffff);
         this.drawString(this.fontRenderer, I18n.format("gui.mcte.blocksImage", new Object[0]), i0 + 5, 25, 0xffffff);
         this.drawString(this.fontRenderer, I18n.format("gui.mcte.yScale", new Object[0]), i0 + 5, 45, 0xffffff);
 
-		super.drawScreen(par1, par2, par3);
+        super.drawScreen(par1, par2, par3);
 
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        for(int i = 0; i < this.thumbnail.length; ++i)
-        {
-        	if(this.thumbnail[i] != null)
-        	{
-        		float d1 = (float)(i0 * i);
-        		this.thumbnail[i].bindTexture();
-            	NGTTessellator tessellator = NGTTessellator.instance;
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        for (int i = 0; i < this.thumbnail.length; ++i) {
+            if (this.thumbnail[i] != null) {
+                float d1 = (float) (i0 * i);
+                this.thumbnail[i].bindTexture();
+                NGTTessellator tessellator = NGTTessellator.instance;
                 tessellator.startDrawingQuads();
-                NGTRenderHelper.addQuadGuiFaceWithUV(0.0F, 0.0F + d1, i0, (float)i0 + d1, this.zLevel,
-                		0.0F, 0.0F, 1.0F, 1.0F);
+                NGTRenderHelper.addQuadGuiFaceWithUV(0.0F, 0.0F + d1, i0, (float) i0 + d1, this.zLevel,
+                        0.0F, 0.0F, 1.0F, 1.0F);
                 tessellator.draw();
-        	}
+            }
         }
     }
 
-	@SideOnly(Side.CLIENT)
-	public class SlotBlockColor extends SlotElement implements ISelector
-	{
-		public final int color;
-		public ItemStack stack;
+    @SideOnly(Side.CLIENT)
+    public class SlotBlockColor extends SlotElement implements ISelector {
+        public final int color;
+        public ItemStack stack;
 
-		public SlotBlockColor(GuiGenerator par1, int par2, ItemStack par3)
-		{
-			this.color = par2;
-			this.stack = par3;
-		}
+        public SlotBlockColor(GuiGenerator par1, int par2, ItemStack par3) {
+            this.color = par2;
+            this.stack = par3;
+        }
 
-		@Override
-		public void draw(Minecraft par1, int par2, int par3, float par4)
-		{
-			SlotElementItem.func_148171_c(par1, par2 + 1, par3 + 1, 0, 0, par4);
-			GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+        @Override
+        public void draw(Minecraft par1, int par2, int par3, float par4) {
+            SlotElementItem.func_148171_c(par1, par2 + 1, par3 + 1, 0, 0, par4);
+            GL11.glEnable(GL12.GL_RESCALE_NORMAL);
             RenderHelper.enableGUIStandardItemLighting();
             par1.getRenderItem().renderItemIntoGUI(this.stack, par2 + 2, par3 + 2);
             RenderHelper.disableStandardItemLighting();
@@ -294,54 +247,47 @@ public class GuiGenerator extends GuiScreenCustom
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             NGTTessellator tessellator = NGTTessellator.instance;
-	        tessellator.startDrawingQuads();
-	        tessellator.setColorOpaque_I(this.color);
+            tessellator.startDrawingQuads();
+            tessellator.setColorOpaque_I(this.color);
             NGTRenderHelper.addQuadGuiFace(par2 + 23, par3 + 1, par2 + 23 + 18, par3 + 1 + 18, par4);
             tessellator.draw();
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             par1.fontRenderer.drawString(this.stack.getDisplayName(), par2 + 46, par3 + 6, 0xffffff);
-		}
+        }
 
-		@Override
-		public void onClicked(int par1, boolean par2)
-		{
-			if(par2)
-			{
-				this.selectBlock();
-			}
-		}
+        @Override
+        public void onClicked(int par1, boolean par2) {
+            if (par2) {
+                this.selectBlock();
+            }
+        }
 
-		private void selectBlock()
-		{
-			Iterator<Block> iterator = Block.REGISTRY.iterator();
-			NonNullList<ItemStack> list = NonNullList.create();
-			while(iterator.hasNext())
-			{
-				Block block = iterator.next();
-				Item item = Item.getItemFromBlock(block);
-				if(item != null)
-				{
-					block.getSubBlocks(CreativeTabs.SEARCH, list);
-				}
-			}
+        private void selectBlock() {
+            Iterator<Block> iterator = Block.REGISTRY.iterator();
+            NonNullList<ItemStack> list = NonNullList.create();
+            while (iterator.hasNext()) {
+                Block block = iterator.next();
+                Item item = Item.getItemFromBlock(block);
+                if (item != null) {
+                    block.getSubBlocks(CreativeTabs.SEARCH, list);
+                }
+            }
 
-			SlotElementItem[] slots = new SlotElementItem[list.size()];
-			for(int i = 0; i < slots.length; ++i)
-			{
-				ItemStack stack = list.get(i);
-				String s = stack.getDisplayName();
-				slots[i] = new SlotElementItem<ItemStack>(this, stack, s, stack);
-			}
+            SlotElementItem[] slots = new SlotElementItem[list.size()];
+            for (int i = 0; i < slots.length; ++i) {
+                ItemStack stack = list.get(i);
+                String s = stack.getDisplayName();
+                slots[i] = new SlotElementItem<ItemStack>(this, stack, s, stack);
+            }
 
-			GuiGenerator.this.mc.displayGuiScreen(new GuiSelect(GuiGenerator.this, slots));
-		}
+            GuiGenerator.this.mc.displayGuiScreen(new GuiSelect(GuiGenerator.this, slots));
+        }
 
-		@Override
-		public void select(Object par1)
-		{
-			this.stack = (ItemStack)par1;
-			BlockSet block = new BlockSet(Block.getBlockFromItem(this.stack.getItem()), this.stack.getItemDamage());
-			GuiGenerator.this.terrainData.blockMap.put(this.color, block);
-		}
-	}
+        @Override
+        public void select(Object par1) {
+            this.stack = (ItemStack) par1;
+            BlockSet block = new BlockSet(Block.getBlockFromItem(this.stack.getItem()), this.stack.getItemDamage());
+            GuiGenerator.this.terrainData.blockMap.put(this.color, block);
+        }
+    }
 }

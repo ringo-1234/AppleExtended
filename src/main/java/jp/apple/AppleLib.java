@@ -17,10 +17,14 @@ package jp.apple;
 import jp.apple.config.AppleConfig;
 import jp.apple.log.AppleLogger;
 import jp.apple.log.BlockLogHandler;
+import jp.apple.reloader.ReloadGuiHandler;
 import jp.apple.replaymod.compat.ReplaySyncManager;
 import jp.apple.util.AppleDir;
+import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -46,5 +50,14 @@ public class AppleLib {
         AppleConfig.init(event.getSuggestedConfigurationFile());
         MinecraftForge.EVENT_BUS.register(new BlockLogHandler());
         ReplaySyncManager.init();
+        if (event.getSide().isClient()) {
+            MinecraftForge.EVENT_BUS.register(new ReloadGuiHandler());
+            MinecraftForge.EVENT_BUS.register(new jp.apple.train.SoundBlocker());
+        }
+    }
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        MinecraftForge.EVENT_BUS.register(new jp.apple.train.TrainTickHandler());
     }
 }

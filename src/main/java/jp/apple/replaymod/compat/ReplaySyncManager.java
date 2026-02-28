@@ -1,5 +1,20 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.apple.replaymod.compat;
 
+import com.replaymod.replay.ReplayModReplay;
 import jp.ngt.rtm.entity.train.EntityTrainBase;
 import jp.ngt.rtm.entity.train.parts.EntityCargoWithModel;
 import jp.ngt.rtm.modelpack.IResourceSelector;
@@ -13,7 +28,6 @@ import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraftforge.fml.common.Loader;
-import com.replaymod.replay.ReplayModReplay;
 
 import java.util.Map;
 
@@ -56,19 +70,19 @@ public class ReplaySyncManager {
     public static void patchMetadata(Entity entity, NBTTagCompound nbt) {
         if (!isReplayActive()) return;
 
-        
+
         if (entity instanceof EntityTrainBase && nbt.hasKey("FormationEntry")) {
             NBTTagCompound formationTag = nbt.getCompoundTag("FormationEntry");
             formationTag.setLong("FormationId", entity.getEntityId() + 2000000L);
-            formationTag.setByte("EntryPos", (byte)0);
+            formationTag.setByte("EntryPos", (byte) 0);
         }
 
-        
+
         if (entity instanceof IResourceSelector && nbt.hasKey("State")) {
             NBTTagCompound stateTag = nbt.getCompoundTag("State");
             String nbtModelName = stateTag.getString("ResourceName");
             if (isValidName(nbtModelName)) {
-                forceRegisterModelToSmpMap(((IResourceSelector)entity).getResourceState().type, nbtModelName);
+                forceRegisterModelToSmpMap(((IResourceSelector) entity).getResourceState().type, nbtModelName);
             }
         }
     }
@@ -84,25 +98,25 @@ public class ReplaySyncManager {
         ResourceState state = selector.getResourceState();
 
         if (entity.world.isRemote) {
-            
+
             String serverModelName = entity.getDataManager().get(key);
 
             if (isValidName(serverModelName)) {
-                
+
                 if (isReplayActive()) {
                     forceRegisterModelToSmpMap(state.type, serverModelName);
                 }
 
                 String currentModelName = state.getResourceName();
-                
+
                 if (!serverModelName.equals(currentModelName) || state.getResourceSet().isDummy()) {
                     state.setResourceName(serverModelName);
-                    
+
                     selector.updateResourceState();
                 }
             }
         } else {
-            
+
             if (isUpdateResourceState) {
                 String name = state.getResourceName();
                 if (isValidName(name)) {
@@ -133,6 +147,7 @@ public class ReplaySyncManager {
             }
         }
     }
+
     public static void patchRailMetadata(jp.ngt.rtm.rail.TileEntityLargeRailCore tile, NBTTagCompound nbt) {
         if (!isReplayActive()) return;
 
@@ -148,15 +163,43 @@ public class ReplaySyncManager {
         if (!isReplayActive()) return;
 
         jp.ngt.rtm.modelpack.state.ResourceStateRail state = tile.getResourceState();
-        
+
         if (state.getResourceSet().isDummy()) {
             String name = state.getResourceName();
             if (isValidName(name)) {
                 forceRegisterModelToSmpMap(state.type, name);
-                
+
                 state.setResourceName(name);
                 tile.shouldRerenderRail = true;
                 tile.shouldRerenderBlock = true;
+            }
+        }
+    }
+
+    public static void patchResourceSelectorMetadata(IResourceSelector<?> selector, NBTTagCompound nbt) {
+        if (!isReplayActive()) return;
+        NBTTagCompound stateTag = nbt.hasKey("State") ? nbt.getCompoundTag("State") :
+                (nbt.hasKey("Property") ? nbt.getCompoundTag("Property") : null);
+
+        if (stateTag != null && stateTag.hasKey("ResourceName")) {
+            String modelName = stateTag.getString("ResourceName");
+            if (isValidName(modelName)) {
+                forceRegisterModelToSmpMap(selector.getResourceState().type, modelName);
+            }
+        }
+    }
+
+    public static void checkModelSync(IResourceSelector<?> selector) {
+        if (!isReplayActive()) return;
+
+        jp.ngt.rtm.modelpack.state.ResourceState<?> state = selector.getResourceState();
+        if (state.getResourceSet().isDummy()) {
+            String name = state.getResourceName();
+            if (isValidName(name)) {
+                forceRegisterModelToSmpMap(state.type, name);
+                state.setResourceName(name);
+                if (selector instanceof jp.ngt.rtm.block.tileentity.TileEntityMachineBase) {
+                }
             }
         }
     }

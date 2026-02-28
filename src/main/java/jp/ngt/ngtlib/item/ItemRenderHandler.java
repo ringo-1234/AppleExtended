@@ -12,24 +12,7 @@
  *
  */
 
-/*
- *
- *  * AppleExtended
- *  *
- *  * Original code (c) 2020 anatawa12 and other contributors.
- *  * Modifications (c) 2026 Applepie.
- *  *
- *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
- *  * Both are licensed under the GNU Lesser General Public License version 3.
- *  * See LICENSE.txt in the mod root for full license text.
- *
- *
- */
-
 package jp.ngt.ngtlib.item;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.item.Item;
@@ -37,35 +20,31 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SideOnly(Side.CLIENT)
-public class ItemRenderHandler extends TileEntityItemStackRenderer
-{
-	public static final ItemRenderHandler INSTANCE = new ItemRenderHandler(TileEntityItemStackRenderer.instance);
+public class ItemRenderHandler extends TileEntityItemStackRenderer {
+    public static final ItemRenderHandler INSTANCE = new ItemRenderHandler(TileEntityItemStackRenderer.instance);
 
-	private final TileEntityItemStackRenderer parentRenderer;
-	private final Map<Item, IItemRendererCustom> rendererMap = new HashMap<>();
+    private final TileEntityItemStackRenderer parentRenderer;
+    private final Map<Item, IItemRendererCustom> rendererMap = new HashMap<>();
 
-	private ItemRenderHandler(TileEntityItemStackRenderer renderer)
-	{
-		this.parentRenderer = renderer;
-		TileEntityItemStackRenderer.instance = this;
-	}
-
-	@Override
-	public void renderByItem(ItemStack itemStack)
-    {
-		if(this.rendererMap.containsKey(itemStack.getItem()))
-		{
-			this.rendererMap.get(itemStack.getItem()).renderItem(itemStack);
-		}
-		else
-		{
-			this.parentRenderer.renderByItem(itemStack);
-		}
+    private ItemRenderHandler(TileEntityItemStackRenderer renderer) {
+        this.parentRenderer = renderer;
+        TileEntityItemStackRenderer.instance = this;
     }
 
-	public void register(Item item, IItemRendererCustom renderer)
-	{
-		this.rendererMap.put(item, renderer);
-	}
+    @Override
+    public void renderByItem(ItemStack itemStack) {
+        if (this.rendererMap.containsKey(itemStack.getItem())) {
+            this.rendererMap.get(itemStack.getItem()).renderItem(itemStack);
+        } else {
+            this.parentRenderer.renderByItem(itemStack);
+        }
+    }
+
+    public void register(Item item, IItemRendererCustom renderer) {
+        this.rendererMap.put(item, renderer);
+    }
 }
