@@ -44,8 +44,15 @@ public class RenderSignal extends TileEntitySpecialRenderer<TileEntitySignal> {
         GL11.glTranslatef(0.5F, 0.0F, 0.5F);
         GL11.glTranslatef(tileEntity.getOffsetX(), tileEntity.getOffsetY(), tileEntity.getOffsetZ());
         GL11.glRotatef(dir, 0.0F, 1.0F, 0.0F);
+        if (tileEntity.getRotationX() != 0.0F) GL11.glRotatef(tileEntity.getRotationX(), 1.0F, 0.0F, 0.0F);
+        if (tileEntity.getRotationZ() != 0.0F) GL11.glRotatef(tileEntity.getRotationZ(), 0.0F, 0.0F, 1.0F);
+
         ModelSetSignal modelSet = tileEntity.getResourceState().getResourceSet();
         if (modelSet != null && !modelSet.isDummy()) {
+            float s = tileEntity.getScale();
+            if (s != 1.0F) {
+                GL11.glScalef(s, s, s);
+            }
             modelSet.modelObj.render(tileEntity, modelSet.getConfig(), pass, partialTicks);
         }
         GL11.glPopMatrix();

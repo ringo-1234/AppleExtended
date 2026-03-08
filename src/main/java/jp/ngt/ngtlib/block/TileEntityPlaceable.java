@@ -19,7 +19,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
 public abstract class TileEntityPlaceable extends TileEntityCustom {
-    private float rotation;
+    private float rotation; //  Y
+    private float rotationX; // X
+    private float rotationZ; // Z
+    private float scale = 1.0F;
     private float offsetX, offsetY, offsetZ;
 
     @Override
@@ -32,20 +35,39 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
                 false
         );
         this.setRotation(nbt.getFloat("Yaw"), false);
+        this.rotationX = nbt.getFloat("apRotX");
+        this.rotationZ = nbt.getFloat("apRotZ");
+        this.scale = nbt.hasKey("apScale") ? nbt.getFloat("apScale") : 1.0F;
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
         super.writeToNBT(nbt);
         nbt.setFloat("Yaw", this.rotation);
+        nbt.setFloat("apRotX", this.rotationX);
+        nbt.setFloat("apRotZ", this.rotationZ);
         nbt.setFloat("offsetX", this.offsetX);
         nbt.setFloat("offsetY", this.offsetY);
         nbt.setFloat("offsetZ", this.offsetZ);
+        nbt.setFloat("apScale", this.scale);
         return nbt;
     }
 
     public float getRotation() {
         return this.rotation;
+    }
+    public float getRotationX() { return this.rotationX; }
+    public float getRotationZ() { return this.rotationZ; }
+
+    public void setRotationXYZS(float x, float y, float z,float s, boolean sync) {
+        this.rotationX = x % 360.0F;
+        this.rotation = y % 360.0F;
+        this.rotationZ = z % 360.0F;
+        this.scale = s;
+        if (sync) {
+            this.sendPacket();
+            this.markDirty();
+        }
     }
 
     public void setRotation(float par1, boolean synch) {
@@ -60,25 +82,25 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
         int yaw = NGTMath.floor(NGTMath.normalizeAngle(-player.rotationYaw + 180.0D + (rotationInterval / 2.0D)) / (double) rotationInterval);
         this.setRotation((float) yaw * rotationInterval, synch);
     }
+    public float getScale() { return this.scale; }
 
-    public float getOffsetX() {
-        return offsetX;
+    public void setScale(float par1, boolean sync) {
+        this.scale = par1;
+        if (sync) {
+            this.sendPacket();
+            this.markDirty();
+        }
     }
-
-    public float getOffsetY() {
-        return offsetY;
-    }
-
-    public float getOffsetZ() {
-        return offsetZ;
-    }
+    public float getOffsetX() { return offsetX; }
+    public float getOffsetY() { return offsetY; }
+    public float getOffsetZ() { return offsetZ; }
 
     public void setOffset(float offsetX, float offsetY, float offsetZ, boolean sync) {
         this.offsetX = offsetX;
         this.offsetY = offsetY;
         this.offsetZ = offsetZ;
         if (sync) {
-            this.getUpdatePacket();
+            this.sendPacket();
             this.markDirty();
         }
     }

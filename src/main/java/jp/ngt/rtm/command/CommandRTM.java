@@ -83,7 +83,7 @@ public class CommandRTM extends CommandBase {
                 }
                 return;
             }
-            if (args[0].equals("delAllTrain")) {
+            if (args[0].equals("delAllTrain")|| subCommand.equals("dat")) {
                 int count = 0;
                 List<Entity> list = player.world.loadedEntityList;
                 for (Entity entity : list) {
@@ -133,19 +133,19 @@ public class CommandRTM extends CommandBase {
                         EntityPlayerMP playerMP = (EntityPlayerMP) player;
                         playerMP.capabilities.setFlySpeed(multiplier * 0.05F);
                         playerMP.sendPlayerAbilities();
-
-                        NGTLog.sendChatMessage(player, "Set player fly speed multiplier to " + multiplier);
+                        playerMP.sendMessage(new net.minecraft.util.text.TextComponentString("Set player fly speed multiplier to " + multiplier));
                     }
                 } catch (NumberFormatException e) {
-                    NGTLog.sendChatMessage(player, "Invalid number format.");
+                    sender.sendMessage(new net.minecraft.util.text.TextComponentString("Invalid number format."));
                 }
                 return;
             }
+            NGTLog.sendChatMessage(sender, "/rtm <door|pan|speed> <value> : Control nearby trains");
+            NGTLog.sendChatMessage(sender, "/rtm drf : Delete riding formation");
+            NGTLog.sendChatMessage(sender, "/rtm delAllTrain : Delete all train");
+            NGTLog.sendChatMessage(sender, "/rtm dat : Delete all train");
+            NGTLog.sendChatMessage(sender, "/rtm dismount : Dismount player from vehicle");
+            NGTLog.sendChatMessage(sender, "/rtm flyspeed <value> : Set player flying speed");
         }
-        NGTLog.sendChatMessage(sender, "/rtm <door|pan|speed> <value> : Control nearby trains");
-        NGTLog.sendChatMessage(sender, "/rtm drf : Delete riding formation");
-        NGTLog.sendChatMessage(sender, "/rtm delAllTrain : Delete all train");
-        NGTLog.sendChatMessage(sender, "/rtm dismount : Dismount player from vehicle");
-        NGTLog.sendChatMessage(sender, "/rtm flyspeed <value> : Set player flying speed");
     }
 }

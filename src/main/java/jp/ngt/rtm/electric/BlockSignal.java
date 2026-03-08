@@ -16,6 +16,7 @@ package jp.ngt.rtm.electric;
 
 import jp.ngt.ngtlib.block.BlockArgHolder;
 import jp.ngt.ngtlib.block.BlockContainerCustomWithMeta;
+import jp.ngt.ngtlib.block.TileEntityPlaceable;
 import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.RTMItem;
 import jp.ngt.rtm.item.ItemInstalledObject.IstlObjType;
@@ -42,7 +43,12 @@ public class BlockSignal extends BlockContainerCustomWithMeta implements IBlockC
             int y = holder.getBlockPos().getY();
             int z = holder.getBlockPos().getZ();
             if (holder.getPlayer().inventory.getCurrentItem().getItem() == jp.ngt.rtm.RTMItem.crowbar) {
-                com.anatawa12.fixRtm.UtilsKt.openGui(holder.getPlayer(), com.anatawa12.fixRtm.gui.GuiId.ChangeOffset, holder.getWorld(), x, y, z);
+                TileEntity te = holder.getWorld().getTileEntity(holder.getBlockPos());
+                if (te instanceof TileEntityPlaceable) {
+                    net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(
+                            new jp.apple.gui.GuiAppleChangeOffset((TileEntityPlaceable)te)
+                    );
+                }
                 return true;
             }
             if (holder.getPlayer().isSneaking()) {

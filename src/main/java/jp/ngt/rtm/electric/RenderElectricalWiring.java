@@ -59,6 +59,9 @@ public class RenderElectricalWiring extends TileEntitySpecialRenderer<TileEntity
         GL11.glTranslatef((float) par2 + 0.5F, (float) par4 + 0.5F, (float) par6 + 0.5F);
         GL11.glTranslatef(tileEntity.getOffsetX(), tileEntity.getOffsetY(), tileEntity.getOffsetZ());
         GL11.glRotatef(tileEntity.getRotation(), 0.0F, 1.0F, 0.0F);
+        if (tileEntity.getRotationX() != 0.0F) GL11.glRotatef(tileEntity.getRotationX(), 1.0F, 0.0F, 0.0F);
+        if (tileEntity.getRotationZ() != 0.0F) GL11.glRotatef(tileEntity.getRotationZ(), 0.0F, 0.0F, 1.0F);
+
         ModelSetConnector modelSet = tileEntity.getResourceState().getResourceSet();
         ConnectorConfig cfg = modelSet.getConfig();
         int meta = tileEntity.getBlockMetadata() % 6;
@@ -83,6 +86,10 @@ public class RenderElectricalWiring extends TileEntitySpecialRenderer<TileEntity
                 GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
                 GL11.glRotatef(90.0F, 1.0F, 0.0F, 0.0F);
                 break;
+        }
+        float s = tileEntity.getScale();
+        if (s != 1.0F) {
+            GL11.glScalef(s, s, s);
         }
         modelSet.modelObj.render(tileEntity, cfg, pass, par8);
         GL11.glPopMatrix();

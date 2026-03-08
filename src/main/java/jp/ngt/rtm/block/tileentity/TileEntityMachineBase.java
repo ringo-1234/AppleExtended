@@ -83,7 +83,7 @@ public abstract class TileEntityMachineBase extends TileEntityPlaceable implemen
     @Override
     public void setRotation(EntityPlayer player, float rotationInterval, boolean synch) {
         super.setRotation(player, rotationInterval, synch);
-        this.pitch = -player.rotationPitch;
+        this.pitch = 0.0F;
     }
 
     @Override
@@ -155,5 +155,15 @@ public abstract class TileEntityMachineBase extends TileEntityPlaceable implemen
     public void addInfoToCrashReport(net.minecraft.crash.CrashReportCategory reportCategory) {
         super.addInfoToCrashReport(reportCategory);
         com.anatawa12.fixRtm.rtm.block.tileentity.TileEntityMachineBaseKt.addInfoToCrashReport(this, reportCategory);
+    }
+    @Override
+    public float getRotationX() {
+        return this.getPitch();
+    }
+
+    @Override
+    public void setRotationXYZS(float x, float y, float z,float s, boolean sync) {
+        super.setRotationXYZS(x, y, z, s, sync);
+        this.pitch = x;
     }
 }

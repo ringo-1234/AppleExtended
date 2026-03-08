@@ -17,9 +17,11 @@ package jp.ngt.rtm.electric;
 import jp.ngt.ngtlib.block.BlockArgHolder;
 import jp.ngt.ngtlib.block.BlockContainerCustomWithMeta;
 import jp.ngt.ngtlib.block.BlockUtil;
+import jp.ngt.ngtlib.block.TileEntityPlaceable;
 import jp.ngt.rtm.item.ItemInstalledObject;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -31,8 +33,14 @@ public abstract class BlockElectricalWiring extends BlockContainerCustomWithMeta
     @Override
     public boolean onBlockActivated(BlockArgHolder holder, float hitX, float hitY, float hitZ) {
         if (holder.getPlayer().inventory.getCurrentItem().getItem() == jp.ngt.rtm.RTMItem.crowbar) {
-            if (holder.getWorld().isRemote)
-                com.anatawa12.fixRtm.UtilsKt.openGui(holder.getPlayer(), com.anatawa12.fixRtm.gui.GuiId.ChangeOffset, holder.getWorld(), holder.getBlockPos());
+            if (holder.getWorld().isRemote) {
+                TileEntity te = holder.getWorld().getTileEntity(holder.getBlockPos());
+                if (te instanceof TileEntityPlaceable) {
+                    net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(
+                            new jp.apple.gui.GuiAppleChangeOffset((TileEntityPlaceable)te)
+                    );
+                }
+            }
             return true;
         }
         if (holder.getWorld().isRemote) {

@@ -15,6 +15,7 @@
 package jp.ngt.rtm.electric;
 
 import jp.ngt.ngtlib.block.BlockArgHolder;
+import jp.ngt.ngtlib.block.TileEntityPlaceable;
 import jp.ngt.ngtlib.util.NGTUtil;
 import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.RTMItem;
@@ -50,7 +51,14 @@ public class BlockTicketVendor extends BlockMachineBase {
         int z = pos.getZ();
 
         if (NGTUtil.isEquippedItem(player, RTMItem.crowbar)) {
-            com.anatawa12.fixRtm.UtilsKt.openGui(player, com.anatawa12.fixRtm.gui.GuiId.ChangeOffset, world, x, y, z);
+            if (world.isRemote) {
+                TileEntity te = world.getTileEntity(pos);
+                if (te instanceof TileEntityPlaceable) {
+                    net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(
+                            new jp.apple.gui.GuiAppleChangeOffset((TileEntityPlaceable)te)
+                    );
+                }
+            }
         } else {
             if (!player.isSneaking()) {
                 player.openGui(RTMCore.instance, RTMCore.guiIdTicketVendor, world, x, y, z);

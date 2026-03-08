@@ -71,7 +71,8 @@ public abstract class TileEntityConnectorBase extends TileEntityElectricalWiring
     //元はgetModelSet()内で更新
     public void updateWirePos() {
         ConnectorConfig cfg = this.getResourceState().getResourceSet().getConfig();
-        Vec3 vec = PooledVec3.create(cfg.wirePos[0], cfg.wirePos[1], cfg.wirePos[2]);
+        float s = this.getScale();
+        Vec3 vec = PooledVec3.create(cfg.wirePos[0] * s, cfg.wirePos[1] * s, cfg.wirePos[2] * s);
         int meta = this.getBlockMetadata();
         switch (meta) {
             case 0:
@@ -95,6 +96,8 @@ public abstract class TileEntityConnectorBase extends TileEntityElectricalWiring
                 vec = vec.rotateAroundY(90.0F);
                 break;
         }
+        if (this.getRotationX() != 0.0F) vec = vec.rotateAroundX(this.getRotationX());
+        if (this.getRotationZ() != 0.0F) vec = vec.rotateAroundZ(this.getRotationZ());
 
         vec = vec.rotateAroundY(this.getRotation());
         vec = vec.add(this.getOffsetX(), this.getOffsetY(), this.getOffsetZ());

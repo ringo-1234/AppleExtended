@@ -106,4 +106,17 @@ public class BlockConnector extends BlockElectricalWiring {
     protected ItemInstalledObject.IstlObjType istlObjType(int damage) {
         return damage < 6 ? ItemInstalledObject.IstlObjType.CONNECTOR_IN : ItemInstalledObject.IstlObjType.CONNECTOR_OUT;
     }
+    @Override
+    public boolean onBlockActivated(jp.ngt.ngtlib.block.BlockArgHolder holder, float hitX, float hitY, float hitZ) {
+        if (holder.getPlayer().isSneaking()) {
+            if (holder.getWorld().isRemote) {
+                int x = holder.getBlockPos().getX();
+                int y = holder.getBlockPos().getY();
+                int z = holder.getBlockPos().getZ();
+                holder.getPlayer().openGui(jp.ngt.rtm.RTMCore.instance, jp.ngt.rtm.RTMCore.guiIdSelectTileEntityModel, holder.getWorld(), x, y, z);
+            }
+            return true;
+        }
+        return super.onBlockActivated(holder, hitX, hitY, hitZ);
+    }
 }

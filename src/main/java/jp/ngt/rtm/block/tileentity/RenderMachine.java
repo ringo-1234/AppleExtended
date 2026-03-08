@@ -66,6 +66,12 @@ public final class RenderMachine extends TileEntitySpecialRenderer<TileEntityMac
             yaw = -yaw;
         }
         GL11.glRotatef(yaw, 0.0F, 1.0F, 0.0F);
+        if (par1.getRotationX() != 0.0F) GL11.glRotatef(par1.getRotationX(), 1.0F, 0.0F, 0.0F);
+        if (par1.getRotationZ() != 0.0F) GL11.glRotatef(par1.getRotationZ(), 0.0F, 0.0F, 1.0F);
+        float s = par1.getScale();
+        if (s != 1.0F) {
+            GL11.glScalef(s, s, s);
+        }
         modelSet.modelObj.render(par1, cfg, MinecraftForgeClient.getRenderPass(), par8);
 
         GL11.glPopMatrix();

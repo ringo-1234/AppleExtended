@@ -40,7 +40,12 @@ public abstract class BlockMachineBase extends BlockContainerCustomWithMeta {
     protected boolean clickMachine(World world, int x, int y, int z, EntityPlayer player) {
         if (world.isRemote) {
             if (jp.ngt.ngtlib.util.NGTUtil.isEquippedItem(player, jp.ngt.rtm.RTMItem.crowbar)) {
-                com.anatawa12.fixRtm.UtilsKt.openGui(player, com.anatawa12.fixRtm.gui.GuiId.ChangeOffset, player.world, x, y, z);
+                net.minecraft.tileentity.TileEntity te = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
+                if (te instanceof jp.ngt.ngtlib.block.TileEntityPlaceable) {
+                    net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(
+                            new jp.apple.gui.GuiAppleChangeOffset((jp.ngt.ngtlib.block.TileEntityPlaceable) te)
+                    );
+                }
                 return true;
             }
 

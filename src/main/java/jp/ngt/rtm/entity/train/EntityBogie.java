@@ -32,6 +32,7 @@ import jp.ngt.rtm.rail.TileEntityLargeRailBase;
 import jp.ngt.rtm.rail.TileEntityLargeRailCore;
 import jp.ngt.rtm.rail.TileEntityLargeRailSwitchCore;
 import jp.ngt.rtm.rail.util.RailMap;
+import jp.ngt.rtm.world.RTMChunkManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.MoverType;
@@ -44,13 +45,17 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.EntityDamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ForgeChunkManager.Ticket;
+import net.minecraftforge.common.ForgeChunkManager;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
-public final class EntityBogie extends Entity implements Lockable {
+public final class EntityBogie extends Entity implements Lockable, jp.ngt.rtm.world.IChunkLoader {
+    private Ticket ticket;
     public static final DataParameter<Integer> TRAIN_ID = EntityDataManager.<Integer>createKey(EntityBogie.class, DataSerializers.VARINT);
     public static final DataParameter<Byte> BOGIE_STATE = EntityDataManager.<Byte>createKey(EntityBogie.class, DataSerializers.BYTE);
 
@@ -324,6 +329,7 @@ public final class EntityBogie extends Entity implements Lockable {
         }
 
         if (!this.world.isRemote) {
+            this.updateChunks();
             if (this.currentRailObj != null) {
                 this.currentRailObj.colliding = true;
             } else {
@@ -354,6 +360,9 @@ public final class EntityBogie extends Entity implements Lockable {
 
     @Override
     public void setDead() {
+        if (!this.world.isRemote) {
+            this.releaseTicket();
+        }
         boolean flag = this.getEntityWorld().isRemote && this.getTrain() != null && this.getTrain().getVehicleState(TrainState.TrainStateType.ChunkLoader) > 0;
         if (this.existCount > 100 && !flag || (this.getEntityWorld().isRemote && this.getTrain() == null)) {
             super.setDead();
@@ -648,5 +657,51 @@ public final class EntityBogie extends Entity implements Lockable {
     public void addEntityCrashInfo(net.minecraft.crash.CrashReportCategory category) {
         super.addEntityCrashInfo(category);
         com.anatawa12.fixRtm.rtm.entity.train.EntityBogieKt.addEntityCrashInfo(this, category);
+    }
+    private void updateChunks() {
+        if (!this.world.isRemote) {
+            this.forceChunkLoading();
+        }
+    }
+
+    @Override
+    public boolean isChunkLoaderEnable() {
+        return !this.isDead;
+    }
+
+    @Override
+    public void setChunkTicket(Ticket par1) {
+        if (this.ticket != par1) {
+            this.releaseTicket();
+        }
+        this.ticket = par1;
+    }
+
+    @Override
+    public void forceChunkLoading() {
+        this.forceChunkLoading(this.chunkCoordX, this.chunkCoordZ);
+    }
+
+    @Override
+    public void forceChunkLoading(int x, int z) {
+        if (!this.world.isRemote) {
+            if (this.ticket == null) {
+                this.ticket = RTMChunkManager.INSTANCE.getNewTicket(this.world, ForgeChunkManager.Type.ENTITY);
+                if (this.ticket != null) {
+                    this.ticket.bindEntity(this);
+                }
+            }
+
+            if (this.ticket != null) {
+                ForgeChunkManager.forceChunk(this.ticket, new ChunkPos(x, z));
+            }
+        }
+    }
+
+    private void releaseTicket() {
+        if (this.ticket != null) {
+            ForgeChunkManager.releaseTicket(this.ticket);
+            this.ticket = null;
+        }
     }
 }

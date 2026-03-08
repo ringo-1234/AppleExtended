@@ -26,6 +26,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraftforge.fml.client.GuiScrollingList;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.input.Mouse;
 
 import java.io.IOException;
 import java.util.List;
@@ -72,7 +73,15 @@ public class GuiAppleListSelector extends GuiScreen {
             super.setWorldAndResolution(mc, width, height);
         }
     }
-
+    @Override
+    public void handleMouseInput() throws IOException {
+        super.handleMouseInput();
+        int mouseX = Mouse.getEventX() * this.width / this.mc.displayWidth;
+        int mouseY = this.height - Mouse.getEventY() * this.height / this.mc.displayHeight - 1;
+        if (this.guiScroll != null) {
+            this.guiScroll.handleMouseInput(mouseX, mouseY);
+        }
+    }
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         
