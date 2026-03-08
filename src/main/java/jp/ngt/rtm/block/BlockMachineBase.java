@@ -22,6 +22,7 @@ import jp.ngt.rtm.modelpack.cfg.MachineConfig;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -40,12 +41,8 @@ public abstract class BlockMachineBase extends BlockContainerCustomWithMeta {
     protected boolean clickMachine(World world, int x, int y, int z, EntityPlayer player) {
         if (world.isRemote) {
             if (jp.ngt.ngtlib.util.NGTUtil.isEquippedItem(player, jp.ngt.rtm.RTMItem.crowbar)) {
-                net.minecraft.tileentity.TileEntity te = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
-                if (te instanceof jp.ngt.ngtlib.block.TileEntityPlaceable) {
-                    net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(
-                            new jp.apple.gui.GuiAppleChangeOffset((jp.ngt.ngtlib.block.TileEntityPlaceable) te)
-                    );
-                }
+                TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+                jp.apple.gui.AppleGuiHelper.openOffsetGui(te);
                 return true;
             }
 

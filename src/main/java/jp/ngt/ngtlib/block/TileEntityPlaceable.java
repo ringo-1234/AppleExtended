@@ -35,8 +35,8 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
                 false
         );
         this.setRotation(nbt.getFloat("Yaw"), false);
-        this.rotationX = nbt.getFloat("apRotX");
-        this.rotationZ = nbt.getFloat("apRotZ");
+        this.rotationX = nbt.hasKey("apRotX") ? nbt.getFloat("apRotX") : 0.0F;
+        this.rotationZ = nbt.hasKey("apRotZ") ? nbt.getFloat("apRotZ") : 0.0F;
         this.scale = nbt.hasKey("apScale") ? nbt.getFloat("apScale") : 1.0F;
     }
 
@@ -46,10 +46,10 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
         nbt.setFloat("Yaw", this.rotation);
         nbt.setFloat("apRotX", this.rotationX);
         nbt.setFloat("apRotZ", this.rotationZ);
+        nbt.setFloat("apScale", this.scale);
         nbt.setFloat("offsetX", this.offsetX);
         nbt.setFloat("offsetY", this.offsetY);
         nbt.setFloat("offsetZ", this.offsetZ);
-        nbt.setFloat("apScale", this.scale);
         return nbt;
     }
 
@@ -59,7 +59,7 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
     public float getRotationX() { return this.rotationX; }
     public float getRotationZ() { return this.rotationZ; }
 
-    public void setRotationXYZS(float x, float y, float z,float s, boolean sync) {
+    public void setRotationXYZS(float x, float y, float z, float s, boolean sync) {
         this.rotationX = x % 360.0F;
         this.rotation = y % 360.0F;
         this.rotationZ = z % 360.0F;

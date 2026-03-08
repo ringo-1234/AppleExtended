@@ -41,7 +41,6 @@ public class AppleLib {
     public static AppleLib instance;
 
     public static final Logger LOGGER = LogManager.getLogger(NAME);
-
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         File mcRoot = event.getModConfigurationDirectory().getParentFile();

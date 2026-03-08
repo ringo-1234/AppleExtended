@@ -79,18 +79,12 @@ public abstract class TileEntityMachineBase extends TileEntityPlaceable implemen
         }
     }
 
-
-    @Override
-    public void setRotation(EntityPlayer player, float rotationInterval, boolean synch) {
-        super.setRotation(player, rotationInterval, synch);
-        this.pitch = 0.0F;
-    }
-
     @Override
     public void setRotation(float par1, boolean synch) {
         super.setRotation(par1, synch);
         this.yawFixed = true;
     }
+
 
     public float getPitch() {
         return this.pitch;
@@ -158,12 +152,17 @@ public abstract class TileEntityMachineBase extends TileEntityPlaceable implemen
     }
     @Override
     public float getRotationX() {
-        return this.getPitch();
+        return super.getRotationX();
     }
 
     @Override
-    public void setRotationXYZS(float x, float y, float z,float s, boolean sync) {
+    public void setRotationXYZS(float x, float y, float z, float s, boolean sync) {
         super.setRotationXYZS(x, y, z, s, sync);
         this.pitch = x;
+    }
+    @Override
+    public void setRotation(EntityPlayer player, float rotationInterval, boolean synch) {
+        super.setRotation(player, rotationInterval, synch);
+        this.pitch = 0.0F;
     }
 }
