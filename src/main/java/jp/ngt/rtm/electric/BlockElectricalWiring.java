@@ -35,7 +35,9 @@ public abstract class BlockElectricalWiring extends BlockContainerCustomWithMeta
         if (holder.getPlayer().inventory.getCurrentItem().getItem() == jp.ngt.rtm.RTMItem.crowbar) {
             if (holder.getWorld().isRemote) {
                 TileEntity te = holder.getWorld().getTileEntity(holder.getBlockPos());
-                jp.apple.gui.AppleGuiHelper.openOffsetGui(te);
+                if (te instanceof TileEntityPlaceable) {
+                    jp.apple.gui.AppleGuiHelper.openOffsetGui(te);
+                }
             }
             return true;
         }

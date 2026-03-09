@@ -53,11 +53,7 @@ public class BlockTicketVendor extends BlockMachineBase {
         if (NGTUtil.isEquippedItem(player, RTMItem.crowbar)) {
             if (world.isRemote) {
                 TileEntity te = world.getTileEntity(pos);
-                if (te instanceof TileEntityPlaceable) {
-                    net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(
-                            new jp.apple.gui.GuiAppleChangeOffset((TileEntityPlaceable)te)
-                    );
-                }
+                jp.apple.gui.AppleGuiHelper.openOffsetGui(te);
             }
         } else {
             if (!player.isSneaking()) {

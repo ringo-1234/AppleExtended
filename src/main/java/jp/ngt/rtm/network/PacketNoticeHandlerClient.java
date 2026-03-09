@@ -76,11 +76,17 @@ public class PacketNoticeHandlerClient implements IMessageHandler<PacketNotice, 
                     float f0 = Float.valueOf(msg.split(":")[1]);
                     ((TileEntityTurnTableCore) tile).setRotation(f0);
                 }
-            } else if (message.notice.startsWith("decoration")) {
-                String json = message.notice.replace("decoration:", "");
-                DecorationStore.INSTANCE.setModel(json);
-            } else if (msg.startsWith("speaker")) {
-                SpeakerSounds.getInstance(false).onGetPacket(msg, false);
+            } else if (msg.startsWith("flySpeed")) {
+                String[] sa0 = msg.split(",");
+                float speed = Float.parseFloat(sa0[1]);
+                try {
+                    java.lang.reflect.Field f =
+                            net.minecraft.entity.player.PlayerCapabilities.class.getDeclaredField("field_75096_f");
+                    f.setAccessible(true);
+                    f.set(NGTUtil.getClientPlayer().capabilities, speed * 0.05F);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

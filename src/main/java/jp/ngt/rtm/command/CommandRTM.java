@@ -15,9 +15,11 @@
 package jp.ngt.rtm.command;
 
 import jp.ngt.ngtlib.io.NGTLog;
+import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.entity.train.EntityBogie;
 import jp.ngt.rtm.entity.train.EntityTrainBase;
 import jp.ngt.rtm.entity.train.util.TrainState.TrainStateType;
+import jp.ngt.rtm.network.PacketNotice;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -126,17 +128,18 @@ public class CommandRTM extends CommandBase {
             }
             if (subCommand.equals("flyspeed") && args.length >= 2) {
                 try {
-                    float val = Float.parseFloat(args[1]);
-                    float multiplier = MathHelper.clamp(val, 0.1F, 10.0F);
-
+                    float speed = Float.parseFloat(args[1]);
+                    float clampedSpeed = MathHelper.clamp(speed, 0.1F, 10.0F);
                     if (player instanceof EntityPlayerMP) {
                         EntityPlayerMP playerMP = (EntityPlayerMP) player;
-                        playerMP.capabilities.setFlySpeed(multiplier * 0.05F);
-                        playerMP.sendPlayerAbilities();
-                        playerMP.sendMessage(new net.minecraft.util.text.TextComponentString("Set player fly speed multiplier to " + multiplier));
+                        RTMCore.NETWORK_WRAPPER.sendTo(
+                                new PacketNotice(PacketNotice.Side_CLIENT, "flySpeed," + clampedSpeed),
+                                playerMP
+                        );
+                        NGTLog.sendChatMessage(playerMP, "Set fly speed multiplier to " + clampedSpeed);
                     }
                 } catch (NumberFormatException e) {
-                    sender.sendMessage(new net.minecraft.util.text.TextComponentString("Invalid number format."));
+                    NGTLog.sendChatMessage(sender, "Invalid number format.");
                 }
                 return;
             }

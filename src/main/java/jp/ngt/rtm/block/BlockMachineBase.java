@@ -41,7 +41,7 @@ public abstract class BlockMachineBase extends BlockContainerCustomWithMeta {
     protected boolean clickMachine(World world, int x, int y, int z, EntityPlayer player) {
         if (world.isRemote) {
             if (jp.ngt.ngtlib.util.NGTUtil.isEquippedItem(player, jp.ngt.rtm.RTMItem.crowbar)) {
-                TileEntity te = world.getTileEntity(new BlockPos(x, y, z));
+                TileEntity te = world.getTileEntity(new net.minecraft.util.math.BlockPos(x, y, z));
                 jp.apple.gui.AppleGuiHelper.openOffsetGui(te);
                 return true;
             }
