@@ -22,8 +22,13 @@ public class AppleConfig {
     public static final String CATEGORY_CONTROL = "control";
     public static final String CATEGORY_SECURITY = "security";
     public static final String CATEGORY_SOUND = "sound";
+    public static final String CATEGORY_SOUND_RANGE = "sound_range";
 
-    public static int notchRepeatInterval = 2;
+    public static float runningSoundRange = 16.0F;
+    public static float crossingSoundRange = 64.0F;
+    public static float hornSoundRange = 16.0F;
+
+    public static int notchRepeatInterval = 1;
     public static boolean enableBlockChangeLog = true;
 
     public static boolean enableJointSound = true;
@@ -42,6 +47,13 @@ public class AppleConfig {
             );
             enableJointSound = cfg.getBoolean("enableJointSound", CATEGORY_SOUND, true, "Whether to enable RTM standard joint sounds");
             enableNotchSound = cfg.getBoolean("enableNotchSound", CATEGORY_SOUND, true, "Whether to enable the RTM standard notch operation sound");
+
+            runningSoundRange = cfg.getFloat("runningSoundRange", CATEGORY_SOUND_RANGE,
+                    16.0F, 1.0F, 1024.0F, "Set the range in which sound can be heard.");
+            crossingSoundRange = cfg.getFloat("crossingSoundRange", CATEGORY_SOUND_RANGE,
+                    64.0F, 1.0F, 1024.0F, "Set the range in which sound can be heard.");
+            hornSoundRange = cfg.getFloat("hornSoundRange", CATEGORY_SOUND_RANGE,
+                    16.0F, 1.0F, 1024.0F, "Set the range in which sound can be heard.");
 
         } catch (Exception e) {
             e.printStackTrace();

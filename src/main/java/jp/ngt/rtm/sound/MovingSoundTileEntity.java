@@ -23,6 +23,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MovingSoundTileEntity extends MovingSoundCustom {
     protected final TileEntity entity;
+    private float baseVolume = -1.0F;
 
     protected MovingSoundTileEntity(TileEntity par1Entity, String par2Sound, boolean par3Repeat) {
         super(par2Sound, par3Repeat);
@@ -31,11 +32,7 @@ public class MovingSoundTileEntity extends MovingSoundCustom {
         this.xPosF = (float) this.entity.getPos().getX() + 0.5F;
         this.yPosF = (float) this.entity.getPos().getY() + 0.5F;
         this.zPosF = (float) this.entity.getPos().getZ() + 0.5F;
-    }
-
-    @Override
-    public void setVolume(float par1) {
-        super.setVolume(par1 * RTMCore.trainSoundVol);
+        this.setSoundRange(jp.apple.config.AppleConfig.crossingSoundRange);
     }
 
     @Override
@@ -46,5 +43,19 @@ public class MovingSoundTileEntity extends MovingSoundCustom {
             this.donePlaying = true;
             return;
         }
+
+        if (this.baseVolume >= 0.0F) {
+            float adjusted = jp.apple.sound.SoundRangeHelper.calcVolume(
+                    this.baseVolume,
+                    jp.apple.config.AppleConfig.crossingSoundRange,
+                    this.xPosF, this.yPosF, this.zPosF);
+        }
+    }
+
+    @Override
+    public void setVolume(float par1) {
+        float v = par1 * RTMCore.trainSoundVol;
+        this.baseVolume = v;
+        super.setVolume(v);
     }
 }

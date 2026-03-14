@@ -145,6 +145,13 @@ public abstract class EntityVehiclePart extends EntityCustom {
     @Override
     public void onUpdate() {
         if (!this.world.isRemote) {
+            if (this.ticksExisted > 100 && !this.isIndependent) {
+                EntityVehicleBase parent = this.getVehicle();
+                if (parent == null || parent.isDead) {
+                    this.setDead();
+                    return;
+                }
+            }
             if (this.getFirstPassenger() != null) {
                 if (this.rider == null && this.getFirstPassenger() instanceof EntityLivingBase) {
                     this.rider = (EntityLivingBase) this.getFirstPassenger();

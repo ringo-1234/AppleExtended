@@ -1,3 +1,17 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.apple.gui;
 
 import jp.ngt.ngtlib.block.TileEntityPlaceable;
@@ -25,13 +39,13 @@ public class GuiAppleChangeOffset extends GuiScreenCustom {
         this.buttonList.add(new GuiButton(1, this.width / 2 + 5, this.height - 28, 100, 20, I18n.format("gui.cancel")));
 
         int x = this.width - 70;
-        
+
         fieldOffsetX = setFloatField(x, 20, 60, 20, String.valueOf(tileEntity.getOffsetX()));
         fieldOffsetY = setFloatField(x, 50, 60, 20, String.valueOf(tileEntity.getOffsetY()));
         fieldOffsetZ = setFloatField(x, 80, 60, 20, String.valueOf(tileEntity.getOffsetZ()));
 
-        fieldRotX = setFloatField(x, 110, 60, 20, String.valueOf(tileEntity.getRotationX())); 
-        fieldRotY = setFloatField(x, 140, 60, 20, String.valueOf(tileEntity.getRotation()));  
+        fieldRotX = setFloatField(x, 110, 60, 20, String.valueOf(tileEntity.getRotationX()));
+        fieldRotY = setFloatField(x, 140, 60, 20, String.valueOf(tileEntity.getRotation()));
         fieldRotZ = setFloatField(x, 170, 60, 20, String.valueOf(tileEntity.getRotationZ()));
         fieldScale = setFloatField(x, 200, 60, 20, String.valueOf(tileEntity.getScale()));
     }
@@ -63,7 +77,7 @@ public class GuiAppleChangeOffset extends GuiScreenCustom {
     }
 
     private void sendPacket() {
-        
+
         float ox = tryParse(fieldOffsetX.getText(), tileEntity.getOffsetX());
         float oy = tryParse(fieldOffsetY.getText(), tileEntity.getOffsetY());
         float oz = tryParse(fieldOffsetZ.getText(), tileEntity.getOffsetZ());
@@ -76,7 +90,7 @@ public class GuiAppleChangeOffset extends GuiScreenCustom {
         tileEntity.setOffset(ox, oy, oz, false);
         tileEntity.setRotationXYZS(rx, ry, rz, sc, false);
 
-        
+
         PacketNBT.sendToServer(tileEntity);
     }
 

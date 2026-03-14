@@ -658,6 +658,7 @@ public final class EntityBogie extends Entity implements Lockable, jp.ngt.rtm.wo
         super.addEntityCrashInfo(category);
         com.anatawa12.fixRtm.rtm.entity.train.EntityBogieKt.addEntityCrashInfo(this, category);
     }
+
     private void updateChunks() {
         if (!this.world.isRemote) {
             this.forceChunkLoading();

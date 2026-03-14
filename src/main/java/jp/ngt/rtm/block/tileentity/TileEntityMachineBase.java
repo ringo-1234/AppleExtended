@@ -150,6 +150,7 @@ public abstract class TileEntityMachineBase extends TileEntityPlaceable implemen
         super.addInfoToCrashReport(reportCategory);
         com.anatawa12.fixRtm.rtm.block.tileentity.TileEntityMachineBaseKt.addInfoToCrashReport(this, reportCategory);
     }
+
     @Override
     public float getRotationX() {
         return super.getRotationX();
@@ -160,6 +161,7 @@ public abstract class TileEntityMachineBase extends TileEntityPlaceable implemen
         super.setRotationXYZS(x, y, z, s, sync);
         this.pitch = x;
     }
+
     @Override
     public void setRotation(EntityPlayer player, float rotationInterval, boolean synch) {
         super.setRotation(player, rotationInterval, synch);

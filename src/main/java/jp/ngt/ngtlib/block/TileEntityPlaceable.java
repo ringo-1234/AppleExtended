@@ -56,8 +56,14 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
     public float getRotation() {
         return this.rotation;
     }
-    public float getRotationX() { return this.rotationX; }
-    public float getRotationZ() { return this.rotationZ; }
+
+    public float getRotationX() {
+        return this.rotationX;
+    }
+
+    public float getRotationZ() {
+        return this.rotationZ;
+    }
 
     public void setRotationXYZS(float x, float y, float z, float s, boolean sync) {
         this.rotationX = x % 360.0F;
@@ -82,7 +88,10 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
         int yaw = NGTMath.floor(NGTMath.normalizeAngle(-player.rotationYaw + 180.0D + (rotationInterval / 2.0D)) / (double) rotationInterval);
         this.setRotation((float) yaw * rotationInterval, synch);
     }
-    public float getScale() { return this.scale; }
+
+    public float getScale() {
+        return this.scale;
+    }
 
     public void setScale(float par1, boolean sync) {
         this.scale = par1;
@@ -91,9 +100,18 @@ public abstract class TileEntityPlaceable extends TileEntityCustom {
             this.markDirty();
         }
     }
-    public float getOffsetX() { return offsetX; }
-    public float getOffsetY() { return offsetY; }
-    public float getOffsetZ() { return offsetZ; }
+
+    public float getOffsetX() {
+        return offsetX;
+    }
+
+    public float getOffsetY() {
+        return offsetY;
+    }
+
+    public float getOffsetZ() {
+        return offsetZ;
+    }
 
     public void setOffset(float offsetX, float offsetY, float offsetZ, boolean sync) {
         this.offsetX = offsetX;

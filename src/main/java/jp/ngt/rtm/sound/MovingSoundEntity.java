@@ -23,10 +23,13 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MovingSoundEntity extends MovingSoundCustom {
     protected final Entity entity;
+    private float baseVolume = -1.0F;
 
     protected MovingSoundEntity(Entity par1Entity, String par2Sound, boolean par3Repeat) {
         super(par2Sound, par3Repeat);
         this.entity = par1Entity;
+        this.baseVolume = RTMCore.trainSoundVol;
+        this.setSoundRange(jp.apple.config.AppleConfig.runningSoundRange);
     }
 
     @Override
@@ -41,10 +44,19 @@ public class MovingSoundEntity extends MovingSoundCustom {
         this.xPosF = (float) this.entity.posX;
         this.yPosF = (float) this.entity.posY;
         this.zPosF = (float) this.entity.posZ;
+
+        if (this.baseVolume >= 0.0F) {
+            float adjusted = jp.apple.sound.SoundRangeHelper.calcVolume(
+                    this.baseVolume,
+                    jp.apple.config.AppleConfig.runningSoundRange,
+                    this.xPosF, this.yPosF, this.zPosF);
+        }
     }
 
     @Override
     public void setVolume(float par1) {
-        super.setVolume(par1 * RTMCore.trainSoundVol);
+        float v = par1 * RTMCore.trainSoundVol;
+        this.baseVolume = v;
+        super.setVolume(v);
     }
 }

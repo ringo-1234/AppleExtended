@@ -23,6 +23,7 @@ import jp.ngt.rtm.entity.npc.macro.TrainCommand;
 import jp.ngt.rtm.entity.train.EntityTrainBase;
 import jp.ngt.rtm.gui.ContainerRTMWorkBench;
 import jp.ngt.rtm.gui.ContainerTrainControlPanel;
+import jp.ngt.rtm.modelpack.IResourceSelector;
 import jp.ngt.rtm.modelpack.init.ModelPackUploadThread;
 import jp.ngt.rtm.modelpack.state.DataMap;
 import jp.ngt.rtm.sound.SpeakerSounds;
@@ -51,6 +52,11 @@ public class PacketNoticeHandlerServer implements IMessageHandler<PacketNotice, 
         if ((message.type & 1) == PacketNotice.Side_SERVER) {
             if (msg.equals("isConnected")) {
                 RTMCore.NETWORK_WRAPPER.sendToAll(new PacketNotice(PacketNotice.Side_CLIENT, "setConnected"));
+            } else if (msg.equals("requestSync")) {
+                Entity entity = message.getEntity(world);
+                if (entity instanceof IResourceSelector) {
+                    ((IResourceSelector) entity).updateResourceState();
+                }
             } else if (msg.startsWith("getModelPack")) {
                 RTMCore.NETWORK_WRAPPER.sendToAll(new PacketNotice(PacketNotice.Side_CLIENT, "setConnected"));
                 ModelPackUploadThread.startThread();

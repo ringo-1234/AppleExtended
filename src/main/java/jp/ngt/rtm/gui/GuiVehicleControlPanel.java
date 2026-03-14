@@ -568,7 +568,7 @@ public class GuiVehicleControlPanel extends InventoryEffectRenderer {
             return;
         }
 
-        
+
         if (button.id == 129) {
             String[][] announce = this.modelset.getConfig().sound_Announcement;
             if (announce != null) {
@@ -590,7 +590,7 @@ public class GuiVehicleControlPanel extends InventoryEffectRenderer {
             return;
         }
 
-        
+
         if (button.id >= CUSTOM_BUTTOM_ID) {
             int index = button.id - CUSTOM_BUTTOM_ID;
             String[][] allButtons = this.getCustomButtons();
@@ -610,7 +610,7 @@ public class GuiVehicleControlPanel extends InventoryEffectRenderer {
             return;
         }
 
-        
+
         if ((button.id >= 110 && button.id <= 115) || (button.id >= 124 && button.id <= 127) || (button.id >= 140 && button.id <= 142)) {
             TrainStateType type = null;
             int stateData = 0;
@@ -684,10 +684,18 @@ public class GuiVehicleControlPanel extends InventoryEffectRenderer {
             this.vehicle.syncVehicleState(TrainStateType.Door, (byte) state);
             TrainState macroType = TrainState.Door_Close;
             switch (state) {
-                case 0: macroType = TrainState.Door_Close; break;
-                case 1: macroType = TrainState.Door_OpenRight; break;
-                case 2: macroType = TrainState.Door_OpenLeft; break;
-                case 3: macroType = TrainState.Door_OpenAll; break;
+                case 0:
+                    macroType = TrainState.Door_Close;
+                    break;
+                case 1:
+                    macroType = TrainState.Door_OpenRight;
+                    break;
+                case 2:
+                    macroType = TrainState.Door_OpenLeft;
+                    break;
+                case 3:
+                    macroType = TrainState.Door_OpenAll;
+                    break;
             }
             MacroRecorder.INSTANCE.recDoor(this.vehicle.world, macroType);
         }

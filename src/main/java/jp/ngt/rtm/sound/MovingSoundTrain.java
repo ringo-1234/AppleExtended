@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm.sound;
 
+import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.entity.train.EntityTrainBase;
 import jp.ngt.rtm.modelpack.modelset.ModelSetTrain;
 import net.minecraftforge.fml.relauncher.Side;

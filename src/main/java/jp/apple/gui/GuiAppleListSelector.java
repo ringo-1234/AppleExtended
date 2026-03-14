@@ -58,13 +58,13 @@ public class GuiAppleListSelector extends GuiScreen {
 
     @Override
     public void initGui() {
-        
+
         this.guiScroll = new InternalScrollList(this.mc, screenWidth, screenHeight, yPosition, yPosition + screenHeight, xPosition, 10);
     }
 
     @Override
     public void setWorldAndResolution(Minecraft mc, int width, int height) {
-        
+
         if (this.mc != null && (this.width != width || this.height != height)) {
             super.setWorldAndResolution(mc, width, height);
             this.parentScreen.setWorldAndResolution(mc, width, height);
@@ -73,6 +73,7 @@ public class GuiAppleListSelector extends GuiScreen {
             super.setWorldAndResolution(mc, width, height);
         }
     }
+
     @Override
     public void handleMouseInput() throws IOException {
         super.handleMouseInput();
@@ -82,9 +83,10 @@ public class GuiAppleListSelector extends GuiScreen {
             this.guiScroll.handleMouseInput(mouseX, mouseY);
         }
     }
+
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        
+
         if (this.inRange(mouseX, mouseY)) {
             this.parentScreen.drawScreen(-1, -1, partialTicks);
         } else {
@@ -93,14 +95,14 @@ public class GuiAppleListSelector extends GuiScreen {
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        
+
         ScaledResolution res = new ScaledResolution(this.mc);
         int scale = res.getScaleFactor();
 
         GL11.glPushMatrix();
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
 
-        
+
         GL11.glScissor(
                 this.xPosition * scale,
                 this.mc.displayHeight - (this.yPosition + this.screenHeight) * scale,
@@ -108,10 +110,10 @@ public class GuiAppleListSelector extends GuiScreen {
                 this.screenHeight * scale
         );
 
-        
+
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
 
-        
+
         this.guiScroll.drawScreen(mouseX, mouseY, partialTicks);
 
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
@@ -121,12 +123,11 @@ public class GuiAppleListSelector extends GuiScreen {
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         if (!this.inRange(mouseX, mouseY)) {
-            
+
             this.mc.displayGuiScreen(this.parentScreen);
         } else {
-            
-            
-            
+
+
             super.mouseClicked(mouseX, mouseY, mouseButton);
         }
     }
@@ -158,7 +159,7 @@ public class GuiAppleListSelector extends GuiScreen {
             if (index != indexGetter.get()) {
                 onSelect.accept(index);
             }
-            
+
             mc.displayGuiScreen(parentScreen);
         }
 
@@ -169,12 +170,12 @@ public class GuiAppleListSelector extends GuiScreen {
 
         @Override
         protected void drawBackground() {
-            
+
         }
 
         @Override
         protected void drawSlot(int index, int right, int top, int height, Tessellator tessellator) {
-            
+
             GuiAppleListSelector.this.drawCenteredString(
                     mc.fontRenderer,
                     displayStringList.get(index),

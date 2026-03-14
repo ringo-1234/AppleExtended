@@ -84,9 +84,8 @@ public class TileEntityCrossingGate extends TileEntityMachineBase {
         super.updateResourceState();
 
         if (this.world != null && this.world.isRemote) {
-            if (this.soundPlayer.isPlaying()) {
-                this.soundPlayer.stopSound();
-            }
+            this.soundPlayer.stopSound();
+            this.soundPlayer = SoundPlayer.create();
         }
     }
 

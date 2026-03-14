@@ -50,8 +50,7 @@ public class SoundPlayer {
 
             this.sound = MovingSoundMaker.create(tile, sound, repeat);
             if (this.sound != null) {
-                this.sound.setVolume(4.0F);
-                ClientProxy.playSound(this.sound, 10.0F, 1.0F);
+                ClientProxy.playSound(this.sound, 4.0F, 1.0F);
             }
         }
 

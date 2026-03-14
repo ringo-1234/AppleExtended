@@ -32,6 +32,7 @@ import jp.ngt.rtm.modelpack.cfg.VehicleBaseConfig;
 import jp.ngt.rtm.modelpack.modelset.ModelSetBase;
 import jp.ngt.rtm.modelpack.modelset.ModelSetVehicleBase;
 import jp.ngt.rtm.modelpack.state.ResourceState;
+import jp.ngt.rtm.network.PacketNotice;
 import jp.ngt.rtm.network.PacketSetTrainState;
 import jp.ngt.rtm.network.PacketVehicleMovement;
 import net.minecraft.entity.Entity;
@@ -101,7 +102,6 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
         this.soundUpdater = world != null ? RTMCore.proxy.getSoundUpdater(this) : null;
 
         if (world.isRemote) {
-
             world.addWeatherEffect(new WeatherEffectDummy(world, this));
         }
 
@@ -220,6 +220,13 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
         this.prevRotationRoll = this.rotationRoll;
 
         if (this.world.isRemote) {
+            if (this.ticksExisted == (60 + (this.getEntityId() % 20))) {
+                String currentModel = this.getResourceState().getResourceName();
+                String defaultModel = this.getSubType().defaultName;
+                if (currentModel.equals(defaultModel)) {
+                    RTMCore.NETWORK_WRAPPER.sendToServer(new PacketNotice(PacketNotice.Side_SERVER, "requestSync", this));
+                }
+            }
             if (this.soundUpdater != null) {
                 this.soundUpdater.update();
             }

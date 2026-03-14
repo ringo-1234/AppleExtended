@@ -27,17 +27,18 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 @SideOnly(Side.CLIENT)
 public class MovingSoundCustom extends MovingSound {
     private final String soundName;
-    private float prevVolume = -1.0F;
-    private float prevPitch = -1.0F;
+    private float prevVolume = -2.0F;
+    private float prevPitch = -2.0F;
     private boolean isMCSound;
     private SoundEventAccessor seAccessor;
+    private float soundRangeOverride = -1.0F;
 
     public MovingSoundCustom(String sound, boolean repeat) {
         super(getSoundEvent(sound), SoundCategory.MASTER);
         this.soundName = sound;
         this.repeat = repeat;
         this.repeatDelay = 0;
-        this.attenuationType = AttenuationType.LINEAR;//減衰率, NONEで音量変わらず
+        this.attenuationType = AttenuationType.LINEAR;
         this.isMCSound = this.checkMCSound(sound);
     }
 
@@ -47,14 +48,14 @@ public class MovingSoundCustom extends MovingSound {
 
     @Override
     public void update() {
-        if (this.prevVolume >= 0.0F) {
+        if (this.prevVolume >= -1.0F) {
             this.volume = this.prevVolume;
-            this.prevVolume = -1.0F;
+            this.prevVolume = -2.0F;
         }
 
-        if (this.prevPitch >= 0.0F) {
+        if (this.prevPitch >= -1.0F) {
             this.pitch = this.prevPitch;
-            this.prevPitch = -1.0F;
+            this.prevPitch = -2.0F;
         }
     }
 
@@ -68,6 +69,22 @@ public class MovingSoundCustom extends MovingSound {
 
     public void setPitch(float par1) {
         this.prevPitch = par1 < 0.0F ? 0.0F : par1;
+    }
+
+    public void setVolumeRaw(float par1) {
+        this.prevVolume = par1 < 0.0F ? 0.0F : par1;
+    }
+
+    public void setSoundRange(float range) {
+        this.soundRangeOverride = range;
+    }
+
+    @Override
+    public float getVolume() {
+        if (this.soundRangeOverride > 0.0F) {
+            return this.soundRangeOverride / 16.0F;
+        }
+        return this.prevVolume >= -1.0F ? this.prevVolume : this.volume;
     }
 
     @Override
@@ -92,7 +109,6 @@ public class MovingSoundCustom extends MovingSound {
         return se;
     }
 
-    //getSoundName()返すだけ用
     private static class SoundEventDummy extends SoundEvent {
         public SoundEventDummy(String sound) {
             this(new ResourceLocationCustom(sound));

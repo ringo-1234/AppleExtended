@@ -106,6 +106,7 @@ public class BlockConnector extends BlockElectricalWiring {
     protected ItemInstalledObject.IstlObjType istlObjType(int damage) {
         return damage < 6 ? ItemInstalledObject.IstlObjType.CONNECTOR_IN : ItemInstalledObject.IstlObjType.CONNECTOR_OUT;
     }
+
     @Override
     public boolean onBlockActivated(jp.ngt.ngtlib.block.BlockArgHolder holder, float hitX, float hitY, float hitZ) {
         if (holder.getPlayer().isSneaking()) {

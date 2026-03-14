@@ -225,6 +225,7 @@ public class ClientProxy extends CommonProxy {
         } else {
             MovingSoundCustom ms = MovingSoundMaker.create(entity, sound, false);
             if (ms != null) {
+                ms.setSoundRange(jp.apple.config.AppleConfig.hornSoundRange);
                 this.playSound(ms, vol, pitch);
             }
         }
