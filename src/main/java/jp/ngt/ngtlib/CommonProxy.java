@@ -1,56 +1,67 @@
-package jp.ngt.ngtlib;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.io.File;
+package jp.ngt.ngtlib;
 
 import jp.ngt.ngtlib.util.NGTUtil;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class CommonProxy
-{
-	public boolean isServer()
-	{
-		return true;
-	}
+import java.io.File;
 
-	public World getWorld()
-	{
-		return null;
-	}
+public class CommonProxy {
+    public boolean isServer() {
+        return true;
+    }
 
-	public EntityPlayer getPlayer()
-	{
-		return null;
-	}
+    public World getWorld() {
+        return null;
+    }
 
-	public File getMinecraftDirectory(String folder)
-	{
-		return NGTUtil.getServer().getFile(folder);
-	}
+    public EntityPlayer getPlayer() {
+        return null;
+    }
 
-	public String getUserName()
-	{
-		return "";
-	}
+    public File getMinecraftDirectory(String folder) {
+        return NGTUtil.getServer().getFile(folder);
+    }
 
-	public void preInit(){}
+    public String getUserName() {
+        return "";
+    }
 
-	public void init(){}
+    public void preInit() {
+    }
 
-	public void postInit(){}
+    public void init() {
+    }
 
-	public void removeGuiWarning(){}
+    public void postInit() {
+    }
 
-	public void breakBlock(World world, int x, int y, int z, int meta)
-	{
-		world.setBlockToAir(new BlockPos(x, y, z));
-	}
+    public void removeGuiWarning() {
+    }
 
-	public void zoom(EntityPlayer player, int count){}
+    public void breakBlock(World world, int x, int y, int z, int meta) {
+        world.setBlockToAir(new BlockPos(x, y, z));
+    }
 
-	public int getChunkLoadDistance()
-	{
-		return 256;
-	}
+    public void zoom(EntityPlayer player, int count) {
+    }
+
+    public int getChunkLoadDistance() {
+        return 256;
+    }
 }

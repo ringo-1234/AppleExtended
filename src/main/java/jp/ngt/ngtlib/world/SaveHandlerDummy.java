@@ -1,6 +1,18 @@
-package jp.ngt.ngtlib.world;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.io.File;
+package jp.ngt.ngtlib.world;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.MinecraftException;
@@ -11,54 +23,55 @@ import net.minecraft.world.storage.IPlayerFileData;
 import net.minecraft.world.storage.ISaveHandler;
 import net.minecraft.world.storage.WorldInfo;
 
-/**NGTWorld用*/
-public class SaveHandlerDummy implements ISaveHandler
-{
-	@Override
-	public WorldInfo loadWorldInfo()
-	{
-		return null;
-	}
+import java.io.File;
 
-	@Override
-	public void checkSessionLock() throws MinecraftException {}
+/**
+ * NGTWorld用
+ */
+public class SaveHandlerDummy implements ISaveHandler {
+    @Override
+    public WorldInfo loadWorldInfo() {
+        return null;
+    }
 
-	@Override
-	public IChunkLoader getChunkLoader(WorldProvider provider)
-	{
-		return null;
-	}
+    @Override
+    public void checkSessionLock() throws MinecraftException {
+    }
 
-	@Override
-	public void saveWorldInfoWithPlayer(WorldInfo info, NBTTagCompound nbt){}
+    @Override
+    public IChunkLoader getChunkLoader(WorldProvider provider) {
+        return null;
+    }
 
-	@Override
-	public void saveWorldInfo(WorldInfo info){}
+    @Override
+    public void saveWorldInfoWithPlayer(WorldInfo info, NBTTagCompound nbt) {
+    }
 
-	@Override
-	public IPlayerFileData getPlayerNBTManager()
-	{
-		return null;
-	}
+    @Override
+    public void saveWorldInfo(WorldInfo info) {
+    }
 
-	@Override
-	public void flush(){}
+    @Override
+    public IPlayerFileData getPlayerNBTManager() {
+        return null;
+    }
 
-	@Override
-	public File getWorldDirectory()
-	{
-		return null;
-	}
+    @Override
+    public void flush() {
+    }
 
-	@Override
-	public File getMapFileFromName(String name)
-	{
-		return null;
-	}
+    @Override
+    public File getWorldDirectory() {
+        return null;
+    }
 
-	@Override
-	public TemplateManager getStructureTemplateManager()
-	{
-		return null;
-	}
+    @Override
+    public File getMapFileFromName(String name) {
+        return null;
+    }
+
+    @Override
+    public TemplateManager getStructureTemplateManager() {
+        return null;
+    }
 }

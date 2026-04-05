@@ -1,8 +1,21 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.item;
 
 import jp.ngt.ngtlib.item.ItemArgHolderBase.ItemArgHolder;
 import jp.ngt.ngtlib.math.NGTMath;
-import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.RTMResource;
 import jp.ngt.rtm.entity.npc.EntityMotorman;
 import jp.ngt.rtm.entity.npc.EntityNPC;
@@ -18,86 +31,71 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemNPC extends ItemWithModel
-{
-	public ItemNPC()
-	{
-		super();
-		this.setHasSubtypes(true);
-		this.setMaxStackSize(1);
-	}
-
-	@Override
-	protected ActionResult<ItemStack> onItemUse(ItemArgHolder holder, float hitX, float hitY, float hitZ)
-    {
-		ItemStack itemStack = holder.getItemStack();
-		World world = holder.getWorld();
-		EntityPlayer player = holder.getPlayer();
-		BlockPos pos = holder.getBlockPos();
-
-		if(!world.isRemote)
-		{
-			float rotationInterval = 15.0F;
-			int yaw = NGTMath.floor(NGTMath.normalizeAngle(-player.rotationYaw + 180.0D + (rotationInterval / 2.0D)) / (double)rotationInterval);
-			float yawF = (float)yaw * rotationInterval;
-
-			EntityNPC entity = itemStack.getItemDamage() == 0 ? new EntityMotorman(world, player) : new EntityNPC(world, player);
-			entity.setLocationAndAngles((double)pos.getX() + 0.5D, (double)pos.getY() + 1.0D, (double)pos.getZ() + 0.5D, yawF, 0.0F);
-			entity.rotationYawHead = yawF;
-			world.spawnEntity(entity);
-			if(itemStack.getItemDamage() == 1)
-			{
-				entity.getResourceState().readFromNBT(this.getModelState(itemStack).writeToNBT());
-				entity.updateResourceState();
-			}
-		}
-		return holder.success();
+public class ItemNPC extends ItemWithModel {
+    public ItemNPC() {
+        super();
+        this.setHasSubtypes(true);
+        this.setMaxStackSize(1);
     }
 
-	@Override
-	public String getUnlocalizedName(ItemStack itemStack)
-    {
+    @Override
+    protected ActionResult<ItemStack> onItemUse(ItemArgHolder holder, float hitX, float hitY, float hitZ) {
+        ItemStack itemStack = holder.getItemStack();
+        World world = holder.getWorld();
+        EntityPlayer player = holder.getPlayer();
+        BlockPos pos = holder.getBlockPos();
+
+        if (!world.isRemote) {
+            float rotationInterval = 15.0F;
+            int yaw = NGTMath.floor(NGTMath.normalizeAngle(-player.rotationYaw + 180.0D + (rotationInterval / 2.0D)) / (double) rotationInterval);
+            float yawF = (float) yaw * rotationInterval;
+
+            EntityNPC entity = itemStack.getItemDamage() == 0 ? new EntityMotorman(world, player) : new EntityNPC(world, player);
+            entity.setLocationAndAngles((double) pos.getX() + 0.5D, (double) pos.getY() + 1.0D, (double) pos.getZ() + 0.5D, yawF, 0.0F);
+            entity.rotationYawHead = yawF;
+            world.spawnEntity(entity);
+            if (itemStack.getItemDamage() == 1) {
+                entity.getResourceState().readFromNBT(this.getModelState(itemStack).writeToNBT());
+                entity.updateResourceState();
+            }
+        }
+        return holder.success();
+    }
+
+    @Override
+    public String getUnlocalizedName(ItemStack itemStack) {
         return super.getUnlocalizedName() + "." + itemStack.getItemDamage();
     }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list)
-    {
-		if(!this.isInCreativeTab(tab)){return;}
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void getSubItems(CreativeTabs tab, NonNullList<ItemStack> list) {
+        if (!this.isInCreativeTab(tab)) {
+            return;
+        }
 
-        for (int j = 0; j < 2; ++j)
-        {
+        for (int j = 0; j < 2; ++j) {
             list.add(new ItemStack(this, 1, j));
         }
     }
 
-    /*@SideOnly(Side.CLIENT)
     @Override
-    public void addInformation(ItemStack stack, EntityPlayer player, List tooltip, boolean advanced)
-    {
-		if(stack.getItemDamage() == 1)
-		{
-			String name = this.getModelState(itemStack).getResourceSet().getConfig().getName();
-			tooltip.add(TextFormatting.GRAY + "Model:" + name);
-		}
-    }*/
+    @SideOnly(Side.CLIENT)
+    public net.minecraft.client.gui.GuiScreen newGuiScreen(ItemArgHolder holder) {
+        return newGuiSelectModel(holder);
+    }
 
-	@Override
-	public int getGuiId(ItemStack stack)
-	{
-		return RTMCore.guiIdSelectItemModel;
-	}
+    public int getGuiId(ItemStack stack) {
+        return 0;
+    }
 
-	@Override
-	protected ResourceType getModelType(ItemStack itemStack)
-	{
-		return (itemStack.getItemDamage() == 1) ? RTMResource.NPC : null;
-	}
+    @Override
+    protected ResourceType getModelType(ItemStack itemStack) {
+        return itemStack.getItemDamage() == 1 ? RTMResource.NPC : null;
+    }
 
-	@Override
-	protected ResourceState getNewState(ItemStack itemStack, ResourceType type)
-	{
-		return new ResourceState(type, null);
-	}
+    @Override
+    protected ResourceState getNewState(ItemStack itemStack, ResourceType type) {
+        return new ResourceState(type, null);
+    }
 }

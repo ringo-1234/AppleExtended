@@ -1,19 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.mcte.gui;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.imageio.ImageIO;
-
-import org.lwjgl.opengl.GL11;
 
 import jp.ngt.mcte.MCTEKeyHandlerClient;
 import jp.ngt.mcte.world.WorldData;
@@ -45,40 +44,45 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 
 @SideOnly(Side.CLIENT)
-public class GuiCreatePictorialWorld extends GuiScreenCustom
-{
-	protected static Map<String, ItemStack> biomeIconMap = new TreeMap<String, ItemStack>();
+public class GuiCreatePictorialWorld extends GuiScreenCustom {
+    protected static Map<String, ItemStack> biomeIconMap = new TreeMap<String, ItemStack>();
 
-	private final GuiCreateWorld createWorldGui;
-	private WorldData worldData;
-	private Thumbnail[] thumbnail = new Thumbnail[2];
-	private String[] imgName = {"", ""};
-	private GuiButton[] selectButtons = new GuiButton[3];
-	private GuiTextField minYTF;
-	private GuiTextField yScaleTF;
-	private GuiTextField seaLevelTF;
-	private GuiSlotCustom slotCustom;
-	private SlotElement[] slotElements = new SlotElement[0];
+    private final GuiCreateWorld createWorldGui;
+    private WorldData worldData;
+    private Thumbnail[] thumbnail = new Thumbnail[2];
+    private String[] imgName = {"", ""};
+    private GuiButton[] selectButtons = new GuiButton[3];
+    private GuiTextField minYTF;
+    private GuiTextField yScaleTF;
+    private GuiTextField seaLevelTF;
+    private GuiSlotCustom slotCustom;
+    private SlotElement[] slotElements = new SlotElement[0];
 
-	private boolean canceled = false;
+    private boolean canceled = false;
 
-	public GuiCreatePictorialWorld(GuiCreateWorld par1)
-    {
+    public GuiCreatePictorialWorld(GuiCreateWorld par1) {
         this.createWorldGui = par1;
     }
 
-	@Override
-	public void initGui()
-    {
-		super.initGui();
+    @Override
+    public void initGui() {
+        super.initGui();
 
-		this.worldData = new WorldData(this.createWorldGui.chunkProviderSettingsJson);
-		int i0 = ((this.height - 30) / this.thumbnail.length) + 80;
+        this.worldData = new WorldData(this.createWorldGui.chunkProviderSettingsJson);
+        int i0 = ((this.height - 30) / this.thumbnail.length) + 80;
 
-		this.buttonList.clear();
-		this.buttonList.add(new GuiButton(0, this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("gui.done")));
+        this.buttonList.clear();
+        this.buttonList.add(new GuiButton(0, this.width / 2 - 155, this.height - 28, 150, 20, I18n.format("gui.done")));
         this.buttonList.add(new GuiButton(1, this.width / 2 + 5, this.height - 28, 150, 20, I18n.format("gui.cancel")));
 
         this.selectButtons[0] = new GuiButton(10, i0, 0, 40, 20, I18n.format("gui.mcte.select"));
@@ -88,7 +92,7 @@ public class GuiCreatePictorialWorld extends GuiScreenCustom
         this.selectButtons[2] = new GuiButton(12, i0, 40, 40, 20, I18n.format("gui.mcte.select"));
         this.buttonList.add(this.selectButtons[2]);
 
-		this.textFields.clear();
+        this.textFields.clear();
         this.minYTF = this.setTextField(i0, 60, 40, 20, String.valueOf(this.worldData.minY));
         this.yScaleTF = this.setTextField(i0, 80, 40, 20, String.valueOf(this.worldData.yScale));
         this.seaLevelTF = this.setTextField(i0, 100, 40, 20, String.valueOf(this.worldData.seaLevel));
@@ -97,89 +101,74 @@ public class GuiCreatePictorialWorld extends GuiScreenCustom
         this.slotList.clear();
         int i1 = this.width - 55 - i0;
         this.slotCustom = new GuiSlotCustom(this, 0, this.height - 30, i0 + 45, this.width - 10, i1, 24, this.slotElements);
-		this.slotList.add(this.slotCustom);
+        this.slotList.add(this.slotCustom);
 
-        if(this.worldData.terrainImagePath != null){this.setImageFile(0, new File(this.worldData.terrainImagePath));}
-        if(this.worldData.biomesImagePath != null){this.setImageFile(1, new File(this.worldData.biomesImagePath));}
+        if (this.worldData.terrainImagePath != null) {
+            this.setImageFile(0, new File(this.worldData.terrainImagePath));
+        }
+        if (this.worldData.biomesImagePath != null) {
+            this.setImageFile(1, new File(this.worldData.biomesImagePath));
+        }
     }
 
-	@Override
-	public void onGuiClosed()
-    {
-		super.onGuiClosed();
+    @Override
+    public void onGuiClosed() {
+        super.onGuiClosed();
 
-		if(this.canceled)
-		{
-			if(this.createWorldGui.chunkProviderSettingsJson != null)
-			{
-				File file = new File(this.createWorldGui.chunkProviderSettingsJson);
-				if(file.exists())
-				{
-					file.delete();
-				}
-			}
-			this.createWorldGui.chunkProviderSettingsJson = "";
-		}
-		else
-		{
-			this.writeTextFieldsToWorldData();
-			this.createWorldGui.chunkProviderSettingsJson = this.worldData.saveWorldData(this.createWorldGui.chunkProviderSettingsJson);
-		}
+        if (this.canceled) {
+            if (this.createWorldGui.chunkProviderSettingsJson != null) {
+                File file = new File(this.createWorldGui.chunkProviderSettingsJson);
+                if (file.exists()) {
+                    file.delete();
+                }
+            }
+            this.createWorldGui.chunkProviderSettingsJson = "";
+        } else {
+            this.writeTextFieldsToWorldData();
+            this.createWorldGui.chunkProviderSettingsJson = this.worldData.saveWorldData(this.createWorldGui.chunkProviderSettingsJson);
+        }
     }
 
-	@Override
-	protected void actionPerformed(GuiButton button)
-    {
-		if(button.id == 0)
-        {
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        if (button.id == 0) {
             this.mc.displayGuiScreen(this.createWorldGui);
-        }
-		else if(button.id == 1)
-        {
-			this.canceled = true;
+        } else if (button.id == 1) {
+            this.canceled = true;
             this.mc.displayGuiScreen(this.createWorldGui);
-        }
-		else if(button.id == 10)
-        {
-			this.selectImageFile(0);
-        }
-		else if(button.id == 11)
-        {
-			this.selectImageFile(1);
-        }
-		else if(button.id == 12)
-        {
-			this.selectBlock();
+        } else if (button.id == 10) {
+            this.selectImageFile(0);
+        } else if (button.id == 11) {
+            this.selectImageFile(1);
+        } else if (button.id == 12) {
+            this.selectBlock();
         }
 
-		super.actionPerformed(button);
+        super.actionPerformed(button);
     }
 
-	@Override
-	protected void keyTyped(char par1, int par2)
-    {
-		if(par2 == 1 || par2 == this.mc.gameSettings.keyBindInventory.getKeyCode() || par2 == MCTEKeyHandlerClient.keyEditMenu.getKeyCode())//1:Esc
-		{
-			this.mc.player.closeScreen();
-		}
+    @Override
+    protected void keyTyped(char par1, int par2) {
+        if (par2 == 1 || par2 == this.mc.gameSettings.keyBindInventory.getKeyCode() || par2 == MCTEKeyHandlerClient.keyEditMenu.getKeyCode())//1:Esc
+        {
+            this.mc.player.closeScreen();
+        }
 
-		if((par2 >= 2 && par2 <= 11) || (par2 >= 200 && par2 <= 205) || par2 == 12 || par2 == 14 || par2 == 211)//14:Back, 211:Del
-		{
-			this.currentTextField.textboxKeyTyped(par1, par2);
-		}
+        if ((par2 >= 2 && par2 <= 11) || (par2 >= 200 && par2 <= 205) || par2 == 12 || par2 == 14 || par2 == 211)//14:Back, 211:Del
+        {
+            this.currentTextField.textboxKeyTyped(par1, par2);
+        }
 
-		if(par2 == 28)
-		{
-			this.writeTextFieldsToWorldData();
-		}
+        if (par2 == 28) {
+            this.writeTextFieldsToWorldData();
+        }
     }
 
-	@Override
-	public void drawScreen(int par1, int par2, float par3)
-    {
-		int i0 = (this.height - 30) / this.thumbnail.length;
+    @Override
+    public void drawScreen(int par1, int par2, float par3) {
+        int i0 = (this.height - 30) / this.thumbnail.length;
 
-		this.drawDefaultBackground();
+        this.drawDefaultBackground();
         super.drawScreen(par1, par2, par3);
 
         this.drawString(this.fontRenderer, I18n.format("gui.mcte.terrainImage"), i0 + 5, 5, 0xffffff);
@@ -192,289 +181,251 @@ public class GuiCreatePictorialWorld extends GuiScreenCustom
 
 
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        for(int i = 0; i < this.thumbnail.length; ++i)
-        {
-        	if(this.thumbnail[i] != null)
-        	{
-        		float d1 = (float)(i0 * i);
-        		this.thumbnail[i].bindTexture();
-            	NGTTessellator tessellator = NGTTessellator.instance;
+        for (int i = 0; i < this.thumbnail.length; ++i) {
+            if (this.thumbnail[i] != null) {
+                float d1 = (float) (i0 * i);
+                this.thumbnail[i].bindTexture();
+                NGTTessellator tessellator = NGTTessellator.instance;
                 tessellator.startDrawingQuads();
-                tessellator.addVertexWithUV((float)i0, (float)i0 + d1, (float)this.zLevel, 1.0F, 1.0F);
-                tessellator.addVertexWithUV((float)i0, 0.0F + d1,      (float)this.zLevel, 1.0F, 0.0F);
-                tessellator.addVertexWithUV(0.0F,      0.0F + d1,      (float)this.zLevel, 0.0F, 0.0F);
-                tessellator.addVertexWithUV(0.0F,      (float)i0 + d1, (float)this.zLevel, 0.0F, 1.0F);
+                tessellator.addVertexWithUV((float) i0, (float) i0 + d1, (float) this.zLevel, 1.0F, 1.0F);
+                tessellator.addVertexWithUV((float) i0, 0.0F + d1, (float) this.zLevel, 1.0F, 0.0F);
+                tessellator.addVertexWithUV(0.0F, 0.0F + d1, (float) this.zLevel, 0.0F, 0.0F);
+                tessellator.addVertexWithUV(0.0F, (float) i0 + d1, (float) this.zLevel, 0.0F, 1.0F);
                 tessellator.draw();
-        	}
+            }
         }
     }
 
-	private void selectBlock()
-	{
-		Iterator<Block> iterator0 = Block.REGISTRY.iterator();
-		NonNullList<ItemStack> list0 = NonNullList.create();
-		while(iterator0.hasNext())
-		{
-			Block block = iterator0.next();
-			Item item = Item.getItemFromBlock(block);
-			if(item != null)
-			{
-				block.getSubBlocks(CreativeTabs.SEARCH, list0);
-			}
-		}
+    private void selectBlock() {
+        Iterator<Block> iterator0 = Block.REGISTRY.iterator();
+        NonNullList<ItemStack> list0 = NonNullList.create();
+        while (iterator0.hasNext()) {
+            Block block = iterator0.next();
+            Item item = Item.getItemFromBlock(block);
+            if (item != null) {
+                block.getSubBlocks(CreativeTabs.SEARCH, list0);
+            }
+        }
 
-		List<ItemStack> list1 = new ArrayList<ItemStack>();
-		Iterator<ItemStack> iterator1 = list0.iterator();
-		while(iterator1.hasNext())
-		{
-			ItemStack stack = iterator1.next();
-			Block block = Block.getBlockFromItem(stack.getItem());
-			if(stack.getItemDamage() == 0 && block != null && !block.hasTileEntity(block.getStateFromMeta(stack.getItemDamage())))
-			{
-				list1.add(stack);
-			}
-		}
+        List<ItemStack> list1 = new ArrayList<ItemStack>();
+        Iterator<ItemStack> iterator1 = list0.iterator();
+        while (iterator1.hasNext()) {
+            ItemStack stack = iterator1.next();
+            Block block = Block.getBlockFromItem(stack.getItem());
+            if (stack.getItemDamage() == 0 && block != null && !block.hasTileEntity(block.getStateFromMeta(stack.getItemDamage()))) {
+                list1.add(stack);
+            }
+        }
 
-		ISelector selector = new ISelector()
-		{
-			@Override
-			public void select(Object par1)
-			{
-				GuiCreatePictorialWorld.this.worldData.baseBlock = (Block)par1;
-			}
+        ISelector selector = new ISelector() {
+            @Override
+            public void select(Object par1) {
+                GuiCreatePictorialWorld.this.worldData.baseBlock = (Block) par1;
+            }
 
-		};
+        };
 
-		SlotElementItem[] slots = new SlotElementItem[list1.size()];
-		for(int i = 0; i < slots.length; ++i)
-		{
-			ItemStack stack = list1.get(i);
-			Block block = Block.getBlockFromItem(stack.getItem());
-			String s = stack.getDisplayName();
-			slots[i] = new SlotElementItem<Block>(selector, block, s, stack);
-		}
+        SlotElementItem[] slots = new SlotElementItem[list1.size()];
+        for (int i = 0; i < slots.length; ++i) {
+            ItemStack stack = list1.get(i);
+            Block block = Block.getBlockFromItem(stack.getItem());
+            String s = stack.getDisplayName();
+            slots[i] = new SlotElementItem<Block>(selector, block, s, stack);
+        }
 
-		this.mc.displayGuiScreen(new GuiSelect(this, slots));
-	}
+        this.mc.displayGuiScreen(new GuiSelect(this, slots));
+    }
 
-	private void selectImageFile(int par1)
-	{
-		File file = NGTFileLoader.selectFile(FileType.PNG);
-		if(file == null)
-		{
-			//this.prop.setProperty(par1, "");
-		}
-		else
-		{
-			this.setImageFile(par1, file);
-		}
-	}
+    private void selectImageFile(int par1) {
+        File file = NGTFileLoader.selectFile(FileType.PNG);
+        if (file == null) {
+            //this.prop.setProperty(par1, "");
+        } else {
+            this.setImageFile(par1, file);
+        }
+    }
 
-	private void setImageFile(int index, File file)
-	{
-		if(this.imgName[index].equals(file.getAbsolutePath()))//同じファイルを選択した場合
-		{
-			return;
-		}
+    private void setImageFile(int index, File file) {
+        if (this.imgName[index].equals(file.getAbsolutePath()))//同じファイルを選択した場合
+        {
+            return;
+        }
 
-		try
-		{
-			BufferedImage image = ImageIO.read(file);
-			if(this.thumbnail[index] != null)
-			{
-				this.thumbnail[index].deleteTexture();
-			}
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if (this.thumbnail[index] != null) {
+                this.thumbnail[index].deleteTexture();
+            }
 
-			this.thumbnail[index] = new Thumbnail(image, 256, 256);
-			this.imgName[index] = file.getAbsolutePath();
-			if(index == 1)
-			{
-				this.setBiomeButtons(image);
-			}
+            this.thumbnail[index] = new Thumbnail(image, 256, 256);
+            this.imgName[index] = file.getAbsolutePath();
+            if (index == 1) {
+                this.setBiomeButtons(image);
+            }
 
-			switch(index)
-			{
-			case 0:this.worldData.terrainImagePath = file.getAbsolutePath();break;
-			case 1:this.worldData.biomesImagePath = file.getAbsolutePath();break;
-			}
-		}
-		catch(IOException e){}
-	}
+            switch (index) {
+                case 0:
+                    this.worldData.terrainImagePath = file.getAbsolutePath();
+                    break;
+                case 1:
+                    this.worldData.biomesImagePath = file.getAbsolutePath();
+                    break;
+            }
+        } catch (IOException e) {
+        }
+    }
 
-	private void setBiomeButtons(BufferedImage image)
-	{
-		if(image.getType() != BufferedImage.TYPE_4BYTE_ABGR)
-		{
-			if(this.slotCustom != null)
-			{
-				this.slotList.remove(this.slotCustom);
-				this.slotElements = new SlotElement[0];
-			}
-			return;
-		}
+    private void setBiomeButtons(BufferedImage image) {
+        if (image.getType() != BufferedImage.TYPE_4BYTE_ABGR) {
+            if (this.slotCustom != null) {
+                this.slotList.remove(this.slotCustom);
+                this.slotElements = new SlotElement[0];
+            }
+            return;
+        }
 
-		Map<Integer, Biome> map = new TreeMap<Integer, Biome>();
-		int[] ia = new int[4];//{RGBA}
-		for(int i = 0; i < image.getWidth(); ++i)
-		{
-			for(int j = 0; j < image.getHeight(); ++j)
-			{
-				image.getRaster().getPixel(i, j, ia);
-				int color = NGTImage.getIntFromARGB(ia[3], ia[0], ia[1], ia[2]) & 0xffffff;
-				if(!map.containsKey(color))
-				{
-					Biome b0 = Biomes.PLAINS;
-					if(this.worldData.biomeMap.containsKey(color))
-					{
-						b0 = this.worldData.biomeMap.get(color);
-					}
-					map.put(color, b0);
-				}
-			}
-		}
+        Map<Integer, Biome> map = new TreeMap<Integer, Biome>();
+        int[] ia = new int[4];//{RGBA}
+        for (int i = 0; i < image.getWidth(); ++i) {
+            for (int j = 0; j < image.getHeight(); ++j) {
+                image.getRaster().getPixel(i, j, ia);
+                int color = NGTImage.getIntFromARGB(ia[3], ia[0], ia[1], ia[2]) & 0xffffff;
+                if (!map.containsKey(color)) {
+                    Biome b0 = Biomes.PLAINS;
+                    if (this.worldData.biomeMap.containsKey(color)) {
+                        b0 = this.worldData.biomeMap.get(color);
+                    }
+                    map.put(color, b0);
+                }
+            }
+        }
 
-		int i0 = ((this.height - 30) / this.thumbnail.length) + 10;
-		int i = 0;
-		SlotBiomeColor[] sb = new SlotBiomeColor[map.size()];
-		Set<Entry<Integer, Biome>> set = map.entrySet();
-		for(Entry<Integer, Biome> entry : set)
-		{
-			sb[i] = new SlotBiomeColor(this, entry.getKey(), entry.getValue());
-			++i;
-		}
+        int i0 = ((this.height - 30) / this.thumbnail.length) + 10;
+        int i = 0;
+        SlotBiomeColor[] sb = new SlotBiomeColor[map.size()];
+        Set<Entry<Integer, Biome>> set = map.entrySet();
+        for (Entry<Integer, Biome> entry : set) {
+            sb[i] = new SlotBiomeColor(this, entry.getKey(), entry.getValue());
+            ++i;
+        }
 
-		this.slotCustom.setElements(sb);
-		this.slotElements = sb;
-	}
+        this.slotCustom.setElements(sb);
+        this.slotElements = sb;
+    }
 
-	private void writeTextFieldsToWorldData()
-	{
-		this.worldData.minY = NGTMath.getIntFromString(this.minYTF.getText(), 0, 255, 0);
-		this.minYTF.setText(String.valueOf(this.worldData.minY));
-		this.worldData.yScale = NGTMath.getFloatFromString(this.yScaleTF.getText(), 0.00390625F, 256.0F, 1.0F);
-		this.yScaleTF.setText(String.valueOf(this.worldData.yScale));
-		this.worldData.seaLevel = NGTMath.getIntFromString(this.seaLevelTF.getText(), 0, 255, 64);
-		this.seaLevelTF.setText(String.valueOf(this.worldData.seaLevel));
-	}
+    private void writeTextFieldsToWorldData() {
+        this.worldData.minY = NGTMath.getIntFromString(this.minYTF.getText(), 0, 255, 0);
+        this.minYTF.setText(String.valueOf(this.worldData.minY));
+        this.worldData.yScale = NGTMath.getFloatFromString(this.yScaleTF.getText(), 0.00390625F, 256.0F, 1.0F);
+        this.yScaleTF.setText(String.valueOf(this.worldData.yScale));
+        this.worldData.seaLevel = NGTMath.getIntFromString(this.seaLevelTF.getText(), 0, 255, 64);
+        this.seaLevelTF.setText(String.valueOf(this.worldData.seaLevel));
+    }
 
-	@SideOnly(Side.CLIENT)
-	public class SlotBiomeColor extends SlotElement implements ISelector
-	{
-		public final int color;
-		public Biome biome;
+    @SideOnly(Side.CLIENT)
+    public class SlotBiomeColor extends SlotElement implements ISelector {
+        public final int color;
+        public Biome biome;
 
-		public SlotBiomeColor(GuiCreatePictorialWorld par1, int par2, Biome par3)
-		{
-			this.color = par2;
-			this.biome = par3;
-		}
+        public SlotBiomeColor(GuiCreatePictorialWorld par1, int par2, Biome par3) {
+            this.color = par2;
+            this.biome = par3;
+        }
 
-		@Override
-		public void draw(Minecraft par1, int par2, int par3, float par4)
-		{
+        @Override
+        public void draw(Minecraft par1, int par2, int par3, float par4) {
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             this.drawModalRect(par2 + 1, par3 + 1, 18, 18, par4, this.color);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
             par1.fontRenderer.drawString(this.biome.getBiomeName(), par2 + 23, par3 + 6, 0xffffff);
-		}
+        }
 
-		protected void drawModalRect(int par1, int par2, int par3, int par4, float par5, int color)
-	    {
-	        NGTTessellator tessellator = NGTTessellator.instance;
-	        tessellator.startDrawingQuads();
-	        tessellator.setColorOpaque_I(color);
-	        tessellator.addVertex((float)(par1 + 0),    (float)(par2 + par4), (float)par5);
-	        tessellator.addVertex((float)(par1 + par3), (float)(par2 + par4), (float)par5);
-	        tessellator.addVertex((float)(par1 + par3), (float)(par2 + 0),    (float)par5);
-	        tessellator.addVertex((float)(par1 + 0),    (float)(par2 + 0),    (float)par5);
-	        tessellator.draw();
-	    }
+        protected void drawModalRect(int par1, int par2, int par3, int par4, float par5, int color) {
+            NGTTessellator tessellator = NGTTessellator.instance;
+            tessellator.startDrawingQuads();
+            tessellator.setColorOpaque_I(color);
+            tessellator.addVertex((float) (par1 + 0), (float) (par2 + par4), (float) par5);
+            tessellator.addVertex((float) (par1 + par3), (float) (par2 + par4), (float) par5);
+            tessellator.addVertex((float) (par1 + par3), (float) (par2 + 0), (float) par5);
+            tessellator.addVertex((float) (par1 + 0), (float) (par2 + 0), (float) par5);
+            tessellator.draw();
+        }
 
-		@Override
-		public void onClicked(int par1, boolean par2)
-		{
-			if(par2)
-			{
-				List<Biome> list = new ArrayList<Biome>();
-				for(ResourceLocation res : Biome.REGISTRY.getKeys())
-				{
-					Biome biome = Biome.REGISTRY.getObject(res);
-					if(biome != null)
-					{
-						list.add(biome);
-					}
-				}
+        @Override
+        public void onClicked(int par1, boolean par2) {
+            if (par2) {
+                List<Biome> list = new ArrayList<Biome>();
+                for (ResourceLocation res : Biome.REGISTRY.getKeys()) {
+                    Biome biome = Biome.REGISTRY.getObject(res);
+                    if (biome != null) {
+                        list.add(biome);
+                    }
+                }
 
-				SlotElementItem[] slots = new SlotElementItem[list.size()];
-				for(int i = 0; i < slots.length; ++i)
-				{
-					Biome b0 = list.get(i);
-					String biomeName = b0.getBiomeName();
-					if(biomeIconMap.containsKey(biomeName))
-					{
-						ItemStack stack = biomeIconMap.get(biomeName);
-						slots[i] = new SlotElementItem<Biome>(this, b0, biomeName, stack);
-					}
-					else
-					{
-						slots[i] = new SlotElementItem<Biome>(this, b0, biomeName, new ItemStack(b0.topBlock.getBlock(), 1, 0));
-					}
-				}
+                SlotElementItem[] slots = new SlotElementItem[list.size()];
+                for (int i = 0; i < slots.length; ++i) {
+                    Biome b0 = list.get(i);
+                    String biomeName = b0.getBiomeName();
+                    if (biomeIconMap.containsKey(biomeName)) {
+                        ItemStack stack = biomeIconMap.get(biomeName);
+                        slots[i] = new SlotElementItem<Biome>(this, b0, biomeName, stack);
+                    } else {
+                        slots[i] = new SlotElementItem<Biome>(this, b0, biomeName, new ItemStack(b0.topBlock.getBlock(), 1, 0));
+                    }
+                }
 
-				GuiCreatePictorialWorld.this.mc.displayGuiScreen(new GuiSelect(GuiCreatePictorialWorld.this, slots));
-			}
-		}
+                GuiCreatePictorialWorld.this.mc.displayGuiScreen(new GuiSelect(GuiCreatePictorialWorld.this, slots));
+            }
+        }
 
-		@Override
-		public void select(Object par1)
-		{
-			this.biome = (Biome)par1;
-			GuiCreatePictorialWorld.this.worldData.biomeMap.put(this.color, this.biome);
-		}
-	}
+        @Override
+        public void select(Object par1) {
+            this.biome = (Biome) par1;
+            GuiCreatePictorialWorld.this.worldData.biomeMap.put(this.color, this.biome);
+        }
+    }
 
-	static
-	{
-		biomeIconMap.put(Biomes.OCEAN.getBiomeName(),			new ItemStack(Blocks.WATER, 1, 0));
-		//biomeIconMap.put(Biome.plains.biomeName, new BlockSet(Blocks.grass, 0));
-		//biomeIconMap.put(Biome.desert.biomeName, new BlockSet(Blocks.water, 0));
-		biomeIconMap.put(Biomes.EXTREME_HILLS.getBiomeName(),	new ItemStack(Blocks.STONE, 1, 0));
-		biomeIconMap.put(Biomes.FOREST.getBiomeName(),			new ItemStack(Blocks.LEAVES, 1, 0));
-		biomeIconMap.put(Biomes.TAIGA.getBiomeName(),			new ItemStack(Blocks.LEAVES, 1, 1));
-		biomeIconMap.put(Biomes.SWAMPLAND.getBiomeName(),		new ItemStack(Blocks.WATERLILY, 1, 0));
-		biomeIconMap.put(Biomes.RIVER.getBiomeName(),			new ItemStack(Blocks.WATER, 1, 0));
-		biomeIconMap.put(Biomes.HELL.getBiomeName(),			new ItemStack(Blocks.NETHERRACK, 1, 0));
-		biomeIconMap.put(Biomes.SKY.getBiomeName(),				new ItemStack(Blocks.END_STONE, 1, 0));
-		biomeIconMap.put(Biomes.FROZEN_OCEAN.getBiomeName(),	new ItemStack(Blocks.ICE, 1, 0));
-		biomeIconMap.put(Biomes.FROZEN_RIVER.getBiomeName(),	new ItemStack(Blocks.ICE, 1, 0));
-		//biomeIconMap.put(Biome.ICEPlains.biomeName, new BlockSet(Blocks.SNOW, 0));
-		//biomeIconMap.put(Biome.ICEMountains.biomeName, new BlockSet(Blocks.SNOW, 0));
-		//biomeIconMap.put(Biome.mushroomIsland.biomeName, new BlockSet(Blocks.LEAVES, 0));
-		//biomeIconMap.put(Biome.mushroomIslandShore.biomeName, new BlockSet(Blocks.LEAVES, 0));
-		biomeIconMap.put(Biomes.BEACH.getBiomeName(),			new ItemStack(Blocks.SAND, 1, 0));
-		//biomeIconMap.put(Biome.desertHills.biomeName, new BlockSet(Blocks.LEAVES, 0));
-		biomeIconMap.put(Biomes.FOREST_HILLS.getBiomeName(),	new ItemStack(Blocks.LEAVES, 1, 0));
-		biomeIconMap.put(Biomes.TAIGA_HILLS.getBiomeName(),		new ItemStack(Blocks.LEAVES, 1, 1));
-		biomeIconMap.put(Biomes.EXTREME_HILLS_EDGE.getBiomeName(), new ItemStack(Blocks.STONE, 1, 0));
-		biomeIconMap.put(Biomes.JUNGLE.getBiomeName(),			new ItemStack(Blocks.LEAVES, 1, 3));
-		biomeIconMap.put(Biomes.JUNGLE_HILLS.getBiomeName(),	new ItemStack(Blocks.LEAVES, 1, 3));
-		biomeIconMap.put(Biomes.JUNGLE_EDGE.getBiomeName(),		new ItemStack(Blocks.LEAVES, 1, 3));
-		biomeIconMap.put(Biomes.DEEP_OCEAN.getBiomeName(),		new ItemStack(Blocks.WATER, 1, 0));
-		biomeIconMap.put(Biomes.STONE_BEACH.getBiomeName(),		new ItemStack(Blocks.STONE, 1, 0));
-		biomeIconMap.put(Biomes.COLD_BEACH.getBiomeName(),		new ItemStack(Blocks.ICE, 1, 0));
-		biomeIconMap.put(Biomes.BIRCH_FOREST.getBiomeName(),	new ItemStack(Blocks.LEAVES, 1, 2));
-		biomeIconMap.put(Biomes.BIRCH_FOREST_HILLS.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 2));
-		biomeIconMap.put(Biomes.ROOFED_FOREST.getBiomeName(),	new ItemStack(Blocks.LEAVES, 1, 0));
-		biomeIconMap.put(Biomes.COLD_TAIGA.getBiomeName(),		new ItemStack(Blocks.SNOW, 1, 0));
-		biomeIconMap.put(Biomes.COLD_TAIGA_HILLS.getBiomeName(), new ItemStack(Blocks.SNOW, 1, 0));
-		biomeIconMap.put(Biomes.MUTATED_TAIGA.getBiomeName(),		new ItemStack(Blocks.LEAVES, 1, 1));
-		biomeIconMap.put(Biomes.MUTATED_TAIGA_COLD.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 1));
-		biomeIconMap.put(Biomes.EXTREME_HILLS.getBiomeName(),	new ItemStack(Blocks.STONE, 1, 0));
-		//biomeIconMap.put(Biome.savanna.biomeName, new BlockSet(Blocks.LEAVES, 0));
-		//biomeIconMap.put(Biome.savannaPlateau.biomeName, new BlockSet(Blocks.LEAVES, 0));
-		biomeIconMap.put(Biomes.MESA.getBiomeName(),			new ItemStack(Blocks.HARDENED_CLAY, 1, 0));
-		biomeIconMap.put(Biomes.MESA_CLEAR_ROCK.getBiomeName(), new ItemStack(Blocks.HARDENED_CLAY, 1, 0));
-		biomeIconMap.put(Biomes.MESA_ROCK.getBiomeName(),		new ItemStack(Blocks.HARDENED_CLAY, 1, 0));
-	}
+    static {
+        biomeIconMap.put(Biomes.OCEAN.getBiomeName(), new ItemStack(Blocks.WATER, 1, 0));
+        //biomeIconMap.put(Biome.plains.biomeName, new BlockSet(Blocks.grass, 0));
+        //biomeIconMap.put(Biome.desert.biomeName, new BlockSet(Blocks.water, 0));
+        biomeIconMap.put(Biomes.EXTREME_HILLS.getBiomeName(), new ItemStack(Blocks.STONE, 1, 0));
+        biomeIconMap.put(Biomes.FOREST.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 0));
+        biomeIconMap.put(Biomes.TAIGA.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 1));
+        biomeIconMap.put(Biomes.SWAMPLAND.getBiomeName(), new ItemStack(Blocks.WATERLILY, 1, 0));
+        biomeIconMap.put(Biomes.RIVER.getBiomeName(), new ItemStack(Blocks.WATER, 1, 0));
+        biomeIconMap.put(Biomes.HELL.getBiomeName(), new ItemStack(Blocks.NETHERRACK, 1, 0));
+        biomeIconMap.put(Biomes.SKY.getBiomeName(), new ItemStack(Blocks.END_STONE, 1, 0));
+        biomeIconMap.put(Biomes.FROZEN_OCEAN.getBiomeName(), new ItemStack(Blocks.ICE, 1, 0));
+        biomeIconMap.put(Biomes.FROZEN_RIVER.getBiomeName(), new ItemStack(Blocks.ICE, 1, 0));
+        //biomeIconMap.put(Biome.ICEPlains.biomeName, new BlockSet(Blocks.SNOW, 0));
+        //biomeIconMap.put(Biome.ICEMountains.biomeName, new BlockSet(Blocks.SNOW, 0));
+        //biomeIconMap.put(Biome.mushroomIsland.biomeName, new BlockSet(Blocks.LEAVES, 0));
+        //biomeIconMap.put(Biome.mushroomIslandShore.biomeName, new BlockSet(Blocks.LEAVES, 0));
+        biomeIconMap.put(Biomes.BEACH.getBiomeName(), new ItemStack(Blocks.SAND, 1, 0));
+        //biomeIconMap.put(Biome.desertHills.biomeName, new BlockSet(Blocks.LEAVES, 0));
+        biomeIconMap.put(Biomes.FOREST_HILLS.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 0));
+        biomeIconMap.put(Biomes.TAIGA_HILLS.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 1));
+        biomeIconMap.put(Biomes.EXTREME_HILLS_EDGE.getBiomeName(), new ItemStack(Blocks.STONE, 1, 0));
+        biomeIconMap.put(Biomes.JUNGLE.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 3));
+        biomeIconMap.put(Biomes.JUNGLE_HILLS.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 3));
+        biomeIconMap.put(Biomes.JUNGLE_EDGE.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 3));
+        biomeIconMap.put(Biomes.DEEP_OCEAN.getBiomeName(), new ItemStack(Blocks.WATER, 1, 0));
+        biomeIconMap.put(Biomes.STONE_BEACH.getBiomeName(), new ItemStack(Blocks.STONE, 1, 0));
+        biomeIconMap.put(Biomes.COLD_BEACH.getBiomeName(), new ItemStack(Blocks.ICE, 1, 0));
+        biomeIconMap.put(Biomes.BIRCH_FOREST.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 2));
+        biomeIconMap.put(Biomes.BIRCH_FOREST_HILLS.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 2));
+        biomeIconMap.put(Biomes.ROOFED_FOREST.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 0));
+        biomeIconMap.put(Biomes.COLD_TAIGA.getBiomeName(), new ItemStack(Blocks.SNOW, 1, 0));
+        biomeIconMap.put(Biomes.COLD_TAIGA_HILLS.getBiomeName(), new ItemStack(Blocks.SNOW, 1, 0));
+        biomeIconMap.put(Biomes.MUTATED_TAIGA.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 1));
+        biomeIconMap.put(Biomes.MUTATED_TAIGA_COLD.getBiomeName(), new ItemStack(Blocks.LEAVES, 1, 1));
+        biomeIconMap.put(Biomes.EXTREME_HILLS.getBiomeName(), new ItemStack(Blocks.STONE, 1, 0));
+        //biomeIconMap.put(Biome.savanna.biomeName, new BlockSet(Blocks.LEAVES, 0));
+        //biomeIconMap.put(Biome.savannaPlateau.biomeName, new BlockSet(Blocks.LEAVES, 0));
+        biomeIconMap.put(Biomes.MESA.getBiomeName(), new ItemStack(Blocks.HARDENED_CLAY, 1, 0));
+        biomeIconMap.put(Biomes.MESA_CLEAR_ROCK.getBiomeName(), new ItemStack(Blocks.HARDENED_CLAY, 1, 0));
+        biomeIconMap.put(Biomes.MESA_ROCK.getBiomeName(), new ItemStack(Blocks.HARDENED_CLAY, 1, 0));
+    }
 }

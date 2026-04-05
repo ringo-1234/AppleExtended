@@ -1,67 +1,71 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.modelpack.cfg;
 
 import jp.ngt.rtm.modelpack.state.DataMap;
 
-/**全てのコンフィグの親, JSONからの読み込みに使用*/
-public abstract class ResourceConfig
-{
-	/**name重複時の優先度決定用*/
-	public short version;
+import java.io.File;
 
-	public boolean useCustomColor;
+public abstract class ResourceConfig {
+    public short version;
 
-	/**検索用タグ*/
-	public String tags;
+    public boolean useCustomColor;
 
-	/**DataMapのデフォルト値*/
-	public DMInitValue[] defaultValues;
-	@Deprecated
-	public String defaultData;
+    public String tags;
 
-	/**Resource名, 重複不可*/
-	public abstract String getName();
+    public DMInitValue[] defaultValues;
 
-	/**Configの初期化時に呼ばれる*/
-	public void init()
-	{
-		if(this.defaultValues == null && this.defaultData != null)
-		{
-			String[][] array = DataMap.convertArg(this.defaultData);
-			this.defaultValues = new DMInitValue[array.length];
-			for(int i = 0; i < array.length; ++i)
-			{
-				DMInitValue dmiv = new DMInitValue();
-				dmiv.key = array[i][0];
-				dmiv.type = array[i][1];
-				dmiv.value = array[i][2];
-				this.defaultValues[i] = dmiv;
-			}
-		}
-	}
+    public File file;
 
-	protected String fixSoundPath(String path)
-	{
-		if(path == null || path.length() == 0)
-		{
-			return null;
-		}
-		else if(!path.contains(":"))
-		{
-			return "rtm:" + path;//ドメイン未指定のファイルパスがminecraftドメインと解釈されないように
-		}
-		return path;
-	}
+    @Deprecated
+    public String defaultData;
 
-	public class DMInitValue
-	{
-		public String type;
-		public String key;
-		public String value;
-		/**入力候補*/
-		public String[] suggestions;
-		/**[min, max]*/
-		public double[] minmax;
-		/**[start, contains, end]*/
-		public String[] pattern;
-	}
+    public abstract String getName();
+
+    public void init() {
+        if (this.defaultValues == null && this.defaultData != null) {
+            String[][] array = DataMap.convertArg(this.defaultData);
+            this.defaultValues = new DMInitValue[array.length];
+            for (int i = 0; i < array.length; ++i) {
+                DMInitValue dmiv = new DMInitValue();
+                dmiv.key = array[i][0];
+                dmiv.type = array[i][1];
+                dmiv.value = array[i][2];
+                this.defaultValues[i] = dmiv;
+            }
+        }
+    }
+
+    protected String fixSoundPath(String path) {
+        return fixSoundPath(path, null);
+    }
+
+    protected String fixSoundPath(String path, String defaults) {
+        if (path != null && path.length() != 0) {
+            return !path.contains(":") ? "rtm:" + path : path;
+        } else {
+            return defaults;
+        }
+    }
+
+    public class DMInitValue {
+        public String type;
+        public String key;
+        public String value;
+        public String[] suggestions;
+        public double[] minmax;
+        public String[] pattern;
+    }
 }

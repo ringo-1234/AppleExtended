@@ -1,40 +1,47 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.ngtlib.io;
 
+import javax.tools.SimpleJavaFileObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 
-import javax.tools.SimpleJavaFileObject;
+public class ByteCodeObject extends SimpleJavaFileObject {
+    protected final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    private Class<?> clazz = null;
 
-public class ByteCodeObject extends SimpleJavaFileObject
-{
-	protected final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	private Class<?> clazz = null;
+    public ByteCodeObject(String name, Kind kind) {
+        super(URI.create("string:///" + name.replace('.', '/') + kind.extension), kind);
+    }
 
-	public ByteCodeObject(String name, Kind kind)
-	{
-		super(URI.create("string:///" + name.replace('.', '/') + kind.extension), kind);
-	}
+    @Override
+    public OutputStream openOutputStream() throws IOException {
+        return this.bos;
+    }
 
-	@Override
-	public OutputStream openOutputStream() throws IOException
-	{
-		return this.bos;
-	}
+    public byte[] getBytes() {
+        return this.bos.toByteArray();
+    }
 
-	public byte[] getBytes()
-	{
-		return this.bos.toByteArray();
-	}
+    public void setDefinedClass(Class<?> c) {
+        this.clazz = c;
+    }
 
-	public void setDefinedClass(Class<?> c)
-	{
-		this.clazz = c;
-	}
-
-	public Class<?> getDefinedClass()
-	{
-		return this.clazz;
-	}
+    public Class<?> getDefinedClass() {
+        return this.clazz;
+    }
 }

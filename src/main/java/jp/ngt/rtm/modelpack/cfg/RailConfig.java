@@ -1,66 +1,81 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.modelpack.cfg;
 
-public class RailConfig extends ModelConfig
-{
-	/**名前(重複不可)*/
-	private String railName;
-	/**モデル*/
-	public ModelSource model;
+public class RailConfig extends ModelConfig {
+    /**
+     * 名前(重複不可)
+     */
+    private String railName;
+    /**
+     * モデル
+     */
+    public ModelSource model;
 
-	/**道床幅, 1以上の奇数*/
-	public int ballastWidth;
-	/**動物とかが線路を横切れるかどうか*/
-	public boolean allowCrossing;
-	/**クリエイティブタブに追加する際の道床ブロック*/
-	public BallastSet[] defaultBallast;
+    /**
+     * 道床幅, 1以上の奇数
+     */
+    public int ballastWidth;
+    /**
+     * 動物とかが線路を横切れるかどうか
+     */
+    public boolean allowCrossing;
+    /**
+     * クリエイティブタブに追加する際の道床ブロック
+     */
+    public BallastSet[] defaultBallast;
 
-	@Deprecated
-	public String railModel;
-	@Deprecated
-	public String railTexture;
+    @Deprecated
+    public String railModel;
+    @Deprecated
+    public String railTexture;
 
-	@Override
-	public void init()
-	{
-		super.init();
+    @Override
+    public void init() {
+        super.init();
 
-		if(this.model == null)
-		{
-			this.model = new ModelSource();
-			this.model.modelFile = this.railModel;
-			this.model.textures = new String[][]{{"default", this.railTexture}};
-			this.model.rendererPath = null;
-		}
+        if (this.model == null) {
+            this.model = new ModelSource();
+            this.model.modelFile = this.railModel;
+            this.model.textures = new String[][]{{"default", this.railTexture}};
+            this.model.rendererPath = null;
+        }
 
-		if(this.ballastWidth <= 0)
-		{
-			this.ballastWidth = 3;
-		}
-		else if((this.ballastWidth & 1) == 0)
-		{
-			++this.ballastWidth;
-		}
-	}
+        if (this.ballastWidth <= 0) {
+            this.ballastWidth = 3;
+        } else if ((this.ballastWidth & 1) == 0) {
+            ++this.ballastWidth;
+        }
+    }
 
-	@Override
-	public String getName()
-	{
-		return this.railName;
-	}
+    @Override
+    public String getName() {
+        return this.railName;
+    }
 
 
-	public static RailConfig getDummy()
-	{
-		RailConfig cfg = new RailConfig();
-		cfg.railName = "dummy";
-		cfg.railModel = "1067mm_Wood";
-		return cfg;
-	}
+    public static RailConfig getDummy() {
+        RailConfig cfg = new RailConfig();
+        cfg.railName = "dummy";
+        cfg.railModel = "1067mm_Wood";
+        return cfg;
+    }
 
-	public class BallastSet
-	{
-		public String blockName;
-		public int blockMetadata;
-		public float height;
-	}
+    public class BallastSet {
+        public String blockName;
+        public int blockMetadata;
+        public float height;
+    }
 }

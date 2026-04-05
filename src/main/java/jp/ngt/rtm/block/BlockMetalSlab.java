@@ -1,6 +1,18 @@
-package jp.ngt.rtm.block;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.Random;
+package jp.ngt.rtm.block;
 
 import jp.ngt.ngtlib.block.BlockCustomWithMeta;
 import jp.ngt.ngtlib.block.BlockUtil;
@@ -13,54 +25,47 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class BlockMetalSlab extends BlockCustomWithMeta
-{
-	public BlockMetalSlab()
-	{
-		super(RTMMaterial.fireproof);
-		this.setLightOpacity(0);
-		this.setTickRandomly(true);
-		this.setAABB(new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.0625F, 1.0F));
-	}
+import java.util.Random;
 
-	@Override
-	public EnumBlockRenderType getRenderType(IBlockState state)
-    {
+public class BlockMetalSlab extends BlockCustomWithMeta {
+    public BlockMetalSlab() {
+        super(RTMMaterial.fireproof);
+        this.setLightOpacity(0);
+        this.setTickRandomly(true);
+        this.setAABB(new AxisAlignedBB(0.0F, 0.0F, 0.0F, 1.0F, 0.0625F, 1.0F));
+    }
+
+    @Override
+    public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.MODEL;
     }
 
-	@Override
-	public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity)
-    {
-		if(BlockUtil.getMetadata(world, pos) > 0)
-		{
-			entity.attackEntityFrom(DamageSource.LAVA, 1.0F);
-			entity.setFire(1);
-		}
+    @Override
+    public void onEntityCollidedWithBlock(World world, BlockPos pos, IBlockState state, Entity entity) {
+        if (BlockUtil.getMetadata(world, pos) > 0) {
+            entity.attackEntityFrom(DamageSource.LAVA, 1.0F);
+            entity.setFire(1);
+        }
     }
 
-	@Override
-	public void updateTick(World world, BlockPos pos, IBlockState state, Random rand)
-    {
-		if(!world.isRemote)
-		{
-			int meta = BlockUtil.getMetadata(world, pos);
-			if(meta > 0)
-			{
-				BlockUtil.setBlock(world, pos, this, --meta, 2);
-			}
-		}
+    @Override
+    public void updateTick(World world, BlockPos pos, IBlockState state, Random rand) {
+        if (!world.isRemote) {
+            int meta = BlockUtil.getMetadata(world, pos);
+            if (meta > 0) {
+                BlockUtil.setBlock(world, pos, this, --meta, 2);
+            }
+        }
     }
 
-	@Override
-	public String getHarvestTool(IBlockState state)//Material != rockのとき必須？
+    @Override
+    public String getHarvestTool(IBlockState state)//Material != rockのとき必須？
     {
-		return "";
+        return "";
     }
 
-	@Override
-	public int getHarvestLevel(IBlockState state)
-    {
-		return -1;
+    @Override
+    public int getHarvestLevel(IBlockState state) {
+        return -1;
     }
 }

@@ -1,12 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.mcte.world;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.imageio.ImageIO;
 
 import jp.ngt.mcte.MCTE;
 import jp.ngt.mcte.network.PacketGenerator;
@@ -15,85 +21,84 @@ import jp.ngt.ngtlib.io.NGTImage;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
-public class TerrainData
-{
-	private static BlockSet default_BlockSet = new BlockSet(Blocks.STONE, 0);
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.TreeMap;
 
-	public File terrainFile;
-	public File blocksFile;
-	public Map<Integer, BlockSet> blockMap = new TreeMap<Integer, BlockSet>();
-	public float yScale = 1.0F;
+public class TerrainData {
+    private static BlockSet default_BlockSet = new BlockSet(Blocks.STONE, 0);
 
-	{
-		this.blockMap.put(0x000000, default_BlockSet);
-	}
+    public File terrainFile;
+    public File blocksFile;
+    public Map<Integer, BlockSet> blockMap = new TreeMap<Integer, BlockSet>();
+    public float yScale = 1.0F;
 
-	public void generate(int x, int y, int z)
-	{
-		BufferedImage terrain = null;
-		if(this.terrainFile != null)
-		{
-			try{terrain = ImageIO.read(this.terrainFile);}catch(IOException e){}
-		}
+    {
+        this.blockMap.put(0x000000, default_BlockSet);
+    }
 
-		BufferedImage blocks = null;
-		if(this.blocksFile != null)
-		{
-			try{blocks = ImageIO.read(this.blocksFile);}catch(IOException e){}
-		}
+    public void generate(int x, int y, int z) {
+        BufferedImage terrain = null;
+        if (this.terrainFile != null) {
+            try {
+                terrain = ImageIO.read(this.terrainFile);
+            } catch (IOException e) {
+            }
+        }
 
-		int height = 0;
-		int width = 0;
-		if(terrain != null)
-		{
-			height = terrain.getHeight();
-			width = terrain.getWidth();
-		}
-		else if(blocks != null)
-		{
-			height = blocks.getHeight();
-			width = blocks.getWidth();
-		}
+        BufferedImage blocks = null;
+        if (this.blocksFile != null) {
+            try {
+                blocks = ImageIO.read(this.blocksFile);
+            } catch (IOException e) {
+            }
+        }
 
-		for(int i = 0; i < height; ++i)
-		{
-			for(int j = 0; j < width; ++j)
-			{
-				int color0 = 0;
-				int value = 1;
-				if(terrain != null)
-				{
-					color0 = terrain.getRGB(j, i) & 0xFFFFFF;
-					value = NGTImage.getColorValue(color0);
-					value = (int)((float)value * this.yScale);
-					if(value > 255)
-					{
-						value = 255;
-					}
-				}
+        int height = 0;
+        int width = 0;
+        if (terrain != null) {
+            height = terrain.getHeight();
+            width = terrain.getWidth();
+        } else if (blocks != null) {
+            height = blocks.getHeight();
+            width = blocks.getWidth();
+        }
 
-				int color1 = 0x000000;
-				if(blocks != null)
-				{
-					color1 = blocks.getRGB(j, i) & 0xFFFFFF;
-				}
-				BlockSet set = this.blockMap.get(color1);
-				if(set == null)
-				{
-					set = default_BlockSet;
-				}
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                int color0 = 0;
+                int value = 1;
+                if (terrain != null) {
+                    color0 = terrain.getRGB(j, i) & 0xFFFFFF;
+                    value = NGTImage.getColorValue(color0);
+                    value = (int) ((float) value * this.yScale);
+                    if (value > 255) {
+                        value = 255;
+                    }
+                }
 
-				for(int k = 0; k < value; ++k)
-				{
-					int x0 = x + j;
-					int y0 = y + k;
-					int z0 = z + i;
-					MCTE.NETWORK_WRAPPER.sendToServer(new PacketGenerator(x0, y0, z0,
-							Block.REGISTRY.getNameForObject(set.block).toString(), (byte)set.metadata));
-				}
-			}
-		}
-	}
+                int color1 = 0x000000;
+                if (blocks != null) {
+                    color1 = blocks.getRGB(j, i) & 0xFFFFFF;
+                }
+                BlockSet set = this.blockMap.get(color1);
+                if (set == null) {
+                    set = default_BlockSet;
+                }
+
+                for (int k = 0; k < value; ++k) {
+                    int x0 = x + j;
+                    int y0 = y + k;
+                    int z0 = z + i;
+                    MCTE.NETWORK_WRAPPER.sendToServer(new PacketGenerator(x0, y0, z0,
+                            Block.REGISTRY.getNameForObject(set.block).toString(), (byte) set.metadata));
+                }
+            }
+        }
+    }
 
 	/*public static TerrainData getTerrainDataFromText(File file)
 	{
@@ -161,45 +166,37 @@ public class TerrainData
 		return null;
 	}*/
 
-	/**BlockSet.x = color*/
-	private static BlockSet getBlockAndColor(String s)
-	{
-		String[] sa0 = s.split(":");
-		if(sa0 != null && sa0.length == 2)
-		{
-			String[] sa1 = sa0[1].split(",");
-			if(sa1 != null && sa1.length == 2)
-			{
-				try
-				{
-					int color = Integer.decode(sa0[0]);
-					Block block = Block.getBlockFromName(sa1[0]);
-					int meta = Integer.valueOf(sa1[1]);
-					return new BlockSet(color, 0, 0, block, meta);
-				}
-				catch(NumberFormatException e)
-				{
-					e.printStackTrace();
-				}
-			}
-		}
-		return null;
-	}
+    /**
+     * BlockSet.x = color
+     */
+    private static BlockSet getBlockAndColor(String s) {
+        String[] sa0 = s.split(":");
+        if (sa0 != null && sa0.length == 2) {
+            String[] sa1 = sa0[1].split(",");
+            if (sa1 != null && sa1.length == 2) {
+                try {
+                    int color = Integer.decode(sa0[0]);
+                    Block block = Block.getBlockFromName(sa1[0]);
+                    int meta = Integer.valueOf(sa1[1]);
+                    return new BlockSet(color, 0, 0, block, meta);
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
+    }
 
-	private static BufferedImage getImageFromText(File file)
-	{
-		String imgName = file.getName().replace(".txt", ".png");
-		File imgFile = new File(file.getParentFile(), imgName);
-		try
-		{
-			return ImageIO.read(imgFile);
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-			return null;
-		}
-	}
+    private static BufferedImage getImageFromText(File file) {
+        String imgName = file.getName().replace(".txt", ".png");
+        File imgFile = new File(file.getParentFile(), imgName);
+        try {
+            return ImageIO.read(imgFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 	/*public static class TerrainDataImage extends TerrainData
 	{

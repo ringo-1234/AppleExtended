@@ -1,14 +1,18 @@
-package jp.ngt.mcte.editor.filter;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+package jp.ngt.mcte.editor.filter;
 
 import jp.ngt.mcte.MCTE;
 import jp.ngt.mcte.editor.Editor;
@@ -21,151 +25,140 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public final class FilterManager
-{
-	public static final FilterManager INSTANCE = new FilterManager();
-	public static final String FILTER_PATH = "mcte/filter/";
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.util.*;
 
-	private Map<String, Class<? extends EditFilterBase>> filterClasses;
-	@SideOnly(Side.CLIENT)
-	private Map<String, EditFilterBase> filters;
+public final class FilterManager {
+    public static final FilterManager INSTANCE = new FilterManager();
+    public static final String FILTER_PATH = "mcte/filter/";
 
-	private FilterManager()
-	{
-		this.filterClasses = new HashMap<String, Class<? extends EditFilterBase>>();
-		this.filterClasses.put("Copy",        EditFilterCopy.class);
-		this.filterClasses.put("Cut",         EditFilterCut.class);
-		this.filterClasses.put("Delete",      EditFilterDelete.class);
-		this.filterClasses.put("DeleteEntity",EditFilterDeleteEntity.class);
-		this.filterClasses.put("Fill",        EditFilterFill.class);
-		this.filterClasses.put("FillSurface", EditFilterFillSurface.class);
-		this.filterClasses.put("Paste",       EditFilterPaste.class);
-		this.filterClasses.put("PerlinNoise", EditFilterPerlinNoise.class);
-		this.filterClasses.put("Random",      EditFilterRandom.class);
-	}
+    private Map<String, Class<? extends EditFilterBase>> filterClasses;
+    @SideOnly(Side.CLIENT)
+    private Map<String, EditFilterBase> filters;
 
-	public EditFilterBase getFilterInstance(String name)
-	{
-		try
-		{
-			Class<? extends EditFilterBase> clazz = this.filterClasses.get(name);
-			if(clazz == null){return null;}
-			Constructor constructor = clazz.getConstructor();
-			return (EditFilterBase)constructor.newInstance();
-		}
-		catch (ReflectiveOperationException e)
-		{
-			e.printStackTrace();
-		}
-		return null;
-	}
+    private FilterManager() {
+        this.filterClasses = new HashMap<String, Class<? extends EditFilterBase>>();
+        this.filterClasses.put("Copy", EditFilterCopy.class);
+        this.filterClasses.put("Cut", EditFilterCut.class);
+        this.filterClasses.put("Delete", EditFilterDelete.class);
+        this.filterClasses.put("DeleteEntity", EditFilterDeleteEntity.class);
+        this.filterClasses.put("Fill", EditFilterFill.class);
+        this.filterClasses.put("FillSurface", EditFilterFillSurface.class);
+        this.filterClasses.put("Paste", EditFilterPaste.class);
+        this.filterClasses.put("PerlinNoise", EditFilterPerlinNoise.class);
+        this.filterClasses.put("Random", EditFilterRandom.class);
+    }
 
-	@SideOnly(Side.CLIENT)
-	public void loadFilters()
-	{
-		this.filters = new LinkedHashMap<String, EditFilterBase>();
-		this.initFilter(new EditFilterCopy());
-		this.initFilter(new EditFilterCut());
-		this.initFilter(new EditFilterDelete());
-		this.initFilter(new EditFilterDeleteEntity());
-		this.initFilter(new EditFilterFill());
-		this.initFilter(new EditFilterFillSurface());
-		this.initFilter(new EditFilterPaste());
-		this.initFilter(new EditFilterPerlinNoise());
-		this.initFilter(new EditFilterRandom());
+    public EditFilterBase getFilterInstance(String name) {
+        try {
+            Class<? extends EditFilterBase> clazz = this.filterClasses.get(name);
+            if (clazz == null) {
+                return null;
+            }
+            Constructor constructor = clazz.getConstructor();
+            return (EditFilterBase) constructor.newInstance();
+        } catch (ReflectiveOperationException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
-		File filterFolder = new File(NGTFileLoader.getModsDir().get(0), FILTER_PATH);
-		try
-		{
-			List<File> list = NGTFileLoader.findFileInDirectory(filterFolder, (file)->{return file.getName().endsWith(".js");});
-			for(File file : list)
-			{
-				this.initFilter(new EditFilterCustom(NGTText.readText(file, false, "")));
-			}
-		}
-		catch(IOException e)
-		{
-			e.printStackTrace();
-		}
-	}
+    @SideOnly(Side.CLIENT)
+    public void loadFilters() {
+        this.filters = new LinkedHashMap<String, EditFilterBase>();
+        this.initFilter(new EditFilterCopy());
+        this.initFilter(new EditFilterCut());
+        this.initFilter(new EditFilterDelete());
+        this.initFilter(new EditFilterDeleteEntity());
+        this.initFilter(new EditFilterFill());
+        this.initFilter(new EditFilterFillSurface());
+        this.initFilter(new EditFilterPaste());
+        this.initFilter(new EditFilterPerlinNoise());
+        this.initFilter(new EditFilterRandom());
 
-	@SideOnly(Side.CLIENT)
-	private void initFilter(EditFilterBase filter)
-	{
-		File file = filter.getCfgFile();
-		try
-		{
-			if(!file.getParentFile().exists())
-			{
-				file.getParentFile().mkdirs();
-			}
+        File filterFolder = new File(NGTFileLoader.getModsDir().get(0), FILTER_PATH);
+        try {
+            List<File> list = NGTFileLoader.findFileInDirectory(filterFolder, (file) -> {
+                return file.getName().endsWith(".js");
+            });
+            for (File file : list) {
+                this.initFilter(new EditFilterCustom(NGTText.readText(file, false, "")));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-			if(!file.exists())
-			{
-				file.createNewFile();
-			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-			return;
-		}
+    @SideOnly(Side.CLIENT)
+    private void initFilter(EditFilterBase filter) {
+        File file = filter.getCfgFile();
+        try {
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
 
-		Config cfg = new Config();
-		filter.init(cfg);
-		cfg.load(file);
-		filter.save();
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
-		this.filters.put(filter.getFilterName(), filter);
-	}
+        Config cfg = new Config();
+        filter.init(cfg);
+        cfg.load(file);
+        filter.save();
 
-	@SideOnly(Side.CLIENT)
-	public Collection<EditFilterBase> getFilters()
-	{
-		return this.filters.values();
-	}
+        this.filters.put(filter.getFilterName(), filter);
+    }
 
-	@SideOnly(Side.CLIENT)
-	public boolean execFilter(EntityPlayer player, EntityEditor editor, String name)
-	{
-		//選択未完了時に実行する「0バグ」回避
-		if(!editor.isSelectEnd()){return false;}
+    @SideOnly(Side.CLIENT)
+    public Collection<EditFilterBase> getFilters() {
+        return this.filters.values();
+    }
 
-		EditFilterBase filter = this.filters.get(name);
-		String[] sa = filter.getCfg().export();
-		StringBuilder builder = new StringBuilder();
-		for(String s : sa)
-		{
-			builder.append(s).append(",");
-		}
+    @SideOnly(Side.CLIENT)
+    public boolean execFilter(EntityPlayer player, EntityEditor editor, String name) {
+        //選択未完了時に実行する「0バグ」回避
+        if (!editor.isSelectEnd()) {
+            return false;
+        }
 
-		String script = "";
-		if(filter instanceof EditFilterCustom)
-		{
-			script = ((EditFilterCustom)filter).getScriptText();
-		}
-		MCTE.NETWORK_WRAPPER.sendToServer(new PacketFilter(player, name, builder.toString(), script));
+        EditFilterBase filter = this.filters.get(name);
+        String[] sa = filter.getCfg().export();
+        StringBuilder builder = new StringBuilder();
+        for (String s : sa) {
+            builder.append(s).append(",");
+        }
 
-		return true;
-	}
+        String script = "";
+        if (filter instanceof EditFilterCustom) {
+            script = ((EditFilterCustom) filter).getScriptText();
+        }
+        MCTE.NETWORK_WRAPPER.sendToServer(new PacketFilter(player, name, builder.toString(), script));
 
-	/**ServerSide*/
-	public void execFilter(EntityPlayer player, String name, String data, String script)
-	{
-		EditFilterBase filter = this.getFilterInstance(name);
-		if(filter == null)
-		{
-			filter = new EditFilterCustom(script);
-		}
-		Config cfg = new Config();
-		filter.init(cfg);
-		List<String> list = Arrays.asList(data.split(","));
-		cfg.load(list);
+        return true;
+    }
 
-		Editor editor = EditorManager.INSTANCE.getEditor(player);
-		if(editor != null)
-		{
-			filter.edit(editor);
-		}
-	}
+    /**
+     * ServerSide
+     */
+    public void execFilter(EntityPlayer player, String name, String data, String script) {
+        EditFilterBase filter = this.getFilterInstance(name);
+        if (filter == null) {
+            filter = new EditFilterCustom(script);
+        }
+        Config cfg = new Config();
+        filter.init(cfg);
+        List<String> list = Arrays.asList(data.split(","));
+        cfg.load(list);
+
+        Editor editor = EditorManager.INSTANCE.getEditor(player);
+        if (editor != null) {
+            filter.edit(editor);
+        }
+    }
 }

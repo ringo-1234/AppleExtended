@@ -1,0 +1,87 @@
+package jp.apple.block;
+
+import jp.apple.tileentity.TileEntityTrainModel;
+import jp.ngt.ngtlib.block.TileEntityPlaceable;
+import jp.ngt.rtm.RTMCore;
+import net.minecraft.block.BlockContainer;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
+
+public class BlockTrainModel extends BlockContainer {
+    protected static final AxisAlignedBB TRAIN_MODEL_AABB =
+            new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+
+    public BlockTrainModel() {
+        super(Material.IRON);
+        this.setUnlocalizedName("train_model_block");
+        this.setRegistryName("train_model_block");
+        this.setCreativeTab(jp.apple.AppleLib.tabAppleLib);
+    }
+
+    @Override
+    public TileEntity createNewTileEntity(World worldIn, int meta) {
+        return new TileEntityTrainModel();
+    }
+
+    @Override
+    public EnumBlockRenderType getRenderType(IBlockState state) {
+        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        return TRAIN_MODEL_AABB;
+    }
+
+    @Override
+    public boolean isOpaqueCube(IBlockState state) { return false; }
+
+    @Override
+    public boolean isFullCube(IBlockState state) { return false; }
+
+    @Override
+    public void onBlockPlacedBy(World worldIn, BlockPos pos, IBlockState state,
+                                EntityLivingBase placer, ItemStack stack) {
+        super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
+        TileEntity te = worldIn.getTileEntity(pos);
+        if (te instanceof TileEntityTrainModel) {
+            ((TileEntityTrainModel) te).rotationYaw = placer.rotationYawHead;
+        }
+    }
+
+    @Override
+    public boolean onBlockActivated(World worldIn, BlockPos pos, IBlockState state,
+                                    EntityPlayer playerIn, EnumHand hand,
+                                    EnumFacing facing, float hitX, float hitY, float hitZ) {
+        
+        if (worldIn.isRemote) {
+            TileEntity te = worldIn.getTileEntity(pos);
+            if (te instanceof TileEntityTrainModel) {
+                
+                if (playerIn.getHeldItem(hand).getItem() == jp.ngt.rtm.RTMItem.crowbar) {
+                    jp.apple.gui.AppleGuiHelper.openOffsetGui(te);
+                    return true;
+                }
+                
+                if (playerIn.isSneaking()) {
+                    playerIn.openGui(RTMCore.instance,
+                            RTMCore.guiIdSelectTileEntityModel,
+                            worldIn, pos.getX(), pos.getY(), pos.getZ());
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}

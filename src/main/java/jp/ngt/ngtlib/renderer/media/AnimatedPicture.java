@@ -1,46 +1,54 @@
-package jp.ngt.ngtlib.renderer.media;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.awt.image.BufferedImage;
+package jp.ngt.ngtlib.renderer.media;
 
 import net.minecraft.client.renderer.texture.TextureUtil;
 
-public class AnimatedPicture extends Picture
-{
-	private GIF gifImage;
+import java.awt.image.BufferedImage;
 
-	protected AnimatedPicture(String par1)
-	{
-		super(par1);
-	}
+public class AnimatedPicture extends Picture {
+    private GIF gifImage;
 
-	@Override
-	protected void loadImage()
-	{
-		this.gifImage = GIF.load(this.url);
-		this.textureId = TextureUtil.glGenTextures();
-		//this.uploadTexture(this.textureId, this.image);
-	}
+    protected AnimatedPicture(String par1) {
+        super(par1);
+    }
 
-	@Override
-	public BufferedImage getImage()
-	{
-		if(this.textureId < 0)
-		{
-			this.loadImage();
-		}
+    @Override
+    protected void loadImage() {
+        this.gifImage = GIF.load(this.url);
+        this.textureId = TextureUtil.glGenTextures();
+        //this.uploadTexture(this.textureId, this.image);
+    }
 
-		if(this.gifImage == null)
-		{
-			return null;
-		}
+    @Override
+    public BufferedImage getImage() {
+        if (this.textureId < 0) {
+            this.loadImage();
+        }
 
-		int frameIndex = this.gifImage.getCurrentFrameIndex();
-		this.image = this.gifImage.getImage(frameIndex);
-		this.uploadTexture(this.textureId, this.image);
-		return this.image;
-	}
+        if (this.gifImage == null) {
+            return null;
+        }
 
-	//結合時の描画方式
+        int frameIndex = this.gifImage.getCurrentFrameIndex();
+        this.image = this.gifImage.getImage(frameIndex);
+        this.uploadTexture(this.textureId, this.image);
+        return this.image;
+    }
+
+    //結合時の描画方式
 	/*@Override
 	protected void renderImage(float width, float height, boolean fitAspectRatio, BufferedImage image)
 	{

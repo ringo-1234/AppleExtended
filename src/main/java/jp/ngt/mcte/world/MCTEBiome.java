@@ -1,6 +1,18 @@
-package jp.ngt.mcte.world;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.Random;
+package jp.ngt.mcte.world;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -11,52 +23,45 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class MCTEBiome extends Biome
-{
-	private static final BiomeProperties MEGA_CITY_Prop = new BiomeProperties("Mega City").setBaseHeight(-1.8F).setTemperature(0.2F).setRainfall(0.1F);
-	public static final Biome MEGA_CITY = new MCTEBiome(MEGA_CITY_Prop);
+import java.util.Random;
 
-	public MCTEBiome(BiomeProperties prop)
-	{
-		super(prop);
-		this.spawnableMonsterList.clear();
-		this.spawnableCreatureList.clear();
-		this.spawnableWaterCreatureList.clear();
+public class MCTEBiome extends Biome {
+    private static final BiomeProperties MEGA_CITY_Prop = new BiomeProperties("Mega City").setBaseHeight(-1.8F).setTemperature(0.2F).setRainfall(0.1F);
+    public static final Biome MEGA_CITY = new MCTEBiome(MEGA_CITY_Prop);
+
+    public MCTEBiome(BiomeProperties prop) {
+        super(prop);
+        this.spawnableMonsterList.clear();
+        this.spawnableCreatureList.clear();
+        this.spawnableWaterCreatureList.clear();
         this.spawnableCaveCreatureList.clear();
-	}
-
-	@SideOnly(Side.CLIENT)
-    public int getSkyColorByTemp(float par1)
-    {
-		return 0x500000;
     }
 
-	@Override
-	public void genTerrainBlocks(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double p_180622_6_)
-    {
+    @SideOnly(Side.CLIENT)
+    public int getSkyColorByTemp(float par1) {
+        return 0x500000;
+    }
+
+    @Override
+    public void genTerrainBlocks(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double p_180622_6_) {
         this.generateTerrain(worldIn, rand, chunkPrimerIn, x, z, p_180622_6_);
     }
 
-    protected void generateTerrain(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double p_180628_6_)
-    {
+    protected void generateTerrain(World worldIn, Random rand, ChunkPrimer chunkPrimerIn, int x, int z, double p_180628_6_) {
         int i = worldIn.getSeaLevel();
         IBlockState iblockstate = this.topBlock;
         IBlockState iblockstate1 = this.fillerBlock;
         int j = -1;
-        int k = (int)(p_180628_6_ / 3.0D + 3.0D + rand.nextDouble() * 0.25D);
+        int k = (int) (p_180628_6_ / 3.0D + 3.0D + rand.nextDouble() * 0.25D);
         int l = x & 15;
         int i1 = z & 15;
         BlockPos.MutableBlockPos blockpos$mutableblockpos = new BlockPos.MutableBlockPos();
 
-        for(int y = 255; y >= 0; --y)
-        {
-            if(y <= rand.nextInt(3))
-            {
+        for (int y = 255; y >= 0; --y) {
+            if (y <= rand.nextInt(3)) {
                 chunkPrimerIn.setBlockState(i1, y, l, Blocks.BEDROCK.getDefaultState());
-            }
-            else if(y <= 15)
-            {
-            	chunkPrimerIn.setBlockState(i1, y, l, Blocks.WATER.getDefaultState());
+            } else if (y <= 15) {
+                chunkPrimerIn.setBlockState(i1, y, l, Blocks.WATER.getDefaultState());
             }
             /*else
             {

@@ -1,99 +1,119 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.modelpack.cfg;
 
 
-public abstract class ModelConfig extends ResourceConfig
-{
-	/**選択ボタンのテクスチャのパス*/
-	public String buttonTexture;
+public abstract class ModelConfig extends ResourceConfig {
+    /**
+     * 選択ボタンのテクスチャのパス
+     */
+    public String buttonTexture;
 
-	/**ngto専用*/
-	public float scale;
-	public float[] offset;
+    /**
+     * ngto専用
+     */
+    public float scale;
+    public float[] offset;
 
-	/**スムージング*/
-	public boolean smoothing;
-	/**片面表示を行う(Obj, MqoではONのほうが軽くなる)*/
-	public boolean doCulling;
-	/**
-	 * ポリゴンの精度<br>
-	 * "LOW":+-16.000の範囲のみ正常に描画される<br>
-	 * "MEDIUM":通常<br>
-	 */
-	public String accuracy;
+    /**
+     * スムージング
+     */
+    public boolean smoothing;
+    /**
+     * 片面表示を行う(Obj, MqoではONのほうが軽くなる)
+     */
+    public boolean doCulling;
+    /**
+     * ポリゴンの精度<br>
+     * "LOW":+-16.000の範囲のみ正常に描画される<br>
+     * "MEDIUM":通常<br>
+     */
+    public String accuracy;
 
-	public String serverScriptPath;
+    public String serverScriptPath;
 
-	public String guiScriptPath;
-	public String guiTexture;
+    public String guiScriptPath;
+    public String guiTexture;
 
-	/**[xyzxyz], default:1x1x1*/
-	public float[] renderAABB;
+    /**
+     * [xyzxyz], default:1x1x1
+     */
+    public float[] renderAABB;
 
-	/**
-	 * 当たり判定に使用するパーツ名
-	 * 現状VehicleModelのみ適用
-	 * */
-	public String[] collisionParts;
+    /**
+     * 当たり判定に使用するパーツ名
+     * 現状VehicleModelのみ適用
+     *
+     */
+    public String[] collisionParts;
 
-	@Override
-	public void init()
-	{
-		if(this.tags == null)
-		{
-			this.tags = "";
-		}
+    @Override
+    public void init() {
+        if (this.tags == null) {
+            this.tags = "";
+        }
 
-		if(this.scale <= 0.0F)
-		{
-			this.scale = 1.0F;
-		}
+        if (this.scale <= 0.0F) {
+            this.scale = 1.0F;
+        }
 
-		if(this.offset == null || this.offset.length != 3)
-		{
-			this.offset = new float[3];
-		}
+        if (this.offset == null || this.offset.length != 3) {
+            this.offset = new float[3];
+        }
 
-		if(this.renderAABB == null || this.renderAABB.length != 6)
-		{
-			this.renderAABB = new float[]{0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F};
-		}
-	}
+        if (this.renderAABB == null || this.renderAABB.length != 6) {
+            this.renderAABB = new float[]{0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F};
+        }
+    }
 
-	public class Parts
-	{
-		/**パーツを構成するオブジェクトの名前*/
-		public String[] objects;
-		/**中心座標*/
-		public float[] pos;
+    public class Parts {
+        /**
+         * パーツを構成するオブジェクトの名前
+         */
+        public String[] objects;
+        /**
+         * 中心座標
+         */
+        public float[] pos;
 
-		public void initParts()
-		{
-			if(this.objects == null)
-			{
-				this.objects = new String[0];
-			}
+        public void initParts() {
+            if (this.objects == null) {
+                this.objects = new String[0];
+            }
 
-			if(this.pos == null || this.pos.length != 3)
-			{
-				this.pos = new float[3];
-			}
-		}
-	}
+            if (this.pos == null || this.pos.length != 3) {
+                this.pos = new float[3];
+            }
+        }
+    }
 
-	public class ModelSource
-	{
-		/**モデルファイルのパス(拡張子つきで)*/
-		public String modelFile;
+    public class ModelSource {
+        /**
+         * モデルファイルのパス(拡張子つきで)
+         */
+        public String modelFile;
 
-		/**
-		 * マテリアル名と、それに対応するテクスチャファイルのパス<br>
-		 * {マテリアル名, テクスチャパス, ("Light", "AlphaBlend")}<br>
-		 * xxx_light0.png(消灯), xxx_light1.png(前照灯), xxx_light2.png（尾灯）
-		 */
-		public String[][] textures;
+        /**
+         * マテリアル名と、それに対応するテクスチャファイルのパス<br>
+         * {マテリアル名, テクスチャパス, ("Light", "AlphaBlend")}<br>
+         * xxx_light0.png(消灯), xxx_light1.png(前照灯), xxx_light2.png（尾灯）
+         */
+        public String[][] textures;
 
-		public String rendererPath;
-		public String vertexShaderPath;
-		public String fragmentShaderPath;
-	}
+        public String rendererPath;
+        public String vertexShaderPath;
+        public String fragmentShaderPath;
+    }
 }

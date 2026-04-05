@@ -1,8 +1,18 @@
-package jp.ngt.rtm.entity.npc;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
+package jp.ngt.rtm.entity.npc;
 
 import jp.ngt.ngtlib.io.NGTLog;
 import jp.ngt.ngtlib.io.NGTText;
@@ -32,18 +42,20 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class EntityMotorman extends EntityNPC
-{
-	private static final DataParameter<ItemStack> HELD_ITEM = EntityDataManager.<ItemStack>createKey(EntityMotorman.class, DataSerializers.ITEM_STACK);
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
-	private EntityAIDriveWithMacro aiMacro;
+public class EntityMotorman extends EntityNPC {
+    private static final DataParameter<ItemStack> HELD_ITEM = EntityDataManager.<ItemStack>createKey(EntityMotorman.class, DataSerializers.ITEM_STACK);
 
-	public EntityMotorman(World world)
-	{
-		super(world);
-		this.myRole = Role.MOTORMAN;
-		this.aiMacro = new EntityAIDriveWithMacro(this);
-		this.tasks.taskEntries.clear();//EntityNPCのタスク削除
+    private EntityAIDriveWithMacro aiMacro;
+
+    public EntityMotorman(World world) {
+        super(world);
+        this.myRole = Role.MOTORMAN;
+        this.aiMacro = new EntityAIDriveWithMacro(this);
+        this.tasks.taskEntries.clear();
         this.tasks.addTask(1, new EntityAISwimming(this));
         this.tasks.addTask(2, this.aiMacro);
         this.tasks.addTask(3, new EntityAIDrivingWithDiagram(this));
@@ -51,117 +63,104 @@ public class EntityMotorman extends EntityNPC
         this.tasks.addTask(5, new EntityAIWander(this, SPEED));
         this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.tasks.addTask(7, new EntityAILookIdle(this));
-	}
-
-	public EntityMotorman(World world, EntityPlayer player)
-	{
-		this(world);//AI登録のため
-		this.setOwnerId(player.getUniqueID());
-	}
-
-	@Override
-	public void entityInit()
-	{
-		super.entityInit();
-		this.getDataManager().register(HELD_ITEM, new ItemStack(Items.APPLE));
-	}
-
-	@Override
-	public void writeEntityToNBT(NBTTagCompound nbt)
-    {
-        super.writeEntityToNBT(nbt);
-        if(this.getDiagram() != null)
-        {
-        	NBTTagCompound diagramNBT = new NBTTagCompound();
-        	ItemStack itemstack = this.getDiagram();
-        	itemstack.writeToNBT(diagramNBT);
-        	NBTTagList nbttaglist = new NBTTagList();
-        	nbttaglist.appendTag(diagramNBT);
-        	nbt.setTag("DiagramRTM", nbttaglist);
-        }
     }
 
-	@Override
-    public void readEntityFromNBT(NBTTagCompound nbt)
-    {
-        super.readEntityFromNBT(nbt);
-        if(nbt.hasKey("DiagramRTM"))
-        {
-        	NBTTagList nbttaglist = nbt.getTagList("DiagramRTM", 10);
-    		NBTTagCompound diagramNBT = (NBTTagCompound)nbttaglist.getCompoundTagAt(0);
-    		ItemStack itemstack = new ItemStack(diagramNBT);
-    		this.setDiagram(itemstack);
-        }
-    }
-
-	@Override
-	public void onDeath(DamageSource source)
-    {
-		super.onDeath(source);
-		if(!this.world.isRemote && this.hasDiagram())
-		{
-			this.entityDropItem(this.getDiagram(), 1.0F);
-		}
+    public EntityMotorman(World world, EntityPlayer player) {
+        this(world);
+        this.setOwnerId(player.getUniqueID());
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand)
-    {
-    	if(player.world.isRemote)
-		{
-			player.openGui(RTMCore.instance, RTMCore.guiIdMotorman, player.world, this.getEntityId(), 0, 0);
-		}
+    public void entityInit() {
+        super.entityInit();
+        this.getDataManager().register(HELD_ITEM, new ItemStack(Items.APPLE));
+    }
 
-    	ItemStack itemstack = player.inventory.getCurrentItem();
-    	if(itemstack.getItem() instanceof ItemWritableBook)
-		{
-			if(!this.world.isRemote)
-			{
-				this.setDiagram(itemstack.copy());
-			}
-			itemstack.shrink(1);
-		}
-    	return false;
+    public void onLivingUpdate() {
+        this.myRole = Role.MOTORMAN;
+        this.roleChanged = false;
+        super.onLivingUpdate();
+    }
+
+    @Override
+    public void writeEntityToNBT(NBTTagCompound nbt) {
+        super.writeEntityToNBT(nbt);
+        if (this.getDiagram() != null) {
+            NBTTagCompound diagramNBT = new NBTTagCompound();
+            ItemStack itemstack = this.getDiagram();
+            itemstack.writeToNBT(diagramNBT);
+            NBTTagList nbttaglist = new NBTTagList();
+            nbttaglist.appendTag(diagramNBT);
+            nbt.setTag("DiagramRTM", nbttaglist);
+        }
+    }
+
+    @Override
+    public void readEntityFromNBT(NBTTagCompound nbt) {
+        super.readEntityFromNBT(nbt);
+        if (nbt.hasKey("DiagramRTM")) {
+            NBTTagList nbttaglist = nbt.getTagList("DiagramRTM", 10);
+            NBTTagCompound diagramNBT = (NBTTagCompound) nbttaglist.getCompoundTagAt(0);
+            ItemStack itemstack = new ItemStack(diagramNBT);
+            this.setDiagram(itemstack);
+        }
+    }
+
+    @Override
+    public void onDeath(DamageSource source) {
+        super.onDeath(source);
+        if (!this.world.isRemote && this.hasDiagram()) {
+            this.entityDropItem(this.getDiagram(), 1.0F);
+        }
+    }
+
+    @Override
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        if (player.world.isRemote) {
+            player.openGui(RTMCore.instance, RTMCore.guiIdMotorman, player.world, this.getEntityId(), 0, 0);
+        }
+
+        ItemStack itemstack = player.inventory.getCurrentItem();
+        if (itemstack.getItem() instanceof ItemWritableBook) {
+            if (!this.world.isRemote) {
+                this.setDiagram(itemstack.copy());
+            }
+            itemstack.shrink(1);
+        }
+        return false;
     }
 
     @SideOnly(Side.CLIENT)
-    public void setMacro(File file) throws IOException
-    {
-    	List<String> list = NGTText.readText(file, "");
-    	StringBuilder sb = new StringBuilder("TMacro");
-    	for(String s : list)
-    	{
-    		sb.append(TrainCommand.SEPARATOR);
-    		sb.append(s);
-    	}
-    	RTMCore.NETWORK_WRAPPER.sendToServer(new PacketNotice(PacketNotice.Side_SERVER, sb.toString(), this));
-    	NGTLog.sendChatMessage(NGTUtil.getClientPlayer(), "Set macro : " + file.getName());
+    public void setMacro(File file) throws IOException {
+        List<String> list = NGTText.readText(file, "");
+        StringBuilder sb = new StringBuilder("TMacro");
+        for (String s : list) {
+            sb.append(TrainCommand.SEPARATOR);
+            sb.append(s);
+        }
+        RTMCore.NETWORK_WRAPPER.sendToServer(new PacketNotice(PacketNotice.Side_SERVER, sb.toString(), this));
+        NGTLog.sendChatMessage(NGTUtil.getClientPlayer(), "Set macro : " + file.getName());
     }
 
-    public void setMacro(String[] args)
-    {
-    	this.aiMacro.setMacro(args);
+    public void setMacro(String[] args) {
+        this.aiMacro.setMacro(args);
     }
 
-    public boolean hasDiagram()
-    {
-    	ItemStack itemstack = this.getDiagram();
-    	return itemstack != null && itemstack.getItem() instanceof ItemWritableBook;
+    public boolean hasDiagram() {
+        ItemStack itemstack = this.getDiagram();
+        return itemstack != null && itemstack.getItem() instanceof ItemWritableBook;
     }
 
-    public ItemStack getDiagram()
-    {
-    	return this.getDataManager().get(HELD_ITEM);
+    public ItemStack getDiagram() {
+        return this.getDataManager().get(HELD_ITEM);
     }
 
-    public void setDiagram(ItemStack par1)
-    {
-    	this.getDataManager().set(HELD_ITEM, par1);
+    public void setDiagram(ItemStack par1) {
+        this.getDataManager().set(HELD_ITEM, par1);
     }
 
     @Override
-    public boolean isMotorman()
-	{
-		return true;
-	}
+    public boolean isMotorman() {
+        return true;
+    }
 }

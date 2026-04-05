@@ -1,3 +1,17 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.gui;
 
 import jp.ngt.ngtlib.renderer.NGTTessellator;
@@ -7,27 +21,22 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-
 import org.lwjgl.opengl.GL11;
 
 @SideOnly(Side.CLIENT)
-public class GuiButtonColored extends GuiButton
-{
-	private int color;
-	private int textColor;
+public class GuiButtonColored extends GuiButton {
+    private int color;
+    private int textColor;
 
-	public GuiButtonColored(int id, int xPos, int yPos, int w, int h, String text, int c1, int c2)
-    {
-		super(id, xPos, yPos, w, h, text);
-		this.color = c1;
-		this.textColor = c2;
+    public GuiButtonColored(int id, int xPos, int yPos, int w, int h, String text, int c1, int c2) {
+        super(id, xPos, yPos, w, h, text);
+        this.color = c1;
+        this.textColor = c2;
     }
 
-	@Override
-	public void drawButton(Minecraft mc, int x, int y, float ptick)
-    {
-        if(this.visible)
-        {
+    @Override
+    public void drawButton(Minecraft mc, int x, int y, float ptick) {
+        if (this.visible) {
             FontRenderer fontrenderer = mc.fontRenderer;
             mc.getTextureManager().bindTexture(BUTTON_TEXTURES);
             GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -43,17 +52,16 @@ public class GuiButtonColored extends GuiButton
         }
     }
 
-	private void renderBackground()
-	{
-		GL11.glDisable(GL11.GL_TEXTURE_2D);
-		NGTTessellator tessellator = NGTTessellator.instance;
-		tessellator.startDrawingQuads();
-		tessellator.setColorOpaque_I(this.color);
-		tessellator.addVertex(this.x, this.y + this.height, this.zLevel);
-		tessellator.addVertex(this.x + this.width, this.y + this.height, this.zLevel);
-		tessellator.addVertex(this.x + this.width, this.y, this.zLevel);
-		tessellator.addVertex(this.x, this.y, this.zLevel);
-		tessellator.draw();
-		GL11.glEnable(GL11.GL_TEXTURE_2D);
-	}
+    private void renderBackground() {
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        NGTTessellator tessellator = NGTTessellator.instance;
+        tessellator.startDrawingQuads();
+        tessellator.setColorOpaque_I(this.color);
+        tessellator.addVertex(this.x, this.y + this.height, this.zLevel);
+        tessellator.addVertex(this.x + this.width, this.y + this.height, this.zLevel);
+        tessellator.addVertex(this.x + this.width, this.y, this.zLevel);
+        tessellator.addVertex(this.x, this.y, this.zLevel);
+        tessellator.draw();
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
+    }
 }

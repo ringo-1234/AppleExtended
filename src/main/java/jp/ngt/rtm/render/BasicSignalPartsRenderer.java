@@ -1,9 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.render;
-
-import java.util.LinkedList;
-import java.util.List;
-
-import org.lwjgl.opengl.GL11;
 
 import jp.ngt.ngtlib.renderer.model.IModelNGT;
 import jp.ngt.rtm.electric.SignalLevel;
@@ -13,113 +22,95 @@ import jp.ngt.rtm.modelpack.modelset.ModelSetSignal.LightParts;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
+
+import java.util.LinkedList;
+import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public class BasicSignalPartsRenderer extends SignalPartsRenderer
-{
-	public final LightParts[] lightParts;
-	private List<String> lightList = new LinkedList<String>();
+public class BasicSignalPartsRenderer extends SignalPartsRenderer {
+    public final LightParts[] lightParts;
+    private List<String> lightList = new LinkedList<String>();
 
-	public BasicSignalPartsRenderer(SignalConfig cfg, String... args)
-	{
-		super(args);
-		this.lightParts = ModelSetSignal.parseLightParts(cfg.lights);
-	}
+    public BasicSignalPartsRenderer(SignalConfig cfg, String... args) {
+        super(args);
+        this.lightParts = ModelSetSignal.parseLightParts(cfg.lights);
+    }
 
-	@Override
-	public void init(ModelSetSignal par1, ModelObject par2)
-	{
-		super.init(par1, par2);
-	}
+    @Override
+    public void init(ModelSetSignal par1, ModelObject par2) {
+        super.init(par1, par2);
+    }
 
-	@Override
-	public void render(TileEntity entity, RenderPass pass, float par3)
-	{
-		GL11.glPushMatrix();
+    @Override
+    public void render(TileEntity entity, RenderPass pass, float par3) {
+        GL11.glPushMatrix();
 
-		this.lightList.clear();
+        this.lightList.clear();
 
-		IModelNGT model = this.modelObj.model;
-		SignalConfig cfg = this.modelSet.getConfig();
-		boolean smoothing = cfg.smoothing;
+        IModelNGT model = this.modelObj.model;
+        SignalConfig cfg = this.modelSet.getConfig();
+        boolean smoothing = cfg.smoothing;
 
-		if(pass == RenderPass.NORMAL)
-		{
-			model.renderOnly(smoothing, cfg.modelPartsFixture.objects);
-		}
+        if (pass == RenderPass.NORMAL) {
+            model.renderOnly(smoothing, cfg.modelPartsFixture.objects);
+        }
 
-        if(cfg.rotateBody)
-        {
-        	float yaw = this.getRotation(entity) - this.getBlockDirection(entity);
-        	float[] fa1 = cfg.modelPartsBody.pos;
-        	GL11.glTranslatef(fa1[0], fa1[1], fa1[2]);
-        	GL11.glRotatef(yaw, 0.0F, 1.0F, 0.0F);
+        if (cfg.rotateBody) {
+            float yaw = this.getRotation(entity) - this.getBlockDirection(entity);
+            float[] fa1 = cfg.modelPartsBody.pos;
+            GL11.glTranslatef(fa1[0], fa1[1], fa1[2]);
+            GL11.glRotatef(yaw, 0.0F, 1.0F, 0.0F);
             GL11.glTranslatef(-fa1[0], -fa1[1], -fa1[2]);
         }
 
-        if(pass == RenderPass.NORMAL)
-		{
-        	model.renderOnly(smoothing, cfg.modelPartsBody.objects);
-		}
-        else if(pass == RenderPass.LIGHT)
-        {
-        	//信号上限への対応は個々でのみ行う
-        	int signal = this.getSignal(entity);
-        	if(signal > SignalLevel.HIGH_SPEED_PROCEED.level)
-        	{
-        		signal = SignalLevel.HIGH_SPEED_PROCEED.level;
-        	}
+        if (pass == RenderPass.NORMAL) {
+            model.renderOnly(smoothing, cfg.modelPartsBody.objects);
+        } else if (pass == RenderPass.LIGHT) {
+            //信号上限への対応は個々でのみ行う
+            int signal = this.getSignal(entity);
+            if (signal > SignalLevel.HIGH_SPEED_PROCEED.level) {
+                signal = SignalLevel.HIGH_SPEED_PROCEED.level;
+            }
 
             boolean finish = false;
             int i0 = -1;
-            for(int j = 0; j < 2; ++j)
-            {
-            	if(j == 1)
-        		{
-            		float f0 = 0.0625F;
-            		GL11.glColor4f(f0, f0, f0, 1.0F);
-        		}
+            for (int j = 0; j < 2; ++j) {
+                if (j == 1) {
+                    float f0 = 0.0625F;
+                    GL11.glColor4f(f0, f0, f0, 1.0F);
+                }
 
-            	for(int i = 0; i < this.lightParts.length; ++i)
-                {
-            		if(j == 0)
-            		{
-            			boolean render = false;
-                    	if(!finish && signal > 0 && signal <= this.lightParts[i].signalLevel)
-                    	{
-                    		finish = true;
-                    		render = true;
-                    		int itv = this.lightParts[i].interval;
-                        	if(itv > 0)
-                        	{
-                        		render = ((this.getTick(entity) / itv) % 2) == 0;//ライト被ってるせい
-                        	}
-                    	}
+                for (int i = 0; i < this.lightParts.length; ++i) {
+                    if (j == 0) {
+                        boolean render = false;
+                        if (!finish && signal > 0 && signal <= this.lightParts[i].signalLevel) {
+                            finish = true;
+                            render = true;
+                            int itv = this.lightParts[i].interval;
+                            if (itv > 0) {
+                                render = ((this.getTick(entity) / itv) % 2) == 0;//ライト被ってるせい
+                            }
+                        }
 
-                    	if(render)
-                    	{
-                    		i0 = i;
-                    		for(String s : this.lightParts[i].parts)
-                        	{
-                    			model.renderPart(smoothing, s);//点灯してるライト
-                    			this.lightList.add(s);
-                        	}
-                    	}
-            		}
-            		else
-            		{
-                		for(String s : this.lightParts[i].parts)
-                    	{
-                			if(!this.lightList.contains(s))
-                			{
-                				model.renderPart(smoothing, s);//点灯してないライト
-                			}
-                    	}
-            		}
+                        if (render) {
+                            i0 = i;
+                            for (String s : this.lightParts[i].parts) {
+                                model.renderPart(smoothing, s);//点灯してるライト
+                                this.lightList.add(s);
+                            }
+                        }
+                    } else {
+                        for (String s : this.lightParts[i].parts) {
+                            if (!this.lightList.contains(s)) {
+                                model.renderPart(smoothing, s);//点灯してないライト
+                            }
+                        }
+                    }
                 }
             }
         }
 
         GL11.glPopMatrix();
-	}
+    }
 }

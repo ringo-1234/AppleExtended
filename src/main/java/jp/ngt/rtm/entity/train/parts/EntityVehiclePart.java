@@ -1,6 +1,18 @@
-package jp.ngt.rtm.entity.train.parts;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.UUID;
+package jp.ngt.rtm.entity.train.parts;
 
 import jp.ngt.ngtlib.entity.EntityCustom;
 import jp.ngt.ngtlib.math.PooledVec3;
@@ -20,252 +32,217 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class EntityVehiclePart extends EntityCustom
-{
-	private static final DataParameter<Integer> TRAIN_ID = EntityDataManager.<Integer>createKey(EntityVehiclePart.class, DataSerializers.VARINT);
-	private static final DataParameter<Rotations> POS = EntityDataManager.<Rotations>createKey(EntityVehiclePart.class, DataSerializers.ROTATIONS);
+import java.util.UUID;
 
-	/**設置してあるならtrue, 列車の上にあるならfalse*/
-	protected boolean isIndependent;
-	private EntityVehicleBase parent;
-	private UUID unloadedParent;
-	public boolean needsUpdatePos;
+public abstract class EntityVehiclePart extends EntityCustom {
+    private static final DataParameter<Integer> TRAIN_ID = EntityDataManager.<Integer>createKey(EntityVehiclePart.class, DataSerializers.VARINT);
+    private static final DataParameter<Rotations> POS = EntityDataManager.<Rotations>createKey(EntityVehiclePart.class, DataSerializers.ROTATIONS);
 
-	private EntityLivingBase rider;
+    protected boolean isIndependent;
+    private EntityVehicleBase parent;
+    private UUID unloadedParent;
+    public boolean needsUpdatePos;
 
-	public EntityVehiclePart(World par1)
-	{
-		super(par1);
-	}
+    private EntityLivingBase rider;
 
-	public EntityVehiclePart(World par1, EntityVehicleBase par2, float[] par3Pos)
-    {
-		this(par1);
-		this.setVehicle(par2);
-		this.setPartPos(par3Pos[0], par3Pos[1], par3Pos[2]);
-		this.updatePartPos(par2);
-	}
-
-	@Override
-	protected void entityInit()
-    {
-		this.getDataManager().register(TRAIN_ID, Integer.valueOf(0));
-		this.getDataManager().register(POS, new Rotations(0.0F, 0.0F, 0.0F));
+    public EntityVehiclePart(World par1) {
+        super(par1);
     }
 
-	@Override
-	public void syncData(){}
-
-	@Override
-	protected void writeEntityToNBT(NBTTagCompound nbt)
-	{
-		nbt.setBoolean("Independent", this.isIndependent);
-		Vec3 v3 = this.getPartVec();
-		nbt.setFloat("vecX", (float)v3.getX());
-		nbt.setFloat("vecY", (float)v3.getY());
-		nbt.setFloat("vecZ", (float)v3.getZ());
-		if(this.getVehicle() != null)
-    	{
-    		long l0 = 0L;
-			long l1 = 0L;
-			UUID uuid = this.getVehicle().getUniqueID();
-			if(uuid != null)
-			{
-				l0 = uuid.getMostSignificantBits();
-				l1 = uuid.getLeastSignificantBits();
-			}
-			nbt.setLong("trainUUID_Most", l0);
-			nbt.setLong("trainUUID_Least", l1);
-    	}
-	}
-
-	@Override
-	protected void readEntityFromNBT(NBTTagCompound nbt)
-	{
-		this.isIndependent = nbt.getBoolean("Independent");
-		float vX = nbt.getFloat("vecX");
-		float vY = nbt.getFloat("vecY");
-		float vZ = nbt.getFloat("vecZ");
-		this.setPartPos(vX, vY, vZ);
-		if(nbt.hasKey("trainUUID_Most", 4) && nbt.hasKey("trainUUID_Least", 4))
-		{
-			long l0 = nbt.getLong("trainUUID_Most");
-			long l1 = nbt.getLong("trainUUID_Least");
-			if(l0 != 0L && l1 != 0L)
-			{
-				UUID uuid = new UUID(l0, l1);
-				if(!this.loadTrainFromUUID(uuid))
-				{
-					this.unloadedParent = uuid;
-				}
-			}
-		}
-	}
-
-	private boolean loadTrainFromUUID(UUID uuid)
-    {
-    	for(int j = 0; j < this.world.loadedEntityList.size(); ++j)
-		{
-			Entity entity = (Entity)this.world.loadedEntityList.get(j);
-			if(uuid.equals(entity.getUniqueID()) && entity instanceof EntityVehicleBase)
-			{
-				this.setVehicle((EntityVehicleBase)entity);
-				this.onLoadVehicle();
-				return true;
-			}
-		}
-    	return false;
+    public EntityVehiclePart(World par1, EntityVehicleBase par2, float[] par3Pos) {
+        this(par1);
+        this.setVehicle(par2);
+        this.setPartPos(par3Pos[0], par3Pos[1], par3Pos[2]);
+        this.updatePartPos(par2);
     }
 
-	/**EntityVehicleBaseへ自身の登録を行う。(セーブデータからの読み込み時のみ)*/
-	public abstract void onLoadVehicle();
-
-	@Override
-	public AxisAlignedBB getCollisionBox(Entity par1)
-    {
-		if(par1 instanceof EntityVehiclePart || par1 instanceof EntityVehicleBase || par1 instanceof EntityBogie)
-		{
-			return null;
-		}
-    	return par1.getEntityBoundingBox();
+    @Override
+    protected void entityInit() {
+        this.getDataManager().register(TRAIN_ID, Integer.valueOf(0));
+        this.getDataManager().register(POS, new Rotations(0.0F, 0.0F, 0.0F));
     }
 
-	@Override
-	public AxisAlignedBB getCollisionBoundingBox()
-    {
+    @Override
+    public void syncData() {
+    }
+
+    @Override
+    protected void writeEntityToNBT(NBTTagCompound nbt) {
+        nbt.setBoolean("Independent", this.isIndependent);
+        Vec3 v3 = this.getPartVec();
+        nbt.setFloat("vecX", (float) v3.getX());
+        nbt.setFloat("vecY", (float) v3.getY());
+        nbt.setFloat("vecZ", (float) v3.getZ());
+        if (this.getVehicle() != null) {
+            long l0 = 0L;
+            long l1 = 0L;
+            UUID uuid = this.getVehicle().getUniqueID();
+            if (uuid != null) {
+                l0 = uuid.getMostSignificantBits();
+                l1 = uuid.getLeastSignificantBits();
+            }
+            nbt.setLong("trainUUID_Most", l0);
+            nbt.setLong("trainUUID_Least", l1);
+        }
+    }
+
+    @Override
+    protected void readEntityFromNBT(NBTTagCompound nbt) {
+        this.isIndependent = nbt.getBoolean("Independent");
+        float vX = nbt.getFloat("vecX");
+        float vY = nbt.getFloat("vecY");
+        float vZ = nbt.getFloat("vecZ");
+        this.setPartPos(vX, vY, vZ);
+        if (nbt.hasKey("trainUUID_Most", 4) && nbt.hasKey("trainUUID_Least", 4)) {
+            long l0 = nbt.getLong("trainUUID_Most");
+            long l1 = nbt.getLong("trainUUID_Least");
+            if (l0 != 0L && l1 != 0L) {
+                UUID uuid = new UUID(l0, l1);
+                if (!this.loadTrainFromUUID(uuid)) {
+                    this.unloadedParent = uuid;
+                }
+            }
+        }
+    }
+
+    private boolean loadTrainFromUUID(UUID uuid) {
+        for (int j = 0; j < this.world.loadedEntityList.size(); ++j) {
+            Entity entity = (Entity) this.world.loadedEntityList.get(j);
+            if (uuid.equals(entity.getUniqueID()) && entity instanceof EntityVehicleBase) {
+                this.setVehicle((EntityVehicleBase) entity);
+                this.onLoadVehicle();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public abstract void onLoadVehicle();
+
+    @Override
+    public AxisAlignedBB getCollisionBox(Entity par1) {
+        if (par1 instanceof EntityVehiclePart || par1 instanceof EntityVehicleBase || par1 instanceof EntityBogie) {
+            return null;
+        }
+        return par1.getEntityBoundingBox();
+    }
+
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox() {
         return this.getEntityBoundingBox();
     }
 
     @Override
-    public boolean canBeCollidedWith()
-    {
+    public boolean canBeCollidedWith() {
         return !this.isDead;
     }
 
-	@Override
-	protected boolean canTriggerWalking()
-    {
+    @Override
+    protected boolean canTriggerWalking() {
         return false;
     }
 
-	@Override
-	public void onUpdate()
-    {
-		if(!this.world.isRemote)
-		{
-			if(this.getFirstPassenger() != null)
-			{
-				if(this.rider == null && this.getFirstPassenger() instanceof EntityLivingBase)
-				{
-					this.rider = (EntityLivingBase)this.getFirstPassenger();
-				}
-			}
-			else if(this.rider != null)
-			{
-				this.onDismount(this.rider);
-				this.rider = null;
-			}
-		}
+    @Override
+    public void onUpdate() {
+        if (!this.world.isRemote) {
+            if (this.ticksExisted > 100 && !this.isIndependent) {
+                EntityVehicleBase parent = this.getVehicle();
+                if (parent == null || parent.isDead) {
+                    this.setDead();
+                    return;
+                }
+            }
+            if (this.getFirstPassenger() != null) {
+                if (this.rider == null && this.getFirstPassenger() instanceof EntityLivingBase) {
+                    this.rider = (EntityLivingBase) this.getFirstPassenger();
+                }
+            } else if (this.rider != null) {
+                this.onDismount(this.rider);
+                this.rider = null;
+            }
+        }
 
-		if(this.isIndependent)
-		{
-			this.prevPosX = this.posX;
-	        this.prevPosY = this.posY;
-	        this.prevPosZ = this.posZ;
-	        this.prevRotationPitch = this.rotationPitch;
-	        this.prevRotationYaw = this.rotationYaw;
-		}
-		else
-		{
-			if(this.unloadedParent != null)
-    		{
-    			if(this.loadTrainFromUUID(this.unloadedParent))
-    			{
-    				this.unloadedParent = null;
-    			}
-    		}
+        if (this.isIndependent) {
+            this.prevPosX = this.posX;
+            this.prevPosY = this.posY;
+            this.prevPosZ = this.posZ;
+            this.prevRotationPitch = this.rotationPitch;
+            this.prevRotationYaw = this.rotationYaw;
+        } else {
+            if (this.unloadedParent != null) {
+                if (this.loadTrainFromUUID(this.unloadedParent)) {
+                    this.unloadedParent = null;
+                }
+            }
 
-			super.onUpdate();
+            super.onUpdate();
 
-			EntityVehicleBase vehicle = this.getVehicle();
-			if(vehicle != null)
-			{
-				//XZ方向の移動がなくても更新(転車台でズレルの回避)
-				this.updatePartPos(vehicle);
-			}
-		}
+            EntityVehicleBase vehicle = this.getVehicle();
+            if (vehicle != null) {
+                this.updatePartPos(vehicle);
+            }
+        }
     }
 
-	public void onDismount(Entity rider)
-	{
-		if(this.getVehicle() != null)
-		{
-			this.getVehicle().fixRiderPosOnDismount(rider, this);
-		}
-	}
-
-	/**位置を更新*/
-	public void updatePartPos(EntityVehicleBase vehicle)
-	{
-		Vec3 v3 = this.getPartVec();
-		v3 = v3.rotateAroundZ(-vehicle.rotationRoll);
-		v3 = v3.rotateAroundX(vehicle.rotationPitch);
-		v3 = v3.rotateAroundY(vehicle.rotationYaw);
-		this.setPosition(vehicle.posX + v3.getX(), vehicle.posY + v3.getY(), vehicle.posZ + v3.getZ());
-		this.setRotation(vehicle.rotationYaw, vehicle.rotationPitch);
-		this.needsUpdatePos = false;
-	}
-
-	@Override
-	@SideOnly(Side.CLIENT)//NetClientHandler.handleEntity, par9は常に3
-    public void setPositionAndRotationDirect(double par1, double par3, double par5, float par7, float par8, int par9, boolean par10)
-    {
-    	if(this.getVehicle() == null || this.getVehicle().getSpeed() <= 0.0F)
-    	{
-    		this.setPosition(par1, par3, par5);
-            this.setRotation(par7, par8);
-    	}
+    public void onDismount(Entity rider) {
+        if (this.getVehicle() != null) {
+            this.getVehicle().fixRiderPosOnDismount(rider, this);
+        }
     }
 
-	@Override
+    public void updatePartPos(EntityVehicleBase vehicle) {
+        Vec3 v3 = this.getPartVec();
+        v3 = v3.rotateAroundZ(-vehicle.rotationRoll);
+        v3 = v3.rotateAroundX(vehicle.rotationPitch);
+        v3 = v3.rotateAroundY(vehicle.rotationYaw);
+        this.setPosition(vehicle.posX + v3.getX(), vehicle.posY + v3.getY(), vehicle.posZ + v3.getZ());
+        this.setRotation(vehicle.rotationYaw, vehicle.rotationPitch);
+        this.needsUpdatePos = false;
+    }
+
+    @Override
     @SideOnly(Side.CLIENT)
-    public void setVelocity(double par1, double par3, double par5){}
+    public void setPositionAndRotationDirect(double par1, double par3, double par5, float par7, float par8, int par9, boolean par10) {
+        if (this.getVehicle() == null || this.getVehicle().getSpeed() == 0.0F) {
+            this.setPosition(par1, par3, par5);
+            this.setRotation(par7, par8);
+        }
+    }
 
     @Override
-    public void move(MoverType type, double par1, double par3, double par5){}
+    @SideOnly(Side.CLIENT)
+    public void setVelocity(double par1, double par3, double par5) {
+    }
 
     @Override
-	public void addVelocity(double par1, double par3, double par5){}
-
-    public void setVehicle(EntityVehicleBase vehicle)
-    {
-    	this.getDataManager().set(TRAIN_ID, Integer.valueOf(vehicle.getEntityId()));
+    public void move(MoverType type, double par1, double par3, double par5) {
     }
 
-    public EntityVehicleBase getVehicle()
-    {
-    	if(this.parent == null)
-    	{
-    		int id = this.getDataManager().get(TRAIN_ID);
-    		Entity entity = this.world.getEntityByID(id);
-        	if(entity instanceof EntityVehicleBase)
-        	{
-        		this.parent = (EntityVehicleBase)entity;
-        	}
-    	}
-    	return this.parent;
+    @Override
+    public void addVelocity(double par1, double par3, double par5) {
     }
 
-    /**EntityTrainとの相対位置を保存*/
-    public void setPartPos(float x, float y, float z)
-    {
-    	this.getDataManager().set(POS, new Rotations(x, y, z));
+    public void setVehicle(EntityVehicleBase vehicle) {
+        this.getDataManager().set(TRAIN_ID, Integer.valueOf(vehicle.getEntityId()));
     }
 
-    /**EntityTrainとの相対位置を取得*/
-    public Vec3 getPartVec()
-    {
-    	Rotations ro = this.getDataManager().get(POS);
-    	return PooledVec3.create(ro.getX(), ro.getY(), ro.getZ());
+    public EntityVehicleBase getVehicle() {
+        if (this.parent == null) {
+            int id = this.getDataManager().get(TRAIN_ID);
+            Entity entity = this.world.getEntityByID(id);
+            if (entity instanceof EntityVehicleBase) {
+                this.parent = (EntityVehicleBase) entity;
+            }
+        }
+        return this.parent;
+    }
+
+    public void setPartPos(float x, float y, float z) {
+        this.getDataManager().set(POS, new Rotations(x, y, z));
+    }
+
+    public Vec3 getPartVec() {
+        Rotations ro = this.getDataManager().get(POS);
+        return PooledVec3.create(ro.getX(), ro.getY(), ro.getZ());
     }
 }

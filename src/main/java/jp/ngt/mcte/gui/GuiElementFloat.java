@@ -1,3 +1,17 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.mcte.gui;
 
 import jp.ngt.mcte.editor.filter.Config;
@@ -8,52 +22,42 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class GuiElementFloat extends GuiTextFieldCustom implements IGuiElement
-{
-	private final Config cfg;
-	private final String paramName;
+public class GuiElementFloat extends GuiTextFieldCustom implements IGuiElement {
+    private final Config cfg;
+    private final String paramName;
 
-	public GuiElementFloat(int id, int x, int y, int w, int h, Config cfg, String key)
-	{
-		super(id, NGTUtilClient.getMinecraft().fontRenderer, x, y, w, h, null);
-		this.cfg = cfg;
-		this.paramName = key;
-		this.setText(String.valueOf(cfg.getFloat(key)));
-	}
-
-	@Override
-	public void setFocused(boolean par1)
-    {
-		super.setFocused(par1);
-		if(!par1)
-		{
-			this.updateValue();
-		}
+    public GuiElementFloat(int id, int x, int y, int w, int h, Config cfg, String key) {
+        super(id, NGTUtilClient.getMinecraft().fontRenderer, x, y, w, h, null);
+        this.cfg = cfg;
+        this.paramName = key;
+        this.setText(String.valueOf(cfg.getFloat(key)));
     }
 
-	private void updateValue()
-	{
-		try
-		{
-			float value = Float.valueOf(this.getText());
-			this.cfg.setFloat(this.paramName, value);
-			this.setText(String.valueOf(this.cfg.getFloat(this.paramName)));
-		}
-		catch(NumberFormatException e)
-		{
-			e.printStackTrace();
-		}
-	}
+    @Override
+    public void setFocused(boolean par1) {
+        super.setFocused(par1);
+        if (!par1) {
+            this.updateValue();
+        }
+    }
 
-	@Override
-	public void init(GuiScreenCustom gui)
-	{
-		gui.getTextFields().add(this);
-	}
+    private void updateValue() {
+        try {
+            float value = Float.valueOf(this.getText());
+            this.cfg.setFloat(this.paramName, value);
+            this.setText(String.valueOf(this.cfg.getFloat(this.paramName)));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+    }
 
-	@Override
-	public void setYPos(int y)
-	{
-		this.y = y;
-	}
+    @Override
+    public void init(GuiScreenCustom gui) {
+        gui.getTextFields().add(this);
+    }
+
+    @Override
+    public void setYPos(int y) {
+        this.y = y;
+    }
 }

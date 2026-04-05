@@ -1,26 +1,34 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.ngtlib.renderer;
-
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
-import java.util.Arrays;
-import java.util.PriorityQueue;
-
-import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.renderer.GLAllocation;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
+
+import java.nio.*;
+import java.util.Arrays;
+import java.util.PriorityQueue;
 
 @SideOnly(Side.CLIENT)
-public final class NGTTessellator implements IRenderer
-{
-	public static final NGTTessellator instance = new NGTTessellator();
+public final class NGTTessellator implements IRenderer {
+    public static final NGTTessellator instance = new NGTTessellator();
 
-	private static final int NATIVE_BUFFER_SIZE = 0x600000;//0x200000=2097152//速度に影響なし?
+    private static final int NATIVE_BUFFER_SIZE = 0x600000;//0x200000=2097152//速度に影響なし?
 
     private static final ByteBuffer byteBuffer = GLAllocation.createDirectByteBuffer(NATIVE_BUFFER_SIZE * 4);
     private static final IntBuffer intBuffer = byteBuffer.asIntBuffer();
@@ -29,7 +37,9 @@ public final class NGTTessellator implements IRenderer
     private int[] rawBuffer;
     private int rawBufferIndex;
     private int rawBufferSize = 0;
-    /**The number of vertices to be drawn in the next draw call. Reset to 0 between draw calls.*/
+    /**
+     * The number of vertices to be drawn in the next draw call. Reset to 0 between draw calls.
+     */
     private int vertexCount;
     private float textureU, textureV;
     private int brightness;
@@ -42,29 +52,33 @@ public final class NGTTessellator implements IRenderer
     private boolean hasNormals;
     private boolean isColorDisabled;
 
-    /**An offset to be applied along the x-axis for all vertices in this draw call.*/
+    /**
+     * An offset to be applied along the x-axis for all vertices in this draw call.
+     */
     private float xOffset, yOffset, zOffset;
-    /** The normal to be applied to the face being drawn. */
+    /**
+     * The normal to be applied to the face being drawn.
+     */
     private int normal;
-    /** Whether this tessellator is currently in draw mode. */
+    /**
+     * Whether this tessellator is currently in draw mode.
+     */
     private boolean isDrawing;
 
-    private NGTTessellator(){}
+    private NGTTessellator() {
+    }
 
-    /**Draws the data set up in this tessellator and resets the state to prepare for new drawing.*/
-    public int draw()
-    {
-        if(!this.isDrawing)
-        {
+    /**
+     * Draws the data set up in this tessellator and resets the state to prepare for new drawing.
+     */
+    public int draw() {
+        if (!this.isDrawing) {
             throw new IllegalStateException("Not tesselating!");
-        }
-        else
-        {
+        } else {
             this.isDrawing = false;
 
             int offs = 0;
-            while(offs < this.vertexCount)
-            {
+            while (offs < this.vertexCount) {
                 int vtc = Math.min(this.vertexCount - offs, NATIVE_BUFFER_SIZE >> 5);
                 this.intBuffer.clear();
                 this.intBuffer.put(this.rawBuffer, offs << 3, vtc << 3);
@@ -72,15 +86,13 @@ public final class NGTTessellator implements IRenderer
                 this.byteBuffer.limit(vtc << 5);
                 offs += vtc;
 
-                if(this.hasTexture)
-                {
+                if (this.hasTexture) {
                     this.floatBuffer.position(3);
                     GL11.glTexCoordPointer(2, 32, this.floatBuffer);
                     GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 }
 
-                if(this.hasBrightness)
-                {
+                if (this.hasBrightness) {
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.lightmapTexUnit);
                     this.shortBuffer.position(14);
                     GL11.glTexCoordPointer(2, 32, this.shortBuffer);
@@ -88,15 +100,13 @@ public final class NGTTessellator implements IRenderer
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit);
                 }
 
-                if(this.hasColor)
-                {
+                if (this.hasColor) {
                     this.byteBuffer.position(20);
                     GL11.glColorPointer(4, true, 32, this.byteBuffer);
                     GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
                 }
 
-                if(this.hasNormals)
-                {
+                if (this.hasNormals) {
                     this.byteBuffer.position(24);
                     GL11.glNormalPointer(32, this.byteBuffer);
                     GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
@@ -108,33 +118,28 @@ public final class NGTTessellator implements IRenderer
                 GL11.glDrawArrays(this.drawMode, 0, vtc);
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
 
-                if(this.hasTexture)
-                {
+                if (this.hasTexture) {
                     GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 }
 
-                if(this.hasBrightness)
-                {
+                if (this.hasBrightness) {
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.lightmapTexUnit);
                     GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.defaultTexUnit);
                 }
 
-                if(this.hasColor)
-                {
+                if (this.hasColor) {
                     GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
                 }
 
-                if(this.hasNormals)
-                {
+                if (this.hasNormals) {
                     GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
                 }
             }
 
-            if(this.rawBufferSize > 0x20000 && this.rawBufferIndex < (this.rawBufferSize << 3))
-            {
-            	this.rawBufferSize = 0x10000;
-            	this.rawBuffer = new int[this.rawBufferSize];
+            if (this.rawBufferSize > 0x20000 && this.rawBufferIndex < (this.rawBufferSize << 3)) {
+                this.rawBufferSize = 0x10000;
+                this.rawBuffer = new int[this.rawBufferSize];
             }
 
             int i = this.rawBufferIndex << 2;
@@ -143,23 +148,19 @@ public final class NGTTessellator implements IRenderer
         }
     }
 
-    public TesselatorVertexState getVertexState(float x, float y, float z)
-    {
+    public TesselatorVertexState getVertexState(float x, float y, float z) {
         int[] aint = new int[this.rawBufferIndex];
         PriorityQueue priorityqueue = new PriorityQueue(this.rawBufferIndex, new QuadComparator(this.rawBuffer, x + this.xOffset, y + this.yOffset, z + this.zOffset));
         byte b0 = 32;
 
-        for(int i = 0; i < this.rawBufferIndex; i += b0)
-        {
+        for (int i = 0; i < this.rawBufferIndex; i += b0) {
             priorityqueue.add(Integer.valueOf(i));
         }
 
-        for(int i = 0; !priorityqueue.isEmpty(); i += b0)
-        {
-            int j = ((Integer)priorityqueue.remove()).intValue();
+        for (int i = 0; !priorityqueue.isEmpty(); i += b0) {
+            int j = ((Integer) priorityqueue.remove()).intValue();
 
-            for(int k = 0; k < b0; ++k)
-            {
+            for (int k = 0; k < b0; ++k) {
                 aint[i + k] = this.rawBuffer[j + k];
             }
         }
@@ -168,16 +169,13 @@ public final class NGTTessellator implements IRenderer
         return new TesselatorVertexState(aint, this.rawBufferIndex, this.vertexCount, this.hasTexture, this.hasBrightness, this.hasNormals, this.hasColor);
     }
 
-    public void setVertexState(TesselatorVertexState state)
-    {
-        while(state.getRawBuffer().length > this.rawBufferSize && this.rawBufferSize > 0)
-        {
-        	this.rawBufferSize <<= 1;
+    public void setVertexState(TesselatorVertexState state) {
+        while (state.getRawBuffer().length > this.rawBufferSize && this.rawBufferSize > 0) {
+            this.rawBufferSize <<= 1;
         }
 
-        if(this.rawBufferSize > this.rawBuffer.length)
-        {
-        	this.rawBuffer = new int[this.rawBufferSize];
+        if (this.rawBufferSize > this.rawBuffer.length) {
+            this.rawBuffer = new int[this.rawBufferSize];
         }
 
         System.arraycopy(state.getRawBuffer(), 0, this.rawBuffer, 0, state.getRawBuffer().length);
@@ -189,27 +187,23 @@ public final class NGTTessellator implements IRenderer
         this.hasNormals = state.getHasNormals();
     }
 
-    /**Clears the tessellator state in preparation for new drawing.*/
-    private void reset()
-    {
+    /**
+     * Clears the tessellator state in preparation for new drawing.
+     */
+    private void reset() {
         this.vertexCount = 0;
         this.byteBuffer.clear();
         this.rawBufferIndex = 0;
     }
 
-    public void startDrawingQuads()
-    {
+    public void startDrawingQuads() {
         this.startDrawing(GL11.GL_QUADS);
     }
 
-    public void startDrawing(int par1)
-    {
-        if(this.isDrawing)
-        {
+    public void startDrawing(int par1) {
+        if (this.isDrawing) {
             throw new IllegalStateException("Already tesselating!");
-        }
-        else
-        {
+        } else {
             this.isDrawing = true;
             this.reset();
             this.drawMode = par1;
@@ -221,15 +215,13 @@ public final class NGTTessellator implements IRenderer
         }
     }
 
-    public void setTextureUV(float par1, float par3)
-    {
+    public void setTextureUV(float par1, float par3) {
         this.hasTexture = true;
         this.textureU = par1;
         this.textureV = par3;
     }
 
-    public void setBrightness(int par1)
-    {
+    public void setBrightness(int par1) {
         this.hasBrightness = true;
         this.brightness = par1;
     }
@@ -237,125 +229,97 @@ public final class NGTTessellator implements IRenderer
     /**
      * Sets the RGB values as specified, converting from floats between 0 and 1 to integers from 0-255.
      */
-    public void setColorOpaque_F(float par1, float par2, float par3)
-    {
-        this.setColorOpaque((int)(par1 * 255.0F), (int)(par2 * 255.0F), (int)(par3 * 255.0F));
+    public void setColorOpaque_F(float par1, float par2, float par3) {
+        this.setColorOpaque((int) (par1 * 255.0F), (int) (par2 * 255.0F), (int) (par3 * 255.0F));
     }
 
     /**
      * Sets the RGBA values for the color, converting from floats between 0 and 1 to integers from 0-255.
      */
-    public void setColorRGBA_F(float par1, float par2, float par3, float par4)
-    {
-        this.setColor((int)(par1 * 255.0F), (int)(par2 * 255.0F), (int)(par3 * 255.0F), (int)(par4 * 255.0F));
+    public void setColorRGBA_F(float par1, float par2, float par3, float par4) {
+        this.setColor((int) (par1 * 255.0F), (int) (par2 * 255.0F), (int) (par3 * 255.0F), (int) (par4 * 255.0F));
     }
 
     /**
      * Sets the RGB values as specified, and sets alpha to opaque.
      */
-    public void setColorOpaque(int par1, int par2, int par3)
-    {
+    public void setColorOpaque(int par1, int par2, int par3) {
         this.setColor(par1, par2, par3, 255);
     }
 
     /**
      * Sets the RGBA values for the color. Also clamps them to 0-255.
      */
-    public void setColor(int r, int g, int b, int a)
-    {
-        if (!this.isColorDisabled)
-        {
-            if(r > 255)
-            {
+    public void setColor(int r, int g, int b, int a) {
+        if (!this.isColorDisabled) {
+            if (r > 255) {
                 r = 255;
-            }
-            else if (r < 0)
-            {
+            } else if (r < 0) {
                 r = 0;
             }
 
-            if(g > 255)
-            {
+            if (g > 255) {
                 g = 255;
-            }
-            else if (g < 0)
-            {
+            } else if (g < 0) {
                 g = 0;
             }
 
-            if(b > 255)
-            {
+            if (b > 255) {
                 b = 255;
-            }
-            else if (b < 0)
-            {
+            } else if (b < 0) {
                 b = 0;
             }
 
-            if(a > 255)
-            {
+            if (a > 255) {
                 a = 255;
-            }
-            else if (a < 0)
-            {
+            } else if (a < 0) {
                 a = 0;
             }
 
             this.hasColor = true;
 
-            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN)
-            {
+            if (ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN) {
                 this.color = a << 24 | b << 16 | g << 8 | r;
-            }
-            else
-            {
+            } else {
                 this.color = r << 24 | g << 16 | b << 8 | a;
             }
         }
     }
 
     @Override
-    public void addVertexWithUV(float x, float y, float z, float u, float v)
-    {
+    public void addVertexWithUV(float x, float y, float z, float u, float v) {
         this.setTextureUV(u, v);
         this.addVertex(x, y, z);
     }
 
-    /** Adds a vertex with the specified x,y,z to the current draw call. It will trigger a draw() if the buffer gets full.*/
-    public void addVertex(float par1, float par3, float par5)
-    {
-        if(this.rawBufferIndex >= this.rawBufferSize - 32)
-        {
-            if (this.rawBufferSize == 0)
-            {
-            	this.rawBufferSize = 0x10000;
-            	this.rawBuffer = new int[this.rawBufferSize];
-            }
-            else
-            {
-            	this.rawBufferSize *= 2;
-            	this.rawBuffer = Arrays.copyOf(this.rawBuffer, this.rawBufferSize);
+    /**
+     * Adds a vertex with the specified x,y,z to the current draw call. It will trigger a draw() if the buffer gets full.
+     */
+    public void addVertex(float par1, float par3, float par5) {
+        if (this.rawBufferIndex >= this.rawBufferSize - 32) {
+            if (this.rawBufferSize == 0) {
+                this.rawBufferSize = 0x10000;
+                this.rawBuffer = new int[this.rawBufferSize];
+            } else {
+                this.rawBufferSize *= 2;
+                this.rawBuffer = Arrays.copyOf(this.rawBuffer, this.rawBufferSize);
             }
         }
 
-        if (this.hasTexture)
-        {
+        if (this.hasTexture) {
             this.rawBuffer[this.rawBufferIndex + 3] = Float.floatToRawIntBits(this.textureU);
             this.rawBuffer[this.rawBufferIndex + 4] = Float.floatToRawIntBits(this.textureV);
         }
 
-        if (this.hasBrightness)
-        {
+        if (this.hasBrightness) {
             this.rawBuffer[this.rawBufferIndex + 7] = this.brightness;
         }
 
-        if (this.hasColor)
-        {
+        if (this.hasColor) {
             this.rawBuffer[this.rawBufferIndex + 5] = this.color;
         }
 
-        if (this.hasNormals)
-        {
+        if (this.hasNormals) {
             this.rawBuffer[this.rawBufferIndex + 6] = this.normal;
         }
 
@@ -369,8 +333,7 @@ public final class NGTTessellator implements IRenderer
     /**
      * Sets the color to the given opaque value (stored as byte values packed in an integer).
      */
-    public void setColorOpaque_I(int par1)
-    {
+    public void setColorOpaque_I(int par1) {
         int j = par1 >> 16 & 0xFF;
         int k = par1 >> 8 & 0xFF;
         int l = par1 & 0xFF;
@@ -380,33 +343,29 @@ public final class NGTTessellator implements IRenderer
     /**
      * Sets the color to the given color (packed as bytes in integer) and alpha values.
      */
-    public void setColorRGBA_I(int par1, int par2)
-    {
+    public void setColorRGBA_I(int par1, int par2) {
         int k = par1 >> 16 & 0xFF;
         int l = par1 >> 8 & 0xFF;
         int i1 = par1 & 0xFF;
         this.setColor(k, l, i1, par2);
     }
 
-    public void disableColor()
-    {
+    public void disableColor() {
         this.isColorDisabled = true;
     }
 
     /**
      * Sets the normal for the current draw call.
      */
-    public void setNormal(float par1, float par2, float par3)
-    {
+    public void setNormal(float par1, float par2, float par3) {
         this.hasNormals = true;
-        int b0 = (int)(par1 * 127.0F);
-        int b1 = (int)(par2 * 127.0F);
-        int b2 = (int)(par3 * 127.0F);
+        int b0 = (int) (par1 * 127.0F);
+        int b1 = (int) (par2 * 127.0F);
+        int b2 = (int) (par3 * 127.0F);
         this.normal = b0 & 0xFF | (b1 & 0xFF) << 8 | (b2 & 0xFF) << 16;
     }
 
-    public void resetTranslation()
-    {
+    public void resetTranslation() {
         this.xOffset = 0.0F;
         this.yOffset = 0.0F;
         this.zOffset = 0.0F;
@@ -415,8 +374,7 @@ public final class NGTTessellator implements IRenderer
     /**
      * Sets the translation for all vertices in the current draw call.
      */
-    public void setTranslation(float par1, float par3, float par5)
-    {
+    public void setTranslation(float par1, float par3, float par5) {
         this.xOffset = par1;
         this.yOffset = par3;
         this.zOffset = par5;
@@ -425,8 +383,7 @@ public final class NGTTessellator implements IRenderer
     /**
      * Offsets the translation for all vertices in the current draw call.
      */
-    public void addTranslation(float par1, float par2, float par3)
-    {
+    public void addTranslation(float par1, float par2, float par3) {
         this.xOffset += par1;
         this.yOffset += par2;
         this.zOffset += par3;

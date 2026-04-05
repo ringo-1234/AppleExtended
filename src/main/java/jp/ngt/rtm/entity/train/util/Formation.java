@@ -1,425 +1,357 @@
-package jp.ngt.rtm.entity.train.util;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.ArrayList;
-import java.util.List;
+package jp.ngt.rtm.entity.train.util;
 
 import jp.ngt.ngtlib.util.NGTUtil;
 import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.entity.train.EntityBogie;
 import jp.ngt.rtm.entity.train.EntityTrainBase;
 import jp.ngt.rtm.entity.train.util.BogieController.MotionState;
-import jp.ngt.rtm.entity.train.util.TrainState.TrainStateType;
 import jp.ngt.rtm.network.PacketFormation;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-/**編成の管理, ServerOnly*/
-public final class Formation
-{
-	public final long id;
-	public FormationEntry[] entries;
+import java.util.ArrayList;
+import java.util.List;
 
-	private EntityTrainBase controlCar;
-	private byte direction;
-	private float speed;
+public final class Formation {
+    public final long id;
+    public FormationEntry[] entries;
 
-	/**
-	 * @param par1 ID
-	 * @param par2 両数
-	 */
-	public Formation(long par1, int par2)
-	{
-		this.id = par1;
-		this.entries = new FormationEntry[par2];
-		FormationManager.getInstance().setFormation(par1, this);
-	}
+    private EntityTrainBase controlCar;
+    private byte direction;
+    private float speed;
 
-	public static Formation readFromNBT(NBTTagCompound nbt, boolean withEntries)
-	{
-		long fid = nbt.getLong("FormationId");
-		int num = nbt.getInteger("Size");
-		Formation formation = new Formation(fid, num);
-		if(withEntries)
-		{
-			NBTTagList tagList = nbt.getTagList("Entries", 10);
-			for(int i = 0; i < tagList.tagCount(); ++i)
-	    	{
-	    		FormationEntry entry = FormationEntry.readFromNBT(tagList.getCompoundTagAt(i));
-	    		if(entry != null)
-	    		{
-	    			formation.setEntry(entry, i);
-		    		entry.train.setFormation(formation);
-	    		}
-	    	}
-		}
-		return formation;
-	}
+    public Formation(long par1, int par2) {
+        this.id = par1;
+        this.entries = new FormationEntry[par2];
+        FormationManager.getInstance().setFormation(par1, this);
+    }
 
-	public void writeToNBT(NBTTagCompound nbt, boolean withEntries)
-	{
-		nbt.setLong("FormationId", this.id);
-		nbt.setInteger("Size", this.entries.length);
+    public static Formation readFromNBT(NBTTagCompound nbt, boolean withEntries) {
+        long fid = nbt.getLong("FormationId");
+        int num = nbt.getInteger("Size");
+        Formation formation = new Formation(fid, num);
+        if (withEntries) {
+            NBTTagList tagList = nbt.getTagList("Entries", 10);
+            for (int i = 0; i < tagList.tagCount(); ++i) {
+                FormationEntry entry = FormationEntry.readFromNBT(tagList.getCompoundTagAt(i));
+                if (entry != null) {
+                    formation.setEntry(entry, i);
+                    entry.train.setFormation(formation);
+                }
+            }
+        }
+        return formation;
+    }
 
-		if(withEntries)
-		{
-			NBTTagList tagList = new NBTTagList();
-			for(FormationEntry entry : this.entries)
-			{
-				if(entry != null)
-				{
-					NBTTagCompound tag = new NBTTagCompound();
-					entry.writeToNBT(tag);
-					tagList.appendTag(tag);
-				}
-			}
-			nbt.setTag("Entries", tagList);
-		}
-	}
+    public void writeToNBT(NBTTagCompound nbt, boolean withEntries) {
+        nbt.setLong("FormationId", this.id);
+        nbt.setInteger("Size", this.entries.length);
 
-	/**@return 両数*/
-	public int size()
-	{
-		return this.entries.length;
-	}
+        if (withEntries) {
+            NBTTagList tagList = new NBTTagList();
+            for (FormationEntry entry : this.entries) {
+                if (entry != null) {
+                    NBTTagCompound tag = new NBTTagCompound();
+                    entry.writeToNBT(tag);
+                    tagList.appendTag(tag);
+                }
+            }
+            nbt.setTag("Entries", tagList);
+        }
+    }
 
-	public FormationEntry get(int par1)
-	{
-		return this.entries[par1];
-	}
+    public int size() {
+        return this.entries.length;
+    }
 
-	private void setEntry(FormationEntry entry, int par2)
-	{
-		this.entries[par2] = entry;
-	}
+    public FormationEntry get(int par1) {
+        return this.entries[par1];
+    }
 
-	public FormationEntry getEntry(EntityTrainBase par1)
-	{
-		for(FormationEntry entry : this.entries)
-		{
-			if(entry != null && par1.equals(entry.train))
-			{
-				return entry;
-			}
-		}
-		return null;
-	}
+    private void setEntry(FormationEntry entry, int par2) {
+        this.entries[par2] = entry;
+    }
 
-	/**
-	 * 編成に車両を登録
-	 * @param par1
-	 * @param par3 車両の位置
-	 * @param par5 向き
-	 */
-	public void setTrain(EntityTrainBase par1, int par3, int par5)
-	{
-		this.setEntry(new FormationEntry(par1, par3, par5), par3);
-		if(!par1.getEntityWorld().isRemote)
-		{
-			this.sendPacket();
-		}
-	}
+    public FormationEntry getEntry(EntityTrainBase par1) {
+        for (FormationEntry entry : this.entries) {
+            if (entry != null && par1.equals(entry.train)) {
+                return entry;
+            }
+        }
+        return null;
+    }
 
-	@SideOnly(Side.CLIENT)
-	public void setFormationData(EntityTrainBase par1, byte par3, byte par5)
-	{
-		FormationEntry entry = this.getEntry(par1);
-		if(entry == null)
-		{
-			this.setTrain(par1, par3, par5);
-		}
-		else
-		{
-			entry.entryId = par3;
-			entry.dir = par5;
-		}
-	}
+    public void setTrain(EntityTrainBase par1, int par3, int par5) {
+        this.setEntry(new FormationEntry(par1, par3, par5), par3);
+        if (!par1.getEntityWorld().isRemote) {
+            this.sendPacket();
+        }
+    }
 
-	/**車両番号再振り分け*/
-	private void reallocation()
-	{
-		int i = 0;
-		for(FormationEntry entry : this.entries)
-		{
-			if(entry != null)
-			{
-				entry.updateFormationData(this, i);
-			}
-			++i;
-		}
-		this.sendPacket();
-	}
+    @SideOnly(Side.CLIENT)
+    public void setFormationData(EntityTrainBase par1, byte par3, byte par5) {
+        FormationEntry entry = this.getEntry(par1);
+        if (entry == null) {
+            this.setTrain(par1, par3, par5);
+        } else {
+            entry.entryId = par3;
+            entry.dir = par5;
+        }
+    }
 
-	/**編成を反転*/
-	private void reverse()
-	{
-		NGTUtil.reverse(this.entries);
-		for(FormationEntry entry : this.entries)
-		{
-			entry.dir ^= 1;//向きを反転
-		}
-	}
+    private void reallocation() {
+        int i = 0;
+        for (FormationEntry entry : this.entries) {
+            if (entry != null) {
+                entry.updateFormationData(this, i);
+            }
+            ++i;
+        }
+        this.sendPacket();
+    }
 
-	private void addAll(FormationEntry[] par1)
-	{
-		List<FormationEntry> list = new ArrayList<FormationEntry>();
-		NGTUtil.addArray(list, this.entries);
-		NGTUtil.addArray(list, par1);
-		this.entries = list.toArray(new FormationEntry[list.size()]);
-	}
+    private void reverse() {
+        NGTUtil.reverse(this.entries);
+        for (FormationEntry entry : this.entries) {
+            if (entry == null) continue;
+            entry.dir ^= 1;
+        }
+    }
 
-	private void trim(int start, int end)
-	{
-		FormationEntry[] array = new FormationEntry[end - start + 1];
-		int j = 0;
-		for(int i = start; i <= end; ++i)
-		{
-			array[j] = this.entries[i];
-			++j;
-		}
-		this.entries = array;
-	}
+    private void addAll(FormationEntry[] par1) {
+        List<FormationEntry> list = new ArrayList<FormationEntry>();
+        NGTUtil.addArray(list, this.entries);
+        NGTUtil.addArray(list, par1);
+        this.entries = list.toArray(new FormationEntry[list.size()]);
+    }
 
-	/**
-	 * @param par1 連結される車両
-	 * @param par2 連結対象の車両
-	 * @param par3 連結される車両の向き
-	 * @param par4 連結対象の車両の向き
-	 * @param par5 連結対象の編成
-	 */
-	public void connectTrain(EntityTrainBase par1, EntityTrainBase par2, int par3, int par4, Formation par5)
-	{
-		FormationEntry entry = this.getEntry(par1);
-		if(entry == null){return;}
+    private void trim(int start, int end) {
+        FormationEntry[] array = new FormationEntry[end - start + 1];
+        int j = 0;
+        for (int i = start; i <= end; ++i) {
+            array[j] = this.entries[i];
+            ++j;
+        }
+        this.entries = array;
+    }
 
-		int i0 = 0;
-		boolean flag0 = (par3 == entry.dir);
-		if(flag0)
-		{
-			this.reverse();
-		}
+    public void connectTrain(EntityTrainBase par1, EntityTrainBase par2, int par3, int par4, Formation par5) {
+        FormationEntry formationentry = this.getEntry(par1);
+        FormationEntry formationentry2 = par5.getEntry(par2);
+        if (formationentry2 == null) return;
+        if (formationentry != null) {
+            boolean flag = par3 == formationentry.dir;
+            if (flag) {
+                this.reverse();
+            }
 
-		entry = par5.getEntry(par2);
-		flag0 = (par4 == entry.dir);
-		if(!flag0)
-		{
-			par5.reverse();
-		}
+            flag = par4 == formationentry2.dir;
+            if (!flag) {
+                par5.reverse();
+            }
 
-		this.addAll(par5.entries);
-		this.reallocation();
+            this.addAll(par5.entries);
+            this.reallocation();
 
-		for(FormationEntry entry2 : this.entries)
-		{
-			//entry2.updateFormationData(this, (byte)i);
-			this.setSpeed(0.0F);
-			entry2.train.setNotch(-8);
-			entry2.train.setVehicleState(TrainStateType.Role, TrainState.Role_Center.data);
-		}
+            for (FormationEntry formationentry1 : this.entries) {
+                if (formationentry1 == null) continue;
+                this.setSpeed(0.0F);
+                formationentry1.train.setEmergencyBrake();
+                formationentry1.train.setVehicleState(TrainState.TrainStateType.Role, TrainState.Role_Center.data);
+            }
 
-		FormationManager.getInstance().removeFormation(par5.id);
-	}
+            FormationManager.getInstance().removeFormation(par5.id);
+        }
+    }
 
-	/**
-	 * 車両を編成から除去<br>
-	 * ※Server Only
-	 */
-	public void onRemovedTrain(EntityTrainBase par1)
-	{
-		//1両編成の時
-		if(this.entries.length <= 1)
-		{
-			FormationManager.getInstance().removeFormation(this.id);
-			return;
-		}
+    public void onRemovedTrain(EntityTrainBase par1) {
+        if (this.entries.length <= 1) {
+            FormationManager.getInstance().removeFormation(this.id);
+            return;
+        }
 
-		FormationEntry entry = this.getEntry(par1);
-		if(entry == null){return;}
+        FormationEntry entry = this.getEntry(par1);
+        if (entry == null) {
+            return;
+        }
 
-		if(entry.entryId == 0)
-		{
-			this.trim(1, this.entries.length - 1);
-		}
-		else if(entry.entryId == this.entries.length - 1)
-		{
-			this.trim(0, this.entries.length - 2);
-		}
-		else
-		{
-			int size = this.entries.length - entry.entryId - 1;
-			Formation formation = new Formation(FormationManager.getInstance().getNewFormationId(), size);
+        if (entry.entryId == 0) {
+            this.trim(1, this.entries.length - 1);
+        } else if (entry.entryId == this.entries.length - 1) {
+            this.trim(0, this.entries.length - 2);
+        } else {
+            int i = entry.entryId + 1;
+            int j = this.entries.length - i;
+            Formation formation = new Formation(FormationManager.getInstance().getNewFormationId(), j);
+            int k = 0;
 
-			int j = 0;
-			for(int i = entry.entryId + 1; i < this.entries.length; ++i)
-			{
-				formation.setEntry(this.entries[i], j);
-				++j;
-			}
+            for (int l = i; l < this.entries.length; ++l, k++) {
+                formation.setEntry(this.entries[l], k);
+            }
 
-			this.trim(0, entry.entryId - 1);
-			formation.reallocation();
-		}
+            formation.reallocation();
+            this.trim(0, entry.entryId - 1);
+        }
 
-		this.reallocation();
-	}
+        this.reallocation();
+    }
 
-	/**バール右クリックで連結解除時*/
-	public void onDisconnectedTrain(EntityTrainBase par1, int par2)
-	{
-		FormationEntry entry = this.getEntry(par1);
-		if(entry == null){return;}
+    public void onDisconnectedTrain(EntityTrainBase par1, int par2) {
+        FormationEntry entry = this.getEntry(par1);
+        if (entry == null) {
+            return;
+        }
 
-		boolean b0 = (par2 == entry.dir);//true:切る向きが前
-		int i0 = b0 ? entry.entryId : entry.entryId + 1;
-		int size = this.entries.length - i0;
-		Formation formation = new Formation(FormationManager.getInstance().getNewFormationId(), size);
+        boolean flag = (par2 == entry.dir);
+        int i = flag ? entry.entryId : entry.entryId + 1;
+        int j = this.entries.length - i;
+        Formation formation = new Formation(FormationManager.getInstance().getNewFormationId(), j);
+        int k = 0;
 
-		int j = 0;
-		for(int i = i0; i < this.entries.length; ++i)
-		{
-			formation.setEntry(this.entries[i], j);
-		}
-		formation.reallocation();
+        for (int l = i; l < this.entries.length; ++l, k++) {
+            formation.setEntry(this.entries[l], k);
+        }
 
-		this.trim(0, i0 - 1);
-		this.reallocation();
-	}
+        formation.reallocation();
+        this.trim(0, i - 1);
+        this.reallocation();
+    }
 
-	private EntityTrainBase getControlCar()
-	{
-		if(this.controlCar == null || !this.controlCar.isControlCar())
-		{
-			for(FormationEntry entry : this.entries)
-			{
-				if(entry.train.isControlCar())
-				{
-					this.controlCar = entry.train;
-					break;
-				}
-			}
-		}
-		return this.controlCar;
-	}
+    private EntityTrainBase getControlCar() {
+        if (this.controlCar == null || !this.controlCar.isControlCar()) {
+            for (FormationEntry formationentry : this.entries) {
+                if (formationentry == null) continue;
+                if (formationentry.train.isControlCar()) {
+                    this.controlCar = formationentry.train;
+                    break;
+                }
+            }
+        }
+        return this.controlCar;
+    }
 
-	public int getNotch()
-	{
-		return this.getControlCar() == null ? 0 : this.getControlCar().getNotch();
-	}
+    public int getNotch() {
+        return this.getControlCar() == null ? 0 : this.getControlCar().getNotch();
+    }
 
-	public void setSpeed(float par1)
-	{
-		if(par1 == this.speed){return;}
+    public void setSpeed(float par1) {
+        if (par1 != this.speed) {
+            for (FormationEntry formationentry : this.entries) {
+                if (formationentry == null) continue;
+                formationentry.train.setSpeed_NoSync(par1);
+            }
 
-		for(FormationEntry entry : this.entries)
-		{
-			entry.train.setSpeed_NoSync(par1);
-		}
-		this.speed = par1;
-	}
+            this.speed = par1;
+        }
+    }
 
-	public void setTrainDirection(byte par1, EntityTrainBase par2)
-	{
-		FormationEntry entry = this.getEntry(par2);
-		if(entry == null){return;}
+    public void setTrainDirection(byte par1, EntityTrainBase par2) {
+        if (par2.getTrainDirection() != par1) {
+            this.setSpeed(-par2.getSpeed());
+        }
 
-		this.direction = (byte)(par1 ^ entry.dir);//編成としての向き,XOR
+        FormationEntry formationentry = this.getEntry(par2);
+        if (formationentry != null) {
+            this.direction = (byte) (par1 ^ formationentry.dir);
+            byte b0 = 0;
 
-		byte b0 = 0;
-		for(FormationEntry entry2 : this.entries)
-		{
-			if(entry2 != null)
-			{
-				b0  = (byte)(this.direction ^ entry2.dir);
-				entry2.train.setTrainDirection_NoSync(b0);
-			}
-		}
-	}
+            for (FormationEntry formationentry2 : this.entries) {
+                if (formationentry2 != null) {
+                    b0 = (byte) (this.direction ^ formationentry2.dir);
+                    formationentry2.train.setTrainDirection_NoSync(b0);
+                }
+            }
 
-	public void setTrainStateData(TrainStateType type, byte data, EntityTrainBase par2)
-	{
-		for(FormationEntry entry : this.entries)
-		{
-			if(type == TrainStateType.Role)//向き
-			{
-				if(data == TrainState.Role_Front.data)
-				{
-					this.controlCar = par2;
-				}
+        }
+    }
 
-				if(par2.equals(entry.train))
-				{
-					entry.train.setTrainStateData_NoSync(type, data);
-				}
-				else
-				{
-					if(entry.train.getVehicleState(TrainStateType.Role) == data)
-					{
-						entry.train.setTrainStateData_NoSync(type, TrainState.Role_Center.data);
-					}
-				}
-			}
-			else if(type == TrainStateType.Door)//ドア
-			{
-				int stateR = data & 1;
-				int stateL = data >> 1;
-				int data2 = (entry.train.getTrainDirection() == 0) ? (stateL << 1 | stateR) : (stateR << 1 | stateL);
-				entry.train.setTrainStateData_NoSync(type, (byte)data2);
-			}
-			else
-			{
-				entry.train.setTrainStateData_NoSync(type, data);
-			}
-		}
-	}
+    public void setTrainStateData(TrainState.TrainStateType type, byte data, EntityTrainBase par2) {
+        if (type == TrainState.TrainStateType.Role) {
+            for (FormationEntry formationentry : this.entries) {
+                if (formationentry == null) continue;
+                if (data == TrainState.Role_Front.data || data == TrainState.Role_Back.data) {
+                    this.controlCar = par2;
+                    par2.setTrainStateData_NoSync(type, (par2.getCabDirection() == par2.getTrainDirection()) ? data : (byte) (data ^ 2));
+                    par2.setTrainDirection(par2.getCabDirection());
+                }
 
-	public boolean containBogie(EntityBogie bogie)
-	{
-		for(FormationEntry entry : this.entries)
-		{
-			EntityTrainBase train = entry.train;
-			if(train.getBogie(0) == bogie || train.getBogie(1) == bogie)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+                if (par2.equals(formationentry.train)) {
+                    formationentry.train.setTrainStateData_NoSync(type, data);
+                } else if (formationentry.train.getVehicleState(TrainState.TrainStateType.Role) != TrainState.Role_Center.data) {
+                    formationentry.train.setTrainStateData_NoSync(type, TrainState.Role_Center.data);
+                }
+            }
+        } else if (type == TrainState.TrainStateType.Door) {
+            data &= 3;
+            byte swapped = (byte) (((data & 1) << 1) | ((data >> 1) & 1));
+            for (FormationEntry formationentry : this.entries) {
+                if (formationentry == null) continue;
+                byte value = par2.getTrainDirection() != formationentry.train.getTrainDirection() ? swapped : data;
+                formationentry.train.setTrainStateData_NoSync(type, value);
+            }
+        } else {
+            for (FormationEntry formationentry : this.entries) {
+                if (formationentry == null) continue;
+                formationentry.train.setTrainStateData_NoSync(type, data);
+            }
+        }
+    }
 
-	/**Server Only*/
-	private void sendPacket()
-	{
-		RTMCore.NETWORK_WRAPPER.sendToAll(new PacketFormation(this));
-	}
+    public boolean containBogie(EntityBogie bogie) {
+        for (FormationEntry formationentry : this.entries) {
+            if (formationentry == null) continue;
+            EntityTrainBase entitytrainbase = formationentry.train;
+            if (entitytrainbase.getBogie(0) == bogie || entitytrainbase.getBogie(1) == bogie) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	public boolean isFrontCar(EntityTrainBase train)
-	{
-		int index = this.direction == 0 ? 0 : this.entries.length - 1;
-		if(this.entries[index] != null)
-		{
-			EntityTrainBase front = this.entries[index].train;
-			return train.equals(front);
-		}
-		return false;
-	}
+    private void sendPacket() {
+        RTMCore.NETWORK_WRAPPER.sendToAll(new PacketFormation(this));
+    }
 
-	/**EntityTrain.updateMovement()から(先頭車からのみ)*/
-	public void updateTrainMovement()
-	{
-		EntityTrainBase prevTrain = null;
-		for(int i = 0; i < this.entries.length; ++i)
-		{
-			int index = this.direction == 0 ? i : this.entries.length - i - 1;
-			if(this.entries[index] == null){continue;}
+    public boolean isFrontCar(EntityTrainBase train) {
+        int index = this.direction == 0 ? 0 : this.entries.length - 1;
+        if (this.entries[index] != null) {
+            EntityTrainBase front = this.entries[index].train;
+            return train.equals(front);
+        }
+        return false;
+    }
 
-			EntityTrainBase train = this.entries[index].train;
-			MotionState state = MotionState.STOP;
-			if(train.existBogies())
-	        {
-				state = train.bogieController.moveTrainWithBogie(train, prevTrain, this.speed, false);
-	        }
-			train.updateTrainMovement(state);
-			prevTrain = train;
-		}
-	}
+    public void updateTrainMovement() {
+        EntityTrainBase prevTrain = null;
+        for (int i = 0; i < this.entries.length; ++i) {
+            int index = this.direction == 0 ? i : this.entries.length - i - 1;
+            if (this.entries[index] == null) {
+                continue;
+            }
+
+            EntityTrainBase train = this.entries[index].train;
+            MotionState state = MotionState.STOP;
+            if (train.existBogies()) {
+                state = train.bogieController.moveTrainWithBogie(train, prevTrain, this.speed, false);
+            }
+            train.updateTrainMovement(state);
+            prevTrain = train;
+        }
+    }
 }

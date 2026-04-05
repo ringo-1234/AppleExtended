@@ -1,165 +1,169 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.modelpack.cfg;
 
-public class TrainConfig extends VehicleBaseConfig implements IConfigWithType
-{
-	/**車両名（重複不可）*/
-	private String trainName;
-	/**車両のタイプ(EC:電車, DC:気動車, EL:電気機関車, DL:ディーゼル機関車, SL:蒸気機関車, CC:コンテナ車, TC:タンク車, N:なし)*/
-	private String trainType;
+public class TrainConfig extends VehicleBaseConfig implements IConfigWithType {
+    private String trainName;
+    private String trainType;
 
-	/**車体モデル*/
-	private ModelSource trainModel2;
-	/**台車モデル {front, back}*/
-	private ModelSource[] bogieModel3;
+    private ModelSource trainModel2;
+    private ModelSource[] bogieModel3;
 
-	@Deprecated
-	private ModelSource bogieModel2;
-	@Deprecated
-	private String trainModel;
-	@Deprecated
-	private String bogieModel;
-	@Deprecated
-	private String trainTexture;
-	@Deprecated
-	private String bogieTexture;
+    @Deprecated
+    private ModelSource bogieModel2;
+    @Deprecated
+    private String trainModel;
+    @Deprecated
+    private String bogieModel;
+    @Deprecated
+    private String trainTexture;
+    @Deprecated
+    private String bogieTexture;
 
-	/**ブレーキ緩解音*/
-	public String sound_BrakeRelease;
-	/**ブレーキ緩解音(弱め)*/
-	public String sound_BrakeRelease2;
-	/**ジョイント音を鳴らさない*/
-	public boolean muteJointSound;
-	/**
-	 * 2回目のジョイント音の遅延具合(m)<br>
-	 * [2][1~]
-	 * [BogieID][車輪No]
-	 */
-	public float[][] jointDelay;//3つ以上の車輪対応,台車前後別
+    public String sound_BrakeRelease;
+    public String sound_BrakeRelease2;
+    public boolean muteJointSound;
+    public float[][] jointDelay;
 
-	/**単行かどうか*/
-	public boolean isSingleTrain;
+    public boolean isSingleTrain;
 
-	/**台車の位置{x, y, z}*/
-	private float[][] bogiePos;
-	/**車体長の半分*/
-	public float trainDistance;
+    private float[][] bogiePos;
+    public float trainDistance;
+    /**
+     * 加速度<br>
+     * N km/h/s -> N x 0.0006944
+     */
+    public float accelerateion;
 
-	/**
-	 * 加速度<br>
-	 * N km/h/s -> N x 0.0006944
-	 */
-	public float accelerateion;
-	/**ノッチごとの速度上限(1~5段)*/
-	public float[] maxSpeed;
+    /**
+     * ノッチごとの速度上限(1~5段)
+     */
+    public float[] maxSpeed;
 
-	/**カーブでの傾き具合(0.0~1.0)*/
-	public float rolling;
+    public float rolling;
 
-	/**パンタグラフの摺板位置{X,Z,minY,maxY}*/
-	public float[][] pantoPos;
+    public float[][] pantoPos;
 
-	public float rollSpeedCoefficient;
-	public float rollVariationCoefficient;
-	public float rollWidthCoefficient;
+    public float rollSpeedCoefficient;
+    public float rollVariationCoefficient;
+    public float rollWidthCoefficient;
 
-	@Override
-	public void init()
-	{
-		super.init();
+    public float[] accelerateions;
+    public float[] deccelerations;
 
-		if(this.trainModel2 == null)
-		{
-			this.trainModel2 = new ModelSource();
-			this.trainModel2.modelFile = this.trainModel;
-			this.trainModel2.textures = new String[][]{{"default", this.trainTexture}};
-		}
+    public boolean useVariableAcceleration;
+    public boolean useVariableDeceleration;
 
-		if(this.bogieModel3 == null)
-		{
-			this.bogieModel3 = new ModelSource[2];
-			if(this.bogieModel2 != null)
-			{
-				this.bogieModel3[0] = this.bogieModel3[1] = this.bogieModel2;
-			}
-			else
-			{
-				ModelSource model = new ModelSource();
-				model.modelFile = this.bogieModel;
-				model.textures = new String[][]{{"default", this.bogieTexture}};
-				this.bogieModel3[0] = this.bogieModel3[1] = model;
-			}
-		}
+    @Override
+    public void init() {
+        super.init();
 
-		this.sound_BrakeRelease = this.fixSoundPath(this.sound_BrakeRelease);
-		this.sound_BrakeRelease2 = this.fixSoundPath(this.sound_BrakeRelease2);
+        if (this.trainModel2 == null) {
+            this.trainModel2 = new ModelSource();
+            this.trainModel2.modelFile = this.trainModel;
+            this.trainModel2.textures = new String[][]{{"default", this.trainTexture}};
+        }
 
-		if(this.bogiePos == null)
-		{
-			this.bogiePos = new float[][]{{0.0F, 0.0F, 7.125F}, {0.0F, 0.0F, -7.125F}};
-		}
+        if (this.bogieModel3 == null) {
+            this.bogieModel3 = new ModelSource[2];
+            if (this.bogieModel2 != null) {
+                this.bogieModel3[0] = this.bogieModel3[1] = this.bogieModel2;
+            } else {
+                ModelSource model = new ModelSource();
+                model.modelFile = this.bogieModel;
+                model.textures = new String[][]{{"default", this.bogieTexture}};
+                this.bogieModel3[0] = this.bogieModel3[1] = model;
+            }
+        }
 
-		if(this.trainDistance <= 0.0F)
-		{
-			this.trainDistance = 10.125F;
-		}
+        this.sound_BrakeRelease = this.fixSoundPath(this.sound_BrakeRelease);
+        this.sound_BrakeRelease2 = this.fixSoundPath(this.sound_BrakeRelease2);
 
-		if(this.accelerateion <= 0.0F)
-		{
-			this.accelerateion = 0.001736F;
-		}
+        if (this.bogiePos == null) {
+            this.bogiePos = new float[][]{{0.0F, 0.0F, 7.125F}, {0.0F, 0.0F, -7.125F}};
+        }
 
-		if(this.maxSpeed == null || this.maxSpeed.length < 5)
-		{
-			this.maxSpeed = new float[]{0.36F, 0.72F, 1.08F, 1.44F, 1.80F};
-		}
+        if (this.trainDistance <= 0.0F) {
+            this.trainDistance = 10.125F;
+        }
 
-		this.rolling *= 5.0F;
+        if (this.accelerateion <= 0.0F) {
+            this.accelerateion = 0.001736F;
+        }
 
-		if(this.jointDelay == null)
-		{
-			float f0 = 1.9F;
-			this.jointDelay = new float[][]{{0.0F, f0}, {0.0F, f0}};
-		}
-	}
+        if (this.maxSpeed == null || this.maxSpeed.length < 5) {
+            this.maxSpeed = new float[]{0.36F, 0.72F, 1.08F, 1.44F, 1.80F};
+        }
 
-	@Override
-	public String getName()
-	{
-		return this.trainName;
-	}
+        if (this.accelerateions == null || (!this.notDisplayCab && this.accelerateions.length != this.maxSpeed.length)) {
+            this.accelerateions = new float[this.maxSpeed.length];
+            java.util.Arrays.fill(this.accelerateions, this.accelerateion);
+        }
 
-	@Override
-	public ModelSource getModel()
-	{
-		return this.trainModel2;
-	}
+        if (this.deccelerations == null || (!this.notDisplayCab && this.deccelerations.length != 9)) {
+            this.deccelerations = new float[]{-0.0002F, -0.0005F, -0.001F, -0.0015F, -0.002F, -0.0025F, -0.003F, -0.0035F, -0.01F};
+        }
 
-	public ModelSource getBogieModel(int par1)
-	{
-		return this.bogieModel3[par1];
-	}
+        this.rolling *= 5.0F;
 
-	public float[][] getBogiePos()
-	{
-		return this.bogiePos;
-	}
+        if (this.jointDelay == null) {
+            float f0 = 1.9F;
+            this.jointDelay = new float[][]{{0.0F, f0}, {0.0F, f0}};
+        }
 
-	/**
-	 * モデル製作者の方へ<br>
-	 * ここは無視してください
-	 */
-	public static TrainConfig getDummyConfig()
-	{
-		TrainConfig config = new TrainConfig();
-		config.trainName = "Dummy";
-		config.trainType = "N";
-		config.init();
-		return config;
-	}
+        if (this.serverScriptPath == null) {
+            this.useVariableAcceleration = false;
+            this.useVariableDeceleration = false;
+        }
+    }
 
-	@Override
-	public String getSubType()
-	{
-		return this.trainType;
-	}
+    public boolean isNotchInRange(int notch) {
+        if (notch < 0)
+            return -notch <= deccelerations.length - 1;
+        else
+            return notch <= maxSpeed.length;
+    }
+
+    @Override
+    public String getName() {
+        return this.trainName;
+    }
+
+    @Override
+    public ModelSource getModel() {
+        return this.trainModel2;
+    }
+
+    public ModelSource getBogieModel(int par1) {
+        return this.bogieModel3[par1];
+    }
+
+    public float[][] getBogiePos() {
+        return this.bogiePos;
+    }
+
+    public static TrainConfig getDummyConfig() {
+        TrainConfig config = new TrainConfig();
+        config.trainName = "Dummy";
+        config.trainType = "N";
+        config.init();
+        return config;
+    }
+
+    @Override
+    public String getSubType() {
+        return this.trainType;
+    }
 }

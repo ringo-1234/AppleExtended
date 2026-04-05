@@ -1,9 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.rail;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
 
 import jp.ngt.ngtlib.math.AABBInt;
 import jp.ngt.ngtlib.renderer.GLHelper;
@@ -26,427 +35,334 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase implements IResourceSelector
-{
-	protected boolean isCollidedTrain = false;
-	public boolean colliding = false;
-	private int signal = 0;
-	private ResourceStateRail state = new ResourceStateRail(RTMResource.RAIL, this);
-	public final List<ResourceStateRail> subRails = new ArrayList<>();
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
-	protected RailPosition[] railPositions;
-	protected RailMap railmap;
+public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase implements IResourceSelector {
+    public boolean breaking;
+    protected boolean isCollidedTrain = false;
+    public boolean colliding = false;
+    private int signal = 0;
+    private ResourceStateRail state = new ResourceStateRail(RTMResource.RAIL, this);
+    public final List<ResourceStateRail> subRails = new ArrayList<>();
 
-	@SideOnly(Side.CLIENT)
-	private AxisAlignedBB renderAABB;
+    protected RailPosition[] railPositions;
+    protected RailMap railmap;
 
-	@SideOnly(Side.CLIENT)
-	public GLObject[] glLists;
-	@SideOnly(Side.CLIENT)
-	public GLObject railBlocks;
-	/**レールを再描画するかどうか(明るさ変更等)*/
-	@SideOnly(Side.CLIENT)
-	public boolean shouldRerenderRail;
-	@SideOnly(Side.CLIENT)
-	public boolean shouldRerenderBlock;
-	@SideOnly(Side.CLIENT)
-	private int brightness;
-	@SideOnly(Side.CLIENT)
-	public int rerenderCount;
+    @SideOnly(Side.CLIENT)
+    private AxisAlignedBB renderAABB;
 
-	@Override
-	public void readFromNBT(NBTTagCompound nbt)
-	{
-		super.readFromNBT(nbt);
+    @SideOnly(Side.CLIENT)
+    public GLObject[] glLists;
+    @SideOnly(Side.CLIENT)
+    public GLObject railBlocks;
+    @SideOnly(Side.CLIENT)
+    public boolean shouldRerenderRail;
+    @SideOnly(Side.CLIENT)
+    public boolean shouldRerenderBlock;
+    @SideOnly(Side.CLIENT)
+    private int brightness;
+    @SideOnly(Side.CLIENT)
+    public int rerenderCount;
+    private int count;
+    protected int fixRTMRailMapVersion;
 
-		this.readRailStates(nbt);
-		this.readRailData(nbt);
-	}
+    @Override
+    public void readFromNBT(NBTTagCompound nbt) {
+        jp.apple.replaymod.compat.ReplaySyncManager.patchRailMetadata(this, nbt);
 
-	public void readRailStates(NBTTagCompound nbt)
-	{
-		this.state.readFromNBT(nbt.getCompoundTag("State"));
-		if(this.state.version < 1)
-		{
-			this.state.readFromNBT(nbt.getCompoundTag("Property"));
-		}
+        super.readFromNBT(nbt);
+        this.readRailStates(nbt);
+        this.readRailData(nbt);
+    }
 
-		this.subRails.clear();
-		NBTTagList list = nbt.getTagList("SubRails", 10);
-		for(int i = 0; i < list.tagCount(); ++i)
-		{
-			NBTTagCompound nbt1 = list.getCompoundTagAt(i);
-			ResourceStateRail state1 = new ResourceStateRail(RTMResource.RAIL, this);
-			state1.readFromNBT(nbt1);
-			this.subRails.add(state1);
-		}
-	}
+    public void readRailStates(NBTTagCompound nbt) {
+        this.state.readFromNBT(nbt.getCompoundTag("State"));
+        if (this.state.version < 1) {
+            this.state.readFromNBT(nbt.getCompoundTag("Property"));
+        }
 
-	protected void readRailData(NBTTagCompound nbt)
-	{
-		if(!nbt.hasKey("StartRP")){return;}//レール敷設時にマーカーのパケットを受信する可能性があるので
+        this.subRails.clear();
+        NBTTagList list = nbt.getTagList("SubRails", 10);
+        for (int i = 0; i < list.tagCount(); ++i) {
+            NBTTagCompound nbt1 = list.getCompoundTagAt(i);
+            ResourceStateRail state1 = new ResourceStateRail(RTMResource.RAIL, this);
+            state1.readFromNBT(nbt1);
+            this.subRails.add(state1);
+        }
+    }
 
-		this.railPositions = new RailPosition[2];
-		this.railPositions[0] = RailPosition.readFromNBT(nbt.getCompoundTag("StartRP"));
-		this.railPositions[1] = RailPosition.readFromNBT(nbt.getCompoundTag("EndRP"));
-	}
+    protected void readRailData(NBTTagCompound nbt) {
+        if (nbt.hasKey("StartRP")) {
+            this.railPositions = new RailPosition[2];
+            this.railPositions[0] = RailPosition.readFromNBT(nbt.getCompoundTag("StartRP"));
+            this.railPositions[1] = RailPosition.readFromNBT(nbt.getCompoundTag("EndRP"));
+            this.fixRTMRailMapVersion = nbt.getInteger("fixRTMRailMapVersion");
+        }
+    }
 
-	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt)
-	{
-		super.writeToNBT(nbt);
+    @Override
+    public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+        super.writeToNBT(nbt);
+        this.writeRailStates(nbt);
+        this.writeRailData(nbt);
+        return nbt;
+    }
 
-		this.writeRailStates(nbt);
-		this.writeRailData(nbt);
-		return nbt;
-	}
+    public void writeRailStates(NBTTagCompound nbt) {
+        nbt.setTag("State", this.state.writeToNBT());
+        NBTTagList tagList = new NBTTagList();
+        for (ResourceStateRail state1 : this.subRails) {
+            tagList.appendTag(state1.writeToNBT());
+        }
+        nbt.setTag("SubRails", tagList);
+    }
 
-	public void writeRailStates(NBTTagCompound nbt)
-	{
-		nbt.setTag("State", this.state.writeToNBT());
+    protected void writeRailData(NBTTagCompound nbt) {
+        nbt.setTag("StartRP", this.railPositions[0].writeToNBT());
+        nbt.setTag("EndRP", this.railPositions[1].writeToNBT());
+        nbt.setInteger("fixRTMRailMapVersion", this.fixRTMRailMapVersion);
+    }
 
-		NBTTagList tagList = new NBTTagList();
-		for(ResourceStateRail state1 : this.subRails)
-		{
-			tagList.appendTag(state1.writeToNBT());
-		}
-		nbt.setTag("SubRails", tagList);
-	}
+    @Override
+    public void setStartPoint(int x, int y, int z) {
+        this.startPoint[0] = x;
+        this.startPoint[1] = y;
+        this.startPoint[2] = z;
+    }
 
-	protected void writeRailData(NBTTagCompound nbt)
-	{
-		nbt.setTag("StartRP", this.railPositions[0].writeToNBT());
-		nbt.setTag("EndRP", this.railPositions[1].writeToNBT());
-	}
+    public void createRailMap() {
+        if (this.isLoaded()) {
+            if (this.getRailPositions()[0].hasScript()) {
+                RailPosition railposition = this.getRailPositions()[0];
+                this.railmap = new RailMapCustom(railposition, railposition.scriptName, railposition.scriptArgs);
+            } else {
+                this.railmap = new RailMapBasic(this.railPositions[0], this.railPositions[1], fixRTMRailMapVersion);
+            }
+        }
+    }
 
-	@Override
-	public void setStartPoint(int x, int y, int z)
-	{
-		this.startPoint[0] = x;
-		this.startPoint[1] = y;
-		this.startPoint[2] = z;
-		//ここで同期すると、一部変数が未設定のためぬるぽ
-	}
+    public boolean isLoaded() {
+        return this.railPositions != null && this.railPositions.length > 0;
+    }
 
-	public void createRailMap()
-	{
-		if(this.isLoaded())//同期ができてない状態でのRailMapの生成を防ぐ
-		{
-			if(this.getRailPositions()[0].hasScript())
-			{
-				RailPosition rp = this.getRailPositions()[0];
-				this.railmap  = new RailMapCustom(rp, rp.scriptName, rp.scriptArgs);
-			}
-			else
-			{
-				this.railmap  = new RailMapBasic(this.railPositions[0], this.railPositions[1]);
-			}
-		}
-	}
+    public RailPosition[] getRailPositions() {
+        return this.railPositions;
+    }
 
-	/**レール情報の読み込みが完了してるかどうか(=RailPositionが存在する)*/
-	public boolean isLoaded()
-	{
-		return this.railPositions != null && this.railPositions.length > 0;
-	}
+    public void setRailPositions(RailPosition[] par1) {
+        this.railPositions = par1;
+    }
 
-	public RailPosition[] getRailPositions()
-	{
-		return this.railPositions;
-	}
+    public int getSignal() {
+        return this.signal;
+    }
 
-	public void setRailPositions(RailPosition[] par1)
-	{
-		this.railPositions = par1;
-	}
+    public void setSignal(int par1) {
+        this.signal = par1;
+    }
 
-	public int getSignal()
-	{
-		return this.signal;
-	}
+    @Override
+    public TileEntityLargeRailCore getRailCore() {
+        return this;
+    }
 
-	public void setSignal(int par1)
-	{
-		this.signal = par1;
-	}
+    @Override
+    public void sendPacket() {
+        if ((this.world == null || !this.world.isRemote) && this.isLoaded()) {
+            RTMCore.NETWORK_WRAPPER.sendToAll(new PacketLargeRailCore(this, this.getPacketType()));
+        }
+    }
 
-	@Override
-	public TileEntityLargeRailCore getRailCore()
-	{
-		return this;
-	}
+    public byte getPacketType() {
+        return PacketLargeRailCore.TYPE_NORMAL;
+    }
 
-	@Override
-	public void sendPacket()
-	{
-		if((this.world == null || !this.world.isRemote) && this.isLoaded())
-		{
-			RTMCore.NETWORK_WRAPPER.sendToAll(new PacketLargeRailCore(this, this.getPacketType()));
-		}
-	}
+    @Override
+    public void onChunkUnload() {
+        if (this.world.isRemote) {
+            this.deleteGLList();
+        }
+    }
 
-	public byte getPacketType()
-	{
-		return PacketLargeRailCore.TYPE_NORMAL;
-	}
+    @Override
+    public void invalidate() {
+        if (this.world.isRemote) {
+            this.deleteGLList();
+        }
+    }
 
-	@Override
-	public void onChunkUnload()
-	{
-		if(this.world.isRemote)
-		{
-			this.deleteGLList();
-		}
-	}
+    @SideOnly(Side.CLIENT)
+    private void deleteGLList() {
+        if (this.glLists != null) {
+            for (GLObject glList : this.glLists) {
+                GLHelper.deleteGLList(glList);
+            }
+        }
+        GLHelper.deleteGLList(this.railBlocks);
+        this.glLists = new GLObject[this.subRails.size() + 1];
+        this.railBlocks = null;
+    }
 
-	@Override
-	public void invalidate()
-	{
-		if(this.world.isRemote)
-		{
-			this.deleteGLList();
-		}
-	}
+    public void replaceRail(ResourceStateRail state) {
+        this.getResourceState().readFromNBT(state.writeToNBT());
+        this.subRails.clear();
+        this.sendPacket();
+    }
 
-	@SideOnly(Side.CLIENT)
-	private void deleteGLList()
-	{
-		if(this.glLists != null)
-		{
-			for(GLObject glList : this.glLists)
-			{
-				GLHelper.deleteGLList(glList);
-			}
-		}
-		GLHelper.deleteGLList(this.railBlocks);
-		this.glLists = new GLObject[this.subRails.size() + 1];
-		this.railBlocks = null;
-	}
+    public void addSubRail(ResourceStateRail state) {
+        ResourceStateRail newState = new ResourceStateRail(RTMResource.RAIL, this);
+        newState.readFromNBT(state.writeToNBT());
+        ResourceStateRail oldState = null;
+        for (ResourceStateRail state1 : this.subRails) {
+            if (state1.getResourceName().equals(newState.getResourceName())) {
+                oldState = state1;
+                break;
+            }
+        }
 
-	public void replaceRail(ResourceStateRail state)
-	{
-		this.getResourceState().readFromNBT(state.writeToNBT());
-		this.subRails.clear();
-		this.sendPacket();
-	}
+        if (oldState == null) {
+            if (!this.getResourceState().getResourceName().equals(newState.getResourceName())) {
+                this.subRails.add(newState);
+            }
+        } else {
+            this.subRails.remove(oldState);
+        }
 
-	public void addSubRail(ResourceStateRail state)
-	{
-		ResourceStateRail newState = new ResourceStateRail(RTMResource.RAIL, this);
-		newState.readFromNBT(state.writeToNBT());
-		ResourceStateRail oldState = null;
-		for(ResourceStateRail state1 : this.subRails)
-		{
-			if(state1.getResourceName().equals(newState.getResourceName()))
-			{
-				oldState = state1;
-				break;
-			}
-		}
+        this.sendPacket();
+    }
 
-		if(oldState == null)
-		{
-			if(!this.getResourceState().getResourceName().equals(newState.getResourceName()))
-			{
-				this.subRails.add(newState);
-			}
-		}
-		else
-		{
-			this.subRails.remove(oldState);
-		}
+    @Override
+    public void update() {
+        super.update();
 
-		this.sendPacket();
-	}
+        if (!this.world.isRemote) {
+            this.isCollidedTrain = this.colliding;
+            this.colliding = false;
+        } else {
+            if (this.count >= 200) {
+                this.updateBrightness();
+                this.count = 0;
+            }
+            ++this.count;
 
-	private int count;
+            if (this.rerenderCount > 0) {
+                ++this.rerenderCount;
+                if (this.rerenderCount >= 100) {
+                    this.shouldRerenderBlock = true;
+                    this.rerenderCount = 0;
+                }
+            }
+        }
+    }
 
-	@Override
-	public void update()
-	{
-		super.update();
+    @SideOnly(Side.CLIENT)
+    private void updateBrightness() {
+        int light = NGTUtil.getSkyLight(this.getWorld(), this.getPos());
+        if (this.brightness != light) {
+            this.brightness = light;
+            this.shouldRerenderRail = this.shouldRerenderBlock = true;
+        }
+    }
 
-		if(!this.world.isRemote)
-		{
-			this.isCollidedTrain = this.colliding;
-			this.colliding = false;
-		}
-		else
-		{
-			if(this.count >= 200)
-			{
-				this.updateBrightness();
-				this.count = 0;
-			}
-			++this.count;
+    @Override
+    public RailMap getRailMap(Entity entity) {
+        if (this.railmap == null) {
+            this.createRailMap();
+        }
+        return this.railmap;
+    }
 
-			if(this.rerenderCount > 0)
-			{
-				++this.rerenderCount;
-				if(this.rerenderCount >= 100)//一部描画未完了時に再描画
-				{
-					this.shouldRerenderBlock = true;
-					this.rerenderCount = 0;
-				}
-			}
-		}
-	}
+    @Nullable
+    public RailMap[] getAllRailMaps() {
+        RailMap rm = this.getRailMap(null);
+        return rm != null ? new RailMap[]{rm} : null;
+    }
 
-	@SideOnly(Side.CLIENT)
-	private void updateBrightness()
-	{
-		int light = NGTUtil.getSkyLight(this.getWorld(), this.getPos());
-		if(this.brightness != light)
-		{
-			this.brightness = light;
-			this.shouldRerenderRail = this.shouldRerenderBlock = true;
-		}
-	}
+    @SideOnly(Side.CLIENT)
+    @Override
+    public double getMaxRenderDistanceSquared() {
+        return NGTUtil.getChunkLoadDistanceSq();
+    }
 
-	@Override
-	public RailMap getRailMap(Entity entity)
-	{
-		if(this.railmap == null)
-		{
-			this.createRailMap();
-		}
-		return this.railmap;
-	}
+    @SideOnly(Side.CLIENT)
+    @Override
+    public AxisAlignedBB getRenderBoundingBox() {
+        if (!this.isLoaded()) {
+            return INFINITE_EXTENT_AABB;
+        }
 
-	@Nullable
-	public RailMap[] getAllRailMaps()
-	{
-		RailMap rm = this.getRailMap(null);
-		return rm != null ? new RailMap[]{rm} : null;
-	}
+        if (this.renderAABB == null) {
+            this.renderAABB = this.getRenderAABB();
+            if (this.renderAABB == null) {
+                return INFINITE_EXTENT_AABB;
+            }
+        }
+        return this.renderAABB;
+    }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public double getMaxRenderDistanceSquared()
-	{
-		return NGTUtil.getChunkLoadDistanceSq();
-	}
+    @SideOnly(Side.CLIENT)
+    protected AxisAlignedBB getRenderAABB() {
+        AABBInt box = this.getRailSize();
+        AxisAlignedBB aabb = new AxisAlignedBB(box.minX - 1, box.minY, box.minZ - 1, box.maxX + 2, box.maxY + 2, box.maxZ + 2);
+        if (aabb.maxX - aabb.minX <= 3 && aabb.maxZ - aabb.minZ <= 3) {
+            return null;
+        }
+        return aabb;
+    }
 
+    public AABBInt getRailSize() {
+        int startX = this.railPositions[0].blockX;
+        int startY = this.railPositions[0].blockY;
+        int startZ = this.railPositions[0].blockZ;
+        int endX = this.railPositions[1].blockX;
+        int endY = this.railPositions[1].blockY;
+        int endZ = this.railPositions[1].blockZ;
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public AxisAlignedBB getRenderBoundingBox()
-	{
-		if(!this.isLoaded())
-		{
-			return INFINITE_EXTENT_AABB;
-		}
+        int minX = startX <= endX ? startX : endX;
+        int maxX = startX >= endX ? startX : endX;
+        int minY = startY <= endY ? startY : endY;
+        int maxY = startY >= endY ? startY : endY;
+        int minZ = startZ <= endZ ? startZ : endZ;
+        int maxZ = startZ >= endZ ? startZ : endZ;
+        return new AABBInt(minX, minY, minZ, maxX, maxY, maxZ);
+    }
 
-		if(this.renderAABB == null)
-		{
-			this.renderAABB = this.getRenderAABB();
-			if(this.renderAABB == null){return INFINITE_EXTENT_AABB;}//ぬるぽ回避
-		}
-		return this.renderAABB;
-	}
+    @Override
+    public void setPos(int x, int y, int z, int prevX, int prevY, int prevZ) {
+        int difX = x - prevX;
+        int difY = y - prevY;
+        int difZ = z - prevZ;
+        for (RailPosition rp : this.railPositions) {
+            rp.movePos(difX, difY, difZ);
+        }
+        super.setPos(x, y, z, prevX, prevY, prevZ);
+    }
 
-	/**
-	 * レールの描画用AABBを取得<br>
-	 * 呼び出しは最初の1回のみ
-	 */
-	@SideOnly(Side.CLIENT)
-	protected AxisAlignedBB getRenderAABB()
-	{
-		AABBInt box = this.getRailSize();
-		AxisAlignedBB aabb = new AxisAlignedBB(box.minX - 1, box.minY, box.minZ - 1, box.maxX + 2, box.maxY + 2, box.maxZ + 2);
-		if(aabb.maxX - aabb.minX <= 3 && aabb.maxZ - aabb.minZ <= 3)
-		{
-			return null;
-		}
-		return aabb;
-	}
+    @Override
+    public void updateResourceState() {
+        if (this.world == null || !this.world.isRemote) {
+            this.markDirty();
+            this.sendPacket();
+        }
+        this.shouldRerenderBlock = this.shouldRerenderRail = true;
+    }
 
-	/**{XMin, YMin, ZMin, XMax, YMax, ZMax}*/
-	public AABBInt getRailSize()
-	{
-		int startX = this.railPositions[0].blockX;
-		int startY = this.railPositions[0].blockY;
-		int startZ = this.railPositions[0].blockZ;
-		int endX = this.railPositions[1].blockX;
-		int endY = this.railPositions[1].blockY;
-		int endZ = this.railPositions[1].blockZ;
+    @Override
+    public int[] getSelectorPos() {
+        return new int[]{this.getPos().getX(), this.getPos().getY(), this.getPos().getZ()};
+    }
 
-		int minX = startX <= endX ? startX : endX;
-		int maxX = startX >= endX ? startX : endX;
-		int minY = startY <= endY ? startY : endY;
-		int maxY = startY >= endY ? startY : endY;
-		int minZ = startZ <= endZ ? startZ : endZ;
-		int maxZ = startZ >= endZ ? startZ : endZ;
-		return new AABBInt(minX, minY, minZ, maxX, maxY, maxZ);
-	}
+    @Override
+    public boolean closeGui(ResourceState par1) {
+        return true;
+    }
 
-	/*@SideOnly(Side.CLIENT)
-	public FloatBuffer getRenderMatrix()
-	{
-		return this.renderMatrix;
-	}
+    @Override
+    public ResourceStateRail getResourceState() {
+        return this.state;
+    }
 
-	@SideOnly(Side.CLIENT)
-	public void setRenderMatrix(FloatBuffer par1)
-	{
-		this.renderMatrix = par1;
-	}
-
-	//{x, y, z, yaw, pitch}
-	@SideOnly(Side.CLIENT)
-	public float[][] getRenderRailPos()
-	{
-		return this.renderRailPos;
-	}
-
-	@SideOnly(Side.CLIENT)
-	public void setRenderRailPos(float[][] par1)
-	{
-		this.renderRailPos = par1;
-	}*/
-
-	@Override
-	public void setPos(int x, int y, int z, int prevX, int prevY, int prevZ)
-	{
-		int difX = x - prevX;
-		int difY = y - prevY;
-		int difZ = z - prevZ;
-		for(RailPosition rp : this.railPositions)
-		{
-			rp.movePos(difX, difY, difZ);
-		}
-		super.setPos(x, y, z, prevX, prevY, prevZ);
-	}
-
-	@Override
-	public void updateResourceState()
-	{
-		if(this.world == null || !this.world.isRemote)
-		{
-			this.markDirty();
-			this.sendPacket();
-		}
-		this.shouldRerenderBlock = this.shouldRerenderRail = true;
-	}
-
-	@Override
-	public int[] getSelectorPos()
-	{
-		return new int[]{this.getPos().getX(), this.getPos().getY(), this.getPos().getZ()};
-	}
-
-	@Override
-	public boolean closeGui(ResourceState par1)
-	{
-		return true;
-	}
-
-	@Override
-	public ResourceStateRail getResourceState()
-	{
-		return this.state;
-	}
-
-	/**レール形状の説明を取得(アイテム表示用)*/
-	public abstract String getRailShapeName();
+    public abstract String getRailShapeName();
 }

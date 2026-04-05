@@ -1,11 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.ngtlib.renderer.model;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.lwjgl.opengl.GL11;
 
 import jp.ngt.ngtlib.block.NGTObject;
 import jp.ngt.ngtlib.io.FileType;
@@ -22,157 +29,146 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.MinecraftForgeClient;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.opengl.GL11;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @SideOnly(Side.CLIENT)
-public final class NGTOModel implements IModelNGT
-{
-	public static final String GROUP_NAME = "default";
+public final class NGTOModel implements IModelNGT {
+    public static final String GROUP_NAME = "default";
 
-	private final NGTObject ngto;
-	private final float scale;
-	private GLObject[] glLists;
-	private NGTWorld world;
-	private final float[] sizeBox = new float[6];
+    private final NGTObject ngto;
+    private final float scale;
+    private GLObject[] glLists;
+    private NGTWorld world;
+    private final float[] sizeBox = new float[6];
 
-	private final ArrayList<GroupObject> parts = new ArrayList<GroupObject>();
-	private final Map<String, Material> materials = new HashMap<String, Material>();
+    private final ArrayList<GroupObject> parts = new ArrayList<GroupObject>();
+    private final Map<String, Material> materials = new HashMap<String, Material>();
 
-	public NGTOModel(ResourceLocation par1, float par2)
-	{
-		this.ngto = this.loadModel(par1);
-		if(this.ngto == null)
-		{
-			throw new ModelFormatException("Can't load NGTO");
-		}
-		this.materials.put(GROUP_NAME, new Material((byte)0, TextureMap.LOCATION_BLOCKS_TEXTURE));
-		this.scale = par2;
-		calcSizeBox(this.ngto, this.scale, this.sizeBox);
-	}
+    public NGTOModel(ResourceLocation par1, float par2) {
+        this.ngto = this.loadModel(par1);
+        if (this.ngto == null) {
+            throw new ModelFormatException("Can't load NGTO");
+        }
+        this.materials.put(GROUP_NAME, new Material((byte) 0, TextureMap.LOCATION_BLOCKS_TEXTURE));
+        this.scale = par2;
+        calcSizeBox(this.ngto, this.scale, this.sizeBox);
+    }
 
-	private NGTObject loadModel(ResourceLocation par1)
-	{
-		try
-        {
+    private NGTObject loadModel(ResourceLocation par1) {
+        try {
             IResource res = Minecraft.getMinecraft().getResourceManager().getResource(par1);
             return NGTObject.load(res.getInputStream());
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new ModelFormatException("IO Exception reading model", e);
         }
-	}
+    }
 
-	/**サイズBox更新*/
-    public static final void calcSizeBox(NGTObject ngto, float scale, float[] sizeBox)
-    {
-    	float hX = (float)ngto.xSize * 0.5F;
-    	float hZ = (float)ngto.zSize * 0.5F;
-    	sizeBox[0] = -hX * scale;
-    	sizeBox[1] = 0.0F;
-    	sizeBox[2] = -hZ * scale;
-    	sizeBox[3] = hX * scale;
-    	sizeBox[4] = (float)ngto.ySize * scale;
-    	sizeBox[5] = hZ * scale;
+    /**
+     * サイズBox更新
+     */
+    public static final void calcSizeBox(NGTObject ngto, float scale, float[] sizeBox) {
+        float hX = (float) ngto.xSize * 0.5F;
+        float hZ = (float) ngto.zSize * 0.5F;
+        sizeBox[0] = -hX * scale;
+        sizeBox[1] = 0.0F;
+        sizeBox[2] = -hZ * scale;
+        sizeBox[3] = hX * scale;
+        sizeBox[4] = (float) ngto.ySize * scale;
+        sizeBox[5] = hZ * scale;
     }
 
     @Override
-    public float[] getSize()
-    {
-    	return this.sizeBox;
+    public float[] getSize() {
+        return this.sizeBox;
     }
 
-	@Override
-	public void renderAll(boolean smoothing)
-	{
-		if(this.world == null)
-		{
-			if(NGTUtil.getClientWorld() == null){return;}
-			this.world = new NGTWorld(NGTUtil.getClientWorld(), this.ngto);
-		}
+    @Override
+    public void renderAll(boolean smoothing) {
+        if (this.world == null) {
+            if (NGTUtil.getClientWorld() == null) {
+                return;
+            }
+            this.world = new NGTWorld(NGTUtil.getClientWorld(), this.ngto);
+        }
 
-		GL11.glPushMatrix();
-		GL11.glScalef(this.scale, this.scale, this.scale);
-		float x = (float)this.ngto.xSize * 0.5F;
-		float z = (float)this.ngto.zSize * 0.5F;
-		GL11.glTranslatef(-x, 0.0F, -z);
-		int pass = MinecraftForgeClient.getRenderPass();
-		if(pass == -1)
-		{
-			pass = 0;
-		}
-		NGTObjectRenderer.INSTANCE.renderTileEntities(this.world, 0.0F, pass);
-		NGTObjectRenderer.INSTANCE.renderEntities(this.world, 0.0F, pass);
-		this.renderBlocks(pass);
-		GL11.glPopMatrix();
-	}
+        GL11.glPushMatrix();
+        GL11.glScalef(this.scale, this.scale, this.scale);
+        float x = (float) this.ngto.xSize * 0.5F;
+        float z = (float) this.ngto.zSize * 0.5F;
+        GL11.glTranslatef(-x, 0.0F, -z);
+        int pass = MinecraftForgeClient.getRenderPass();
+        if (pass == -1) {
+            pass = 0;
+        }
+        NGTObjectRenderer.INSTANCE.renderTileEntities(this.world, 0.0F, pass);
+        NGTObjectRenderer.INSTANCE.renderEntities(this.world, 0.0F, pass);
+        this.renderBlocks(pass);
+        GL11.glPopMatrix();
+    }
 
-	@Override
-	public void renderOnly(boolean smoothing, String... groupNames)
-	{
-		if(groupNames.length == 1 && groupNames[0].equals(GROUP_NAME))
-		{
-			this.renderAll(smoothing);
-		}
-	}
+    @Override
+    public void renderOnly(boolean smoothing, String... groupNames) {
+        if (groupNames.length == 1 && groupNames[0].equals(GROUP_NAME)) {
+            this.renderAll(smoothing);
+        }
+    }
 
-	@Override
-	public void renderPart(boolean smoothing, String partName)
-	{
-		if(partName.equals(GROUP_NAME))
-		{
-			this.renderAll(smoothing);
-		}
-	}
+    @Override
+    public void renderPart(boolean smoothing, String partName) {
+        if (partName.equals(GROUP_NAME)) {
+            this.renderAll(smoothing);
+        }
+    }
 
-	private void renderBlocks(int pass)
-	{
-		if(this.glLists == null)
-		{
-			this.glLists = new GLObject[2];
-		}
+    private void renderBlocks(int pass) {
+        if (this.glLists == null) {
+            this.glLists = new GLObject[2];
+        }
 
-		NGTUtilClient.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        NGTUtilClient.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
 
-		boolean smoothing = NGTUtilClient.getMinecraft().gameSettings.ambientOcclusion != 0;
-		if(smoothing){GL11.glShadeModel(GL11.GL_SMOOTH);}
-		if(!GLHelper.isValid(this.glLists[pass]))
-		{
-			this.glLists[pass] = GLHelper.generateGLList(this.glLists[pass]);
-			GLHelper.startCompile(this.glLists[pass]);
-			NGTObjectRenderer.INSTANCE.renderNGTObject(this.world, this.ngto, true, 0, pass);
-			GLHelper.endCompile();
-		}
-		else
-		{
-			GLHelper.callList(this.glLists[pass]);
-		}
-		if(smoothing){GL11.glShadeModel(GL11.GL_FLAT);}
-		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-		GLHelper.enableLighting();
-		NGTUtilClient.getMinecraft().entityRenderer.enableLightmap();
-	}
+        boolean smoothing = NGTUtilClient.getMinecraft().gameSettings.ambientOcclusion != 0;
+        if (smoothing) {
+            GL11.glShadeModel(GL11.GL_SMOOTH);
+        }
+        if (!GLHelper.isValid(this.glLists[pass])) {
+            this.glLists[pass] = GLHelper.generateGLList(this.glLists[pass]);
+            GLHelper.startCompile(this.glLists[pass]);
+            NGTObjectRenderer.INSTANCE.renderNGTObject(this.world, this.ngto, true, 0, pass);
+            GLHelper.endCompile();
+        } else {
+            GLHelper.callList(this.glLists[pass]);
+        }
+        if (smoothing) {
+            GL11.glShadeModel(GL11.GL_FLAT);
+        }
+        GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        GLHelper.enableLighting();
+        NGTUtilClient.getMinecraft().entityRenderer.enableLightmap();
+    }
 
-	@Override
-	public int getDrawMode()
-	{
-		return 0;
-	}
+    @Override
+    public int getDrawMode() {
+        return 0;
+    }
 
-	@Override
-	public ArrayList<GroupObject> getGroupObjects()
-	{
-		return this.parts;
-	}
+    @Override
+    public ArrayList<GroupObject> getGroupObjects() {
+        return this.parts;
+    }
 
-	@Override
-	public Map<String, Material> getMaterials()
-	{
-		return this.materials;
-	}
+    @Override
+    public Map<String, Material> getMaterials() {
+        return this.materials;
+    }
 
-	@Override
-	public FileType getType()
-	{
-		return FileType.NGTO;
-	}
+    @Override
+    public FileType getType() {
+        return FileType.NGTO;
+    }
 }

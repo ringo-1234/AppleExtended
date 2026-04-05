@@ -1,3 +1,17 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.ngtlib.io;
 
 import java.io.File;
@@ -6,62 +20,52 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**ファイルのスキャン結果をZipごとに管理*/
-public class ScanResult
-{
-	private final Map<String, MatchResult> result = new HashMap<>();
+/**
+ * ファイルのスキャン結果をZipごとに管理
+ */
+public class ScanResult {
+    private final Map<String, MatchResult> result = new HashMap<>();
 
-	private MatchResult getMatchResult(String key)
-	{
-		if(!this.result.containsKey(key))
-		{
-			this.result.put(key, new MatchResult());
-		}
-		return this.result.get(key);
-	}
+    private MatchResult getMatchResult(String key) {
+        if (!this.result.containsKey(key)) {
+            this.result.put(key, new MatchResult());
+        }
+        return this.result.get(key);
+    }
 
-	public List<File> asList()
-	{
-		List<File> list = new ArrayList<>();
-		for(MatchResult mr : this.result.values())
-		{
-			list.addAll(mr.asList());
-		}
-		return list;
-	}
+    public List<File> asList() {
+        List<File> list = new ArrayList<>();
+        for (MatchResult mr : this.result.values()) {
+            list.addAll(mr.asList());
+        }
+        return list;
+    }
 
-	public void add(String key1, FileMatcher key2, File file)
-	{
-		this.getMatchResult(key1).add(key2, file);
-	}
+    public void add(String key1, FileMatcher key2, File file) {
+        this.getMatchResult(key1).add(key2, file);
+    }
 
-	public static class MatchResult
-	{
-		private final Map<FileMatcher, List<File>> result = new HashMap<>();
+    public static class MatchResult {
+        private final Map<FileMatcher, List<File>> result = new HashMap<>();
 
-		private List<File> getList(FileMatcher key)
-		{
-			if(!this.result.containsKey(key))
-			{
-				this.result.put(key, new ArrayList<>());
-			}
-			return this.result.get(key);
-		}
+        private List<File> getList(FileMatcher key) {
+            if (!this.result.containsKey(key)) {
+                this.result.put(key, new ArrayList<>());
+            }
+            return this.result.get(key);
+        }
 
-		public List<File> asList()
-		{
-			List<File> list = new ArrayList<>();
-			for(List<File> files : this.result.values())
-			{
-				list.addAll(files);
-			}
-			return list;
-		}
+        public List<File> asList() {
+            List<File> list = new ArrayList<>();
+            for (List<File> files : this.result.values()) {
+                list.addAll(files);
+            }
+            return list;
+        }
 
-		public void add(FileMatcher key, File file)
-		{
-			this.getList(key).add(file);
-			NGTFileLoader.log("[NGTFL] Add file : %s (%d)", file.getName(), this.getList(key).size());
-		}
-	}
+        public void add(FileMatcher key, File file) {
+            this.getList(key).add(file);
+            NGTFileLoader.log("[NGTFL] Add file : %s (%d)", file.getName(), this.getList(key).size());
+        }
+    }
 }

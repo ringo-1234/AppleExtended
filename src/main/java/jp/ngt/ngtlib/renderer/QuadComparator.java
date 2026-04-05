@@ -1,28 +1,39 @@
-package jp.ngt.ngtlib.renderer;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.Comparator;
+package jp.ngt.ngtlib.renderer;
 
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.Comparator;
+
 @SideOnly(Side.CLIENT)
-public final class QuadComparator implements Comparator
-{
+public final class QuadComparator implements Comparator {
     private float xCoord;
     private float yCoord;
     private float zCoord;
     private int[] buffer;
 
-    public QuadComparator(int[] buf, float x, float y, float z)
-    {
+    public QuadComparator(int[] buf, float x, float y, float z) {
         this.buffer = buf;
         this.xCoord = x;
         this.yCoord = y;
         this.zCoord = z;
     }
 
-    public int compare(Integer par1, Integer par2)
-    {
+    public int compare(Integer par1, Integer par2) {
         float f = Float.intBitsToFloat(this.buffer[par1.intValue()]) - this.xCoord;
         float f1 = Float.intBitsToFloat(this.buffer[par1.intValue() + 1]) - this.yCoord;
         float f2 = Float.intBitsToFloat(this.buffer[par1.intValue() + 2]) - this.zCoord;
@@ -59,8 +70,7 @@ public final class QuadComparator implements Comparator
     }
 
     @Override
-    public int compare(Object par1, Object par2)
-    {
-        return this.compare((Integer)par1, (Integer)par2);
+    public int compare(Object par1, Object par2) {
+        return this.compare((Integer) par1, (Integer) par2);
     }
 }

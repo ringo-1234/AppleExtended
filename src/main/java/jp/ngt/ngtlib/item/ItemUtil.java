@@ -1,6 +1,18 @@
-package jp.ngt.ngtlib.item;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.Arrays;
+package jp.ngt.ngtlib.item;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -10,49 +22,46 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 
-public final class ItemUtil
-{
-	public static boolean isItemEqual(ItemStack par1, ItemStack par2)
-	{
-		if(par1.getItem() == par2.getItem())
-		{
-			int damage1 = par1.getItemDamage();
-			int damage2 = par2.getItemDamage();
-			if(damage1 == damage2 || damage1 == 32767 || damage2 == 32767)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
+import java.util.Arrays;
 
-	/**アイテムをNBTへ書き込む（スタックサイズをIntegerで保存）*/
-	public static NBTTagCompound writeToNBT(NBTTagCompound par1, ItemStack par2)
-    {
-		par1.setShort("id", (short)Item.getIdFromItem(par2.getItem()));
+public final class ItemUtil {
+    public static boolean isItemEqual(ItemStack par1, ItemStack par2) {
+        if (par1.getItem() == par2.getItem()) {
+            int damage1 = par1.getItemDamage();
+            int damage2 = par2.getItemDamage();
+            if (damage1 == damage2 || damage1 == 32767 || damage2 == 32767) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * アイテムをNBTへ書き込む（スタックサイズをIntegerで保存）
+     */
+    public static NBTTagCompound writeToNBT(NBTTagCompound par1, ItemStack par2) {
+        par1.setShort("id", (short) Item.getIdFromItem(par2.getItem()));
         par1.setInteger("Count", par2.getCount());
-        par1.setShort("Damage", (short)par2.getItemDamage());
-        if(par2.getTagCompound() != null)
-        {
-        	par1.setTag("tag", par2.getTagCompound());
+        par1.setShort("Damage", (short) par2.getItemDamage());
+        if (par2.getTagCompound() != null) {
+            par1.setTag("tag", par2.getTagCompound());
         }
         return par1;
     }
 
-	/**アイテムをNBTから読み出す（スタックサイズをIntegerで保存）*/
-    public static ItemStack readFromNBT(NBTTagCompound par1)
-    {
+    /**
+     * アイテムをNBTから読み出す（スタックサイズをIntegerで保存）
+     */
+    public static ItemStack readFromNBT(NBTTagCompound par1) {
         Item item = Item.getItemById(par1.getShort("id"));
         int size = par1.getInteger("Count");
         int damage = par1.getShort("Damage");
-        if(damage < 0)
-        {
-        	damage = 0;
+        if (damage < 0) {
+            damage = 0;
         }
 
         ItemStack itemstack = new ItemStack(item, size, damage);
-        if(par1.hasKey("tag", 10))
-        {
+        if (par1.hasKey("tag", 10)) {
             NBTTagCompound nbt = par1.getCompoundTag("tag");
             itemstack.setTagCompound(nbt);
         }
@@ -63,55 +72,48 @@ public final class ItemUtil
      * @param stack ItemWritableBook
      * @return ItemWritableBookに書かれている内容
      */
-    public static String[] bookToStrings(ItemStack stack)
-	{
-		if(stack.getItem() instanceof ItemWritableBook)
-    	{
-    		if(stack.hasTagCompound())
-            {
+    public static String[] bookToStrings(ItemStack stack) {
+        if (stack.getItem() instanceof ItemWritableBook) {
+            if (stack.hasTagCompound()) {
                 NBTTagCompound nbt = stack.getTagCompound();
                 NBTTagList bookPages = nbt.getTagList("pages", 8);
-                if(bookPages != null)
-                {
-                	String s1 = bookPages.getStringTagAt(0);
-                	return s1.split("\n");
+                if (bookPages != null) {
+                    String s1 = bookPages.getStringTagAt(0);
+                    return s1.split("\n");
                 }
             }
-    	}
-		return new String[0];
-	}
-
-    public static BlockPos getPlacePos(BlockPos pos, EnumFacing side)
-    {
-    	BlockPos newPos = null;
-    	switch(side)
-    	{
-		case DOWN:
-			newPos = pos.down();
-			break;
-		case EAST:
-			newPos = pos.east();
-			break;
-		case NORTH:
-			newPos = pos.north();
-			break;
-		case SOUTH:
-			newPos = pos.south();
-			break;
-		case UP:
-			newPos = pos.up();
-			break;
-		case WEST:
-			newPos = pos.west();
-			break;
-    	}
-    	return newPos;
+        }
+        return new String[0];
     }
 
-    public static ItemStack[] getEmptyArray(int cap)
-    {
-    	ItemStack[] array = new ItemStack[cap];
-    	Arrays.fill(array, ItemStack.EMPTY);
-    	return array;
+    public static BlockPos getPlacePos(BlockPos pos, EnumFacing side) {
+        BlockPos newPos = null;
+        switch (side) {
+            case DOWN:
+                newPos = pos.down();
+                break;
+            case EAST:
+                newPos = pos.east();
+                break;
+            case NORTH:
+                newPos = pos.north();
+                break;
+            case SOUTH:
+                newPos = pos.south();
+                break;
+            case UP:
+                newPos = pos.up();
+                break;
+            case WEST:
+                newPos = pos.west();
+                break;
+        }
+        return newPos;
+    }
+
+    public static ItemStack[] getEmptyArray(int cap) {
+        ItemStack[] array = new ItemStack[cap];
+        Arrays.fill(array, ItemStack.EMPTY);
+        return array;
     }
 }

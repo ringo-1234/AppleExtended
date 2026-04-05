@@ -1,12 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.ngtlib.gui;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
 
 import jp.ngt.ngtlib.renderer.NGTTessellator;
 import net.minecraft.client.gui.FontRenderer;
@@ -16,13 +22,18 @@ import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.util.ChatAllowedCharacters;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 @SideOnly(Side.CLIENT)
-public class GuiTextFieldCustom extends GuiTextField
-{
-	protected final FontRenderer fontRenderer;
-    //public int xPosition, yPosition;
-    //public int width, height;
+
+public class GuiTextFieldCustom extends GuiTextField {
+    protected final FontRenderer fontRenderer;
+
     protected String text = "";
     protected int maxStringLength = 32;
     protected int cursorCounter;
@@ -30,23 +41,20 @@ public class GuiTextFieldCustom extends GuiTextField
     protected boolean canLoseFocus = true;
     protected boolean isFocused;
     protected boolean isEnabled = true;
-    /** The current character index that should be used as start of the rendered text. */
     protected int lineScrollOffset;
     protected int cursorPosition;
     protected int selectionEnd;
     protected int enabledColor = 0xE0E0E0;
     protected int disabledColor = 0x707070;
     protected boolean visible = true;
-
     @Nullable
     private final GuiScreen screen;
-	private final List<String> tips = new ArrayList<>();
+    private final List<String> tips = new ArrayList<>();
     protected boolean isDisplayMode;
     private TextFieldListner listner;
 
-    public GuiTextFieldCustom(int id, FontRenderer par1, int x, int y, int w, int h, GuiScreen pScr)
-    {
-    	super(id, par1, x, y, w, h);
+    public GuiTextFieldCustom(int id, FontRenderer par1, int x, int y, int w, int h, GuiScreen pScr) {
+        super(id, par1, x, y, w, h);
         this.fontRenderer = par1;
         this.x = x;
         this.y = y;
@@ -56,54 +64,45 @@ public class GuiTextFieldCustom extends GuiTextField
         this.screen = pScr;
     }
 
-    public void setListner(TextFieldListner par1)
-    {
-    	this.listner = par1;
+    public void setListner(TextFieldListner par1) {
+        this.listner = par1;
     }
 
-    public void setDisplayMode(boolean par1)
-	{
-    	this.isDisplayMode = par1;
-		this.setEnabled(!par1);
-	}
+    public void setDisplayMode(boolean par1) {
+        this.isDisplayMode = par1;
+        this.setEnabled(!par1);
+    }
 
     @Override
-    public void updateCursorCounter()
-    {
+    public void updateCursorCounter() {
         ++this.cursorCounter;
     }
 
     @Override
-    public void setText(String par1)
-    {
-        if(par1.length() > this.maxStringLength)
-        {
+    public void setText(String par1) {
+        if (par1.length() > this.maxStringLength) {
             this.text = par1.substring(0, this.maxStringLength);
-        }
-        else
-        {
+        } else {
             this.text = par1;
         }
         this.setCursorPositionEnd();
+        this.notifyListener();
     }
 
     @Override
-    public String getText()
-    {
+    public String getText() {
         return this.text;
     }
 
     @Override
-    public String getSelectedText()
-    {
+    public String getSelectedText() {
         int i = this.cursorPosition < this.selectionEnd ? this.cursorPosition : this.selectionEnd;
         int j = this.cursorPosition < this.selectionEnd ? this.selectionEnd : this.cursorPosition;
         return this.text.substring(i, j);
     }
 
     @Override
-    public void writeText(String par1)
-    {
+    public void writeText(String par1) {
         String s1 = "";
         String s2 = ChatAllowedCharacters.filterAllowedCharacters(par1);
         int i = this.cursorPosition < this.selectionEnd ? this.cursorPosition : this.selectionEnd;
@@ -111,131 +110,101 @@ public class GuiTextFieldCustom extends GuiTextField
         int k = this.maxStringLength - this.text.length() - (i - this.selectionEnd);
         boolean flag = false;
 
-        if (this.text.length() > 0)
-        {
+        if (this.text.length() > 0) {
             s1 = s1 + this.text.substring(0, i);
         }
 
         int l;
 
-        if (k < s2.length())
-        {
+        if (k < s2.length()) {
             s1 = s1 + s2.substring(0, k);
             l = k;
-        }
-        else
-        {
+        } else {
             s1 = s1 + s2;
             l = s2.length();
         }
 
-        if (this.text.length() > 0 && j < this.text.length())
-        {
+        if (this.text.length() > 0 && j < this.text.length()) {
             s1 = s1 + this.text.substring(j);
         }
 
         this.text = s1;
         this.moveCursorBy(i - this.selectionEnd + l);
+        this.notifyListener();
     }
 
     @Override
-    public void deleteWords(int p_146177_1_)
-    {
-        if (this.text.length() != 0)
-        {
-            if (this.selectionEnd != this.cursorPosition)
-            {
+    public void deleteWords(int p_146177_1_) {
+        if (this.text.length() != 0) {
+            if (this.selectionEnd != this.cursorPosition) {
                 this.writeText("");
-            }
-            else
-            {
+            } else {
                 this.deleteFromCursor(this.getNthWordFromCursor(p_146177_1_) - this.cursorPosition);
             }
         }
     }
 
-   @Override
-    public void deleteFromCursor(int p_146175_1_)
-    {
-        if (this.text.length() != 0)
-        {
-            if (this.selectionEnd != this.cursorPosition)
-            {
+    @Override
+    public void deleteFromCursor(int p_146175_1_) {
+        if (this.text.length() != 0) {
+            if (this.selectionEnd != this.cursorPosition) {
                 this.writeText("");
-            }
-            else
-            {
+            } else {
                 boolean flag = p_146175_1_ < 0;
                 int j = flag ? this.cursorPosition + p_146175_1_ : this.cursorPosition;
                 int k = flag ? this.cursorPosition : this.cursorPosition + p_146175_1_;
                 String s = "";
-
-                if (j >= 0)
-                {
+                if (j >= 0) {
                     s = this.text.substring(0, j);
                 }
 
-                if (k < this.text.length())
-                {
+                if (k < this.text.length()) {
                     s = s + this.text.substring(k);
                 }
 
                 this.text = s;
 
-                if (flag)
-                {
+                if (flag) {
                     this.moveCursorBy(p_146175_1_);
                 }
             }
         }
+        this.notifyListener();
     }
 
     @Override
-    public int getNthWordFromCursor(int n)
-    {
+    public int getNthWordFromCursor(int n) {
         return this.getNthWordFromPos(n, this.getCursorPosition());
     }
 
     @Override
-    public int getNthWordFromPos(int n, int p_146183_2_)
-    {
+    public int getNthWordFromPos(int n, int p_146183_2_) {
         return this.getNthWordFromPosWS(n, this.getCursorPosition(), true);
     }
 
     @Override
-    public int getNthWordFromPosWS(int n, int pos, boolean skipWs)
-    {
+    public int getNthWordFromPosWS(int n, int pos, boolean skipWs) {
         int k = pos;
         boolean flag1 = n < 0;
         int l = Math.abs(n);
 
-        for (int i1 = 0; i1 < l; ++i1)
-        {
-            if (flag1)
-            {
-                while (skipWs && k > 0 && this.text.charAt(k - 1) == 32)
-                {
+        for (int i1 = 0; i1 < l; ++i1) {
+            if (flag1) {
+                while (skipWs && k > 0 && this.text.charAt(k - 1) == 32) {
                     --k;
                 }
 
-                while (k > 0 && this.text.charAt(k - 1) != 32)
-                {
+                while (k > 0 && this.text.charAt(k - 1) != 32) {
                     --k;
                 }
-            }
-            else
-            {
+            } else {
                 int j1 = this.text.length();
                 k = this.text.indexOf(32, k);
 
-                if (k == -1)
-                {
+                if (k == -1) {
                     k = j1;
-                }
-                else
-                {
-                    while (skipWs && k < j1 && this.text.charAt(k) == 32)
-                    {
+                } else {
+                    while (skipWs && k < j1 && this.text.charAt(k) == 32) {
                         ++k;
                     }
                 }
@@ -246,24 +215,20 @@ public class GuiTextFieldCustom extends GuiTextField
     }
 
     @Override
-    public void moveCursorBy(int p_146182_1_)
-    {
+    public void moveCursorBy(int p_146182_1_) {
         this.setCursorPosition(this.selectionEnd + p_146182_1_);
     }
 
     @Override
-    public void setCursorPosition(int p_146190_1_)
-    {
+    public void setCursorPosition(int p_146190_1_) {
         this.cursorPosition = p_146190_1_;
         int j = this.text.length();
 
-        if (this.cursorPosition < 0)
-        {
+        if (this.cursorPosition < 0) {
             this.cursorPosition = 0;
         }
 
-        if (this.cursorPosition > j)
-        {
+        if (this.cursorPosition > j) {
             this.cursorPosition = j;
         }
 
@@ -271,219 +236,167 @@ public class GuiTextFieldCustom extends GuiTextField
     }
 
     @Override
-    public void setCursorPositionZero()
-    {
+    public void setCursorPositionZero() {
         this.setCursorPosition(0);
     }
 
     @Override
-    public void setCursorPositionEnd()
-    {
+    public void setCursorPositionEnd() {
         this.setCursorPosition(this.text.length());
     }
 
     @Override
-    public boolean textboxKeyTyped(char word, int code)
-    {
-        if(!this.isFocused){return false;}
+    public boolean textboxKeyTyped(char word, int code) {
+        if (!this.isFocused) {
+            return false;
+        }
 
-        switch (word)
-        {
-        case 1:
-            this.setCursorPositionEnd();
-            this.setSelectionPos(0);
-            return true;
+        switch (word) {
+            case 1:
+                this.setCursorPositionEnd();
+                this.setSelectionPos(0);
+                return true;
 
-        case 3:
-            GuiScreen.setClipboardString(this.getSelectedText());
-            return true;
+            case 3:
+                GuiScreen.setClipboardString(this.getSelectedText());
+                return true;
 
-        case 22:
-            if (this.isEnabled)
-            {
-                this.writeText(GuiScreen.getClipboardString());
-            }
-            return true;
-
-        case 24:
-            GuiScreen.setClipboardString(this.getSelectedText());
-            if (this.isEnabled)
-            {
-                this.writeText("");
-            }
-            return true;
-
-        default:
-            switch (code)
-            {
-            case Keyboard.KEY_BACK:
-                if (GuiScreen.isCtrlKeyDown())
-                {
-                    if (this.isEnabled)
-                    {
-                        this.deleteWords(-1);
-                    }
-                }
-                else if (this.isEnabled)
-                {
-                    this.deleteFromCursor(-1);
+            case 22:
+                if (this.isEnabled) {
+                    this.writeText(GuiScreen.getClipboardString());
                 }
                 return true;
 
-            case Keyboard.KEY_HOME:
-                if (GuiScreen.isShiftKeyDown())
-                {
-                    this.setSelectionPos(0);
-                }
-                else
-                {
-                    this.setCursorPositionZero();
-                }
-                return true;
-
-            case Keyboard.KEY_LEFT:
-                if (GuiScreen.isShiftKeyDown())
-                {
-                    if (GuiScreen.isCtrlKeyDown())
-                    {
-                        this.setSelectionPos(this.getNthWordFromPos(-1, this.getSelectionEnd()));
-                    }
-                    else
-                    {
-                        this.setSelectionPos(this.getSelectionEnd() - 1);
-                    }
-                }
-                else if (GuiScreen.isCtrlKeyDown())
-                {
-                    this.setCursorPosition(this.getNthWordFromCursor(-1));
-                }
-                else
-                {
-                    this.moveCursorBy(-1);
-                }
-                return true;
-
-            case Keyboard.KEY_RIGHT:
-                if (GuiScreen.isShiftKeyDown())
-                {
-                    if (GuiScreen.isCtrlKeyDown())
-                    {
-                        this.setSelectionPos(this.getNthWordFromPos(1, this.getSelectionEnd()));
-                    }
-                    else
-                    {
-                        this.setSelectionPos(this.getSelectionEnd() + 1);
-                    }
-                }
-                else if (GuiScreen.isCtrlKeyDown())
-                {
-                    this.setCursorPosition(this.getNthWordFromCursor(1));
-                }
-                else
-                {
-                    this.moveCursorBy(1);
-                }
-                return true;
-
-            case Keyboard.KEY_END:
-                if (GuiScreen.isShiftKeyDown())
-                {
-                    this.setSelectionPos(this.text.length());
-                }
-                else
-                {
-                    this.setCursorPositionEnd();
-                }
-                return true;
-
-            case Keyboard.KEY_DELETE:
-                if (GuiScreen.isCtrlKeyDown())
-                {
-                    if (this.isEnabled)
-                    {
-                        this.deleteWords(1);
-                    }
-                }
-                else if (this.isEnabled)
-                {
-                    this.deleteFromCursor(1);
+            case 24:
+                GuiScreen.setClipboardString(this.getSelectedText());
+                if (this.isEnabled) {
+                    this.writeText("");
                 }
                 return true;
 
             default:
-                if (ChatAllowedCharacters.isAllowedCharacter(word))
-                {
-                    if (this.isEnabled)
-                    {
-                        this.writeText(Character.toString(word));
-                    }
-                    return true;
+                switch (code) {
+                    case Keyboard.KEY_BACK:
+                        if (GuiScreen.isCtrlKeyDown()) {
+                            if (this.isEnabled) {
+                                this.deleteWords(-1);
+                            }
+                        } else if (this.isEnabled) {
+                            this.deleteFromCursor(-1);
+                        }
+                        return true;
+
+                    case Keyboard.KEY_HOME:
+                        if (GuiScreen.isShiftKeyDown()) {
+                            this.setSelectionPos(0);
+                        } else {
+                            this.setCursorPositionZero();
+                        }
+                        return true;
+
+                    case Keyboard.KEY_LEFT:
+                        if (GuiScreen.isShiftKeyDown()) {
+                            if (GuiScreen.isCtrlKeyDown()) {
+                                this.setSelectionPos(this.getNthWordFromPos(-1, this.getSelectionEnd()));
+                            } else {
+                                this.setSelectionPos(this.getSelectionEnd() - 1);
+                            }
+                        } else if (GuiScreen.isCtrlKeyDown()) {
+                            this.setCursorPosition(this.getNthWordFromCursor(-1));
+                        } else {
+                            this.moveCursorBy(-1);
+                        }
+                        return true;
+
+                    case Keyboard.KEY_RIGHT:
+                        if (GuiScreen.isShiftKeyDown()) {
+                            if (GuiScreen.isCtrlKeyDown()) {
+                                this.setSelectionPos(this.getNthWordFromPos(1, this.getSelectionEnd()));
+                            } else {
+                                this.setSelectionPos(this.getSelectionEnd() + 1);
+                            }
+                        } else if (GuiScreen.isCtrlKeyDown()) {
+                            this.setCursorPosition(this.getNthWordFromCursor(1));
+                        } else {
+                            this.moveCursorBy(1);
+                        }
+                        return true;
+
+                    case Keyboard.KEY_END:
+                        if (GuiScreen.isShiftKeyDown()) {
+                            this.setSelectionPos(this.text.length());
+                        } else {
+                            this.setCursorPositionEnd();
+                        }
+                        return true;
+
+                    case Keyboard.KEY_DELETE:
+                        if (GuiScreen.isCtrlKeyDown()) {
+                            if (this.isEnabled) {
+                                this.deleteWords(1);
+                            }
+                        } else if (this.isEnabled) {
+                            this.deleteFromCursor(1);
+                        }
+                        return true;
+
+                    default:
+                        if (ChatAllowedCharacters.isAllowedCharacter(word)) {
+                            if (this.isEnabled) {
+                                this.writeText(Character.toString(word));
+                            }
+                            return true;
+                        } else {
+                            return false;
+                        }
                 }
-                else
-                {
-                    return false;
-                }
-            }
         }
     }
 
     @Override
-    public boolean mouseClicked(int x, int y, int button)
-    {
+    public boolean mouseClicked(int x, int y, int button) {
         boolean flag = x >= this.x && x < this.x + this.width && y >= this.y && y < this.y + this.height;
 
-        if(this.canLoseFocus)
-        {
+        if (this.canLoseFocus) {
             this.setFocused(flag);
         }
 
-        if(this.isFocused && button == 0)
-        {
+        if (this.isFocused && button == 0) {
             int l = x - this.x;
 
-            if (this.enableBackgroundDrawing)
-            {
+            if (this.enableBackgroundDrawing) {
                 l -= 4;
             }
 
             String s = this.fontRenderer.trimStringToWidth(this.text.substring(this.lineScrollOffset), this.getWidth());
             this.setCursorPosition(this.fontRenderer.trimStringToWidth(s, l).length() + this.lineScrollOffset);
 
-            if(this.listner != null)
-            {
-            	this.listner.onClick();
+            if (this.listner != null) {
+                this.listner.onClick();
             }
         }
 
         return flag;
     }
 
-    public void drawTextBox(int mouseX, int mouseY)
-    {
-    	this.drawTextBox();
+    public void drawTextBox(int mouseX, int mouseY) {
+        this.drawTextBox();
 
-    	boolean hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-    	if(hovered && !this.tips.isEmpty())
-    	{
-    		GuiScreenCustom.drawHoveringTextS(this.tips, mouseX, mouseY, this.screen);
-    	}
+        boolean hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+        if (hovered && !this.tips.isEmpty()) {
+            GuiScreenCustom.drawHoveringTextS(this.tips, mouseX, mouseY, this.screen);
+        }
 
     }
 
     @Override
-    public final void drawTextBox()
-    {
-    	if(this.isDisplayMode)
-    	{
-    		this.drawString(this.fontRenderer, this.text, this.x, this.y + (this.height - 8) / 2, this.enabledColor);
-    	}
-    	else
-    	{
-    		if(this.getVisible())
-            {
-                if(this.getEnableBackgroundDrawing())
-                {
-                	drawRect(this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, 0xFFA0A0A0);
+    public final void drawTextBox() {
+        if (this.isDisplayMode) {
+            this.drawString(this.fontRenderer, this.text, this.x, this.y + (this.height - 8) / 2, this.enabledColor);
+        } else {
+            if (this.getVisible()) {
+                if (this.getEnableBackgroundDrawing()) {
+                    drawRect(this.x - 1, this.y - 1, this.x + this.width + 1, this.y + this.height + 1, 0xFFA0A0A0);
                     drawRect(this.x, this.y, this.x + this.width, this.y + this.height, 0xFF000000);
                 }
 
@@ -497,13 +410,11 @@ public class GuiTextFieldCustom extends GuiTextField
                 int y = this.enableBackgroundDrawing ? this.y + (this.height - 8) / 2 : this.y;
                 int xEnd = x;
 
-                if (k > s.length())
-                {
+                if (k > s.length()) {
                     k = s.length();
                 }
 
-                if (s.length() > 0)
-                {
+                if (s.length() > 0) {
                     String s1 = flag ? s.substring(0, j) : s;
                     xEnd = this.fontRenderer.drawStringWithShadow(s1, x, y, color);
                 }
@@ -511,67 +422,53 @@ public class GuiTextFieldCustom extends GuiTextField
                 boolean flag2 = this.cursorPosition < this.text.length() || this.text.length() >= this.getMaxStringLength();
                 int x2 = xEnd;
 
-                if(!flag)
-                {
+                if (!flag) {
                     x2 = j > 0 ? x + this.width : x;
-                }
-                else if(flag2)
-                {
+                } else if (flag2) {
                     x2 = xEnd - 1;
                     --xEnd;
                 }
 
-                if(s.length() > 0 && flag && j < s.length())
-                {
+                if (s.length() > 0 && flag && j < s.length()) {
                     this.fontRenderer.drawStringWithShadow(s.substring(j), xEnd, y, color);
                 }
 
-                if(flag1)
-                {
-                    if(flag2)
-                    {
+                if (flag1) {
+                    if (flag2) {
                         Gui.drawRect(x2, y - 1, x2 + 1, y + 1 + this.fontRenderer.FONT_HEIGHT, 0xFFD0D0D0);
-                    }
-                    else
-                    {
+                    } else {
                         this.fontRenderer.drawStringWithShadow("_", x2, y, color);
                     }
                 }
 
-                if (k != j)
-                {
+                if (k != j) {
                     int strW = x + this.fontRenderer.getStringWidth(s.substring(0, k));
                     this.drawCursorVertical(x2, y - 1, strW - 1, y + 1 + this.fontRenderer.FONT_HEIGHT);
                 }
             }
-    	}
+        }
     }
 
-    private void drawCursorVertical(int par1, int par2, int par3, int par4)
-    {
+    private void drawCursorVertical(int par1, int par2, int par3, int par4) {
         int i1;
 
-        if (par1 < par3)
-        {
+        if (par1 < par3) {
             i1 = par1;
             par1 = par3;
             par3 = i1;
         }
 
-        if (par2 < par4)
-        {
+        if (par2 < par4) {
             i1 = par2;
             par2 = par4;
             par4 = i1;
         }
 
-        if (par3 > this.x + this.width)
-        {
+        if (par3 > this.x + this.width) {
             par3 = this.x + this.width;
         }
 
-        if (par1 > this.x + this.width)
-        {
+        if (par1 > this.x + this.width) {
             par1 = this.x + this.width;
         }
 
@@ -581,120 +478,102 @@ public class GuiTextFieldCustom extends GuiTextField
         GL11.glLogicOp(GL11.GL_OR_REVERSE);
         NGTTessellator tessellator = NGTTessellator.instance;
         tessellator.startDrawingQuads();
-        tessellator.addVertex((float)par1, (float)par4, 0.0F);
-        tessellator.addVertex((float)par3, (float)par4, 0.0F);
-        tessellator.addVertex((float)par3, (float)par2, 0.0F);
-        tessellator.addVertex((float)par1, (float)par2, 0.0F);
+        tessellator.addVertex((float) par1, (float) par4, 0.0F);
+        tessellator.addVertex((float) par3, (float) par4, 0.0F);
+        tessellator.addVertex((float) par3, (float) par2, 0.0F);
+        tessellator.addVertex((float) par1, (float) par2, 0.0F);
         tessellator.draw();
         GL11.glDisable(GL11.GL_COLOR_LOGIC_OP);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
 
     @Override
-    public void setMaxStringLength(int p_146203_1_)
-    {
+    public void setMaxStringLength(int p_146203_1_) {
         this.maxStringLength = p_146203_1_;
 
-        if (this.text.length() > p_146203_1_)
-        {
+        if (this.text.length() > p_146203_1_) {
             this.text = this.text.substring(0, p_146203_1_);
         }
     }
 
     @Override
-    public int getMaxStringLength()
-    {
+    public int getMaxStringLength() {
         return this.maxStringLength;
     }
 
     @Override
-    public int getCursorPosition()
-    {
+    public int getCursorPosition() {
         return this.cursorPosition;
     }
 
     @Override
-    public boolean getEnableBackgroundDrawing()
-    {
+    public boolean getEnableBackgroundDrawing() {
         return this.enableBackgroundDrawing;
     }
 
     @Override
-    public void setEnableBackgroundDrawing(boolean p_146185_1_)
-    {
+    public void setEnableBackgroundDrawing(boolean p_146185_1_) {
         this.enableBackgroundDrawing = p_146185_1_;
     }
 
     @Override
-    public void setTextColor(int p_146193_1_)
-    {
+    public void setTextColor(int p_146193_1_) {
         this.enabledColor = p_146193_1_;
     }
 
     @Override
-    public void setDisabledTextColour(int p_146204_1_)
-    {
+    public void setDisabledTextColour(int p_146204_1_) {
         this.disabledColor = p_146204_1_;
     }
 
     @Override
-    public void setFocused(boolean par1)
-    {
-    	if(!this.isDisplayMode)
-    	{
-    		if(par1 && !this.isFocused)
-            {
+    public void setFocused(boolean par1) {
+        if (!this.isDisplayMode) {
+            this.setCursorPositionZero();
+            this.setSelectionPos(this.getCursorPosition());
+            if (par1 && !this.isFocused) {
                 this.cursorCounter = 0;
             }
             this.isFocused = par1;
-    	}
+        }
     }
 
     @Override
-    public boolean isFocused()
-    {
+    public boolean isFocused() {
         return this.isFocused;
     }
 
     @Override
-    public void setEnabled(boolean p_146184_1_)
-    {
+    public void setEnabled(boolean p_146184_1_) {
         this.isEnabled = p_146184_1_;
     }
 
     @Override
-    public int getSelectionEnd()
-    {
+    public int getSelectionEnd() {
         return this.selectionEnd;
     }
 
     @Override
-    public int getWidth()
-    {
+    public int getWidth() {
         return this.getEnableBackgroundDrawing() ? this.width - 8 : this.width;
     }
 
     @Override
-    public void setSelectionPos(int p_146199_1_)
-    {
+    public void setSelectionPos(int p_146199_1_) {
         int j = this.text.length();
 
-        if (p_146199_1_ > j)
-        {
+        if (p_146199_1_ > j) {
             p_146199_1_ = j;
         }
 
-        if (p_146199_1_ < 0)
-        {
+        if (p_146199_1_ < 0) {
             p_146199_1_ = 0;
         }
 
         this.selectionEnd = p_146199_1_;
 
-        if (this.fontRenderer != null)
-        {
-            if (this.lineScrollOffset > j)
-            {
+        if (this.fontRenderer != null) {
+            if (this.lineScrollOffset > j) {
                 this.lineScrollOffset = j;
             }
 
@@ -702,58 +581,63 @@ public class GuiTextFieldCustom extends GuiTextField
             String s = this.fontRenderer.trimStringToWidth(this.text.substring(this.lineScrollOffset), k);
             int l = s.length() + this.lineScrollOffset;
 
-            if (p_146199_1_ == this.lineScrollOffset)
-            {
+            if (p_146199_1_ == this.lineScrollOffset) {
                 this.lineScrollOffset -= this.fontRenderer.trimStringToWidth(this.text, k, true).length();
             }
 
-            if (p_146199_1_ > l)
-            {
+            if (p_146199_1_ > l) {
                 this.lineScrollOffset += p_146199_1_ - l;
-            }
-            else if (p_146199_1_ <= this.lineScrollOffset)
-            {
+            } else if (p_146199_1_ <= this.lineScrollOffset) {
                 this.lineScrollOffset -= this.lineScrollOffset - p_146199_1_;
             }
 
-            if (this.lineScrollOffset < 0)
-            {
+            if (this.lineScrollOffset < 0) {
                 this.lineScrollOffset = 0;
             }
 
-            if (this.lineScrollOffset > j)
-            {
+            if (this.lineScrollOffset > j) {
                 this.lineScrollOffset = j;
             }
         }
     }
 
     @Override
-    public void setCanLoseFocus(boolean par1)
-    {
+    public void setCanLoseFocus(boolean par1) {
         this.canLoseFocus = par1;
     }
 
     @Override
-    public boolean getVisible()
-    {
+    public boolean getVisible() {
         return this.visible;
     }
 
     @Override
-    public void setVisible(boolean par1)
-    {
+    public void setVisible(boolean par1) {
         this.visible = par1;
     }
 
-    public GuiTextFieldCustom addTips(String par1)
-	{
-		this.tips.add(par1);
-		return this;
-	}
+    public GuiTextFieldCustom addTips(String par1) {
+        this.tips.add(par1);
+        return this;
+    }
 
-    public interface TextFieldListner
-    {
-    	void onClick();
+    public interface TextFieldListner {
+        void onClick();
+    }
+
+    public interface TextFieldListener {
+        void onChange(GuiTextFieldCustom field);
+    }
+
+    private TextFieldListener listener;
+
+    public void setListener(TextFieldListener listener) {
+        this.listener = listener;
+    }
+
+    private void notifyListener() {
+        if (this.listener != null) {
+            this.listener.onChange(this);
+        }
     }
 }

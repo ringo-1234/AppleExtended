@@ -1,3 +1,17 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.gui;
 
 import jp.ngt.rtm.RTMItem;
@@ -8,104 +22,87 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class TabTrainControlPanel
-{
-	private static int nextIndex;
-	public static TabTrainControlPanel[] tabArray = new TabTrainControlPanel[3];
+public class TabTrainControlPanel {
+    private static int nextIndex;
+    public static TabTrainControlPanel[] tabArray = new TabTrainControlPanel[3];
 
-	private final int tabIndex;
+    private final int tabIndex;
     private final String tabLabel;
     private final Item iconItem;
     private final ResourceLocation tabTexture;
-	private ItemStack itemstack;
+    private ItemStack itemstack;
 
     public static final TabTrainControlPanel TAB_Inventory = new TabTrainControlPanel("Player_Inventory", Item.getItemFromBlock(Blocks.CHEST), new ResourceLocation("rtm", "textures/gui/tab_inventory.png"));
     public static final TabTrainControlPanel TAB_Setting = new TabTrainControlPanel("Setting", RTMItem.crowbar, new ResourceLocation("rtm", "textures/gui/tab_setting.png"));
     public static final TabTrainControlPanel TAB_Function = new TabTrainControlPanel("Function", RTMItem.wrench, new ResourceLocation("rtm", "textures/gui/tab_setting.png"));
     public static final TabTrainControlPanel TAB_Formation = new TabTrainControlPanel("Formation", RTMItem.itemtrain, new ResourceLocation("rtm", "textures/gui/tab_formation.png"));
 
-	public TabTrainControlPanel(String par1, Item par2, ResourceLocation par3)
-	{
-		this.tabIndex = nextIndex++;
-		this.tabLabel = par1;
-		this.iconItem = par2;
-		this.tabTexture = par3;
+    public TabTrainControlPanel(String par1, Item par2, ResourceLocation par3) {
+        this.tabIndex = nextIndex++;
+        this.tabLabel = par1;
+        this.iconItem = par2;
+        this.tabTexture = par3;
 
-		if(this.tabIndex >= tabArray.length)
-		{
-			TabTrainControlPanel[] a0 = new TabTrainControlPanel[this.tabIndex + 1];
-			for(int i = 0; i < tabArray.length; ++i)
-			{
-				a0[i] = tabArray[i];
-			}
-			tabArray = a0;
-		}
+        if (this.tabIndex >= tabArray.length) {
+            TabTrainControlPanel[] a0 = new TabTrainControlPanel[this.tabIndex + 1];
+            for (int i = 0; i < tabArray.length; ++i) {
+                a0[i] = tabArray[i];
+            }
+            tabArray = a0;
+        }
 
-		tabArray[this.tabIndex] = this;
-	}
+        tabArray[this.tabIndex] = this;
+    }
 
-	@SideOnly(Side.CLIENT)
-    public ItemStack getIconItemStack()
-    {
-        if(this.itemstack == null)
-        {
+    @SideOnly(Side.CLIENT)
+    public ItemStack getIconItemStack() {
+        if (this.itemstack == null) {
             this.itemstack = new ItemStack(this.getTabIconItem(), 1, 0);
         }
         return this.itemstack;
     }
 
-	@SideOnly(Side.CLIENT)
-	public ResourceLocation getTexture()
-	{
-		return this.tabTexture;
-	}
+    @SideOnly(Side.CLIENT)
+    public ResourceLocation getTexture() {
+        return this.tabTexture;
+    }
 
-    public int getTabIndex()
-    {
+    public int getTabIndex() {
         return this.tabIndex;
     }
 
-    public String getTabLabel()
-    {
+    public String getTabLabel() {
         return this.tabLabel;
     }
 
-	@SideOnly(Side.CLIENT)
-	public Item getTabIconItem()
-	{
-		return this.iconItem;
-	}
+    @SideOnly(Side.CLIENT)
+    public Item getTabIconItem() {
+        return this.iconItem;
+    }
 
-	@SideOnly(Side.CLIENT)
-	public String getTranslatedTabLabel()
-	{
-		return this.getTabLabel();
-	}
+    @SideOnly(Side.CLIENT)
+    public String getTranslatedTabLabel() {
+        return this.getTabLabel();
+    }
 
-	public int getTabPage()
-    {
-        if(this.tabIndex > 11)
-        {
+    public int getTabPage() {
+        if (this.tabIndex > 11) {
             return ((this.tabIndex - 12) / 10) + 1;
         }
         return 0;
     }
 
-	@SideOnly(Side.CLIENT)
-    public int getTabColumn()
-    {
-        if(this.tabIndex > 11)
-        {
+    @SideOnly(Side.CLIENT)
+    public int getTabColumn() {
+        if (this.tabIndex > 11) {
             return ((this.tabIndex - 12) % 10) % 5;
         }
         return this.tabIndex % 6;
     }
 
-	@SideOnly(Side.CLIENT)
-    public boolean isTabInFirstRow()
-    {
-        if(this.tabIndex > 11)
-        {
+    @SideOnly(Side.CLIENT)
+    public boolean isTabInFirstRow() {
+        if (this.tabIndex > 11) {
             return ((this.tabIndex - 12) % 10) < 5;
         }
         return this.tabIndex < 6;

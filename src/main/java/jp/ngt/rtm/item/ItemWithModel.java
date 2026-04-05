@@ -1,12 +1,23 @@
-package jp.ngt.rtm.item;
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
 
-import java.util.List;
+package jp.ngt.rtm.item;
 
 import jp.ngt.ngtlib.io.NGTLog;
 import jp.ngt.ngtlib.item.ItemArgHolderBase.ItemArgHolder;
 import jp.ngt.ngtlib.item.ItemCustom;
 import jp.ngt.ngtlib.network.PacketNBT;
-import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.modelpack.IResourceSelector;
 import jp.ngt.rtm.modelpack.ModelPackManager;
 import jp.ngt.rtm.modelpack.ResourceType;
@@ -21,118 +32,109 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public abstract class ItemWithModel<T extends ResourceSet> extends ItemCustom implements IResourceSelector
-{
-	/**モデル選択時の読み書きに使用*/
-	//@SideOnly(Side.CLIENT)
-	private ItemStack selectedItem;
-	//@SideOnly(Side.CLIENT)
-	private EntityPlayer selectedPlayer;
+import java.util.List;
 
-	public ItemWithModel()
-	{
-		super();
-		this.setHasSubtypes(true);
-	}
-
-	@Override
-	protected ActionResult<ItemStack> onItemRightClick(ItemArgHolder holder)
-    {
-		if(holder.getWorld().isRemote)
-		{
-			if(this.getModelType(holder.getItemStack()) != null)
-			{
-				this.selectedItem = holder.getItemStack();
-				this.selectedPlayer = holder.getPlayer();
-				holder.getPlayer().openGui(RTMCore.instance, this.getGuiId(holder.getItemStack()), holder.getWorld(), 0, -1, 0);
-			}
-			else
-			{
-				NGTLog.debug("No Type");
-			}
-		}
-		return holder.success();
+public abstract class ItemWithModel<T extends ResourceSet> extends ItemCustom {
+    public ItemWithModel() {
+        super();
+        this.setHasSubtypes(true);
     }
 
-	public abstract int getGuiId(ItemStack stack);
-
-	@SideOnly(Side.CLIENT)
-	@Override
-	protected void addInformation(ItemArgHolder holder, List<String> list, ITooltipFlag flag)
-    {
-		if(ModelPackManager.INSTANCE.modelLoaded)//モデルロード前に呼ばれることの対策
-		{
-			ResourceState state = this.getModelState(holder.getItemStack());
-			if(state != null)
-			{
-				list.add(TextFormatting.GRAY + state.getResourceName());
-			}
-		}
+    @Override
+    protected ActionResult<ItemStack> onItemRightClick(ItemArgHolder holder) {
+        if (holder.getWorld().isRemote) {
+            if (this.getModelType(holder.getItemStack()) != null) {
+                net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(newGuiScreen(holder));
+            } else {
+                NGTLog.debug("No Type");
+            }
+        }
+        return holder.success();
     }
 
-	/**@return モデルパックの種類(null可)*/
-	protected abstract ResourceType getModelType(ItemStack itemStack);
+    @SideOnly(Side.CLIENT)
+    protected final net.minecraft.client.gui.GuiScreen newGuiSelectModel(ItemArgHolder holder) {
+        return new jp.ngt.rtm.gui.GuiSelectModel(holder.getWorld(), new ResourceSelector(holder));
+    }
 
-	public ResourceState<T> getModelState(ItemStack itemStack)
-	{
-		ResourceType type = this.getModelType(itemStack);
-		if(type != null)
-		{
-			ResourceState<T> state = this.getNewState(itemStack, type);
-			if(itemStack.hasTagCompound())
-			{
-				state.readFromNBT(itemStack.getTagCompound().getCompoundTag("State"));
-			}
-			else
-			{
-				state.setResourceName(type.defaultName);
-				NBTTagCompound nbt = new NBTTagCompound();
-				nbt.setTag("State", state.writeToNBT());
-				itemStack.setTagCompound(nbt);
-			}
-			return state;
-		}
-		return null;
-	}
+    @SideOnly(Side.CLIENT)
+    public abstract net.minecraft.client.gui.GuiScreen newGuiScreen(ItemArgHolder holder);
 
-	protected abstract ResourceState<T> getNewState(ItemStack itemStack, ResourceType type);
+    @SideOnly(Side.CLIENT)
+    @Override
+    protected void addInformation(ItemArgHolder holder, List<String> list, ITooltipFlag flag) {
+        if (ModelPackManager.INSTANCE.modelLoaded) {
+            ResourceState resourcestate = this.getModelState(holder.getItemStack());
+            if (resourcestate != null) {
+                list.add(TextFormatting.GRAY + resourcestate.getResourceName());
+            }
+            addMoreInfo(holder.getItemStack(), list);
+        }
+    }
 
-	public void setModelState(ItemStack itemStack, ResourceState<T> state)
-	{
-		if(!itemStack.hasTagCompound())
-		{
-			itemStack.setTagCompound(new NBTTagCompound());
-		}
+    protected void addMoreInfo(ItemStack stack, List<String> list) {
+        ResourceState<T> state = this.getModelState(stack);
+        if (state != null && state.getDataMap().getEntries().size() > 0) {
+            list.add(TextFormatting.DARK_PURPLE + "(+DataMap)");
+        }
+        if (com.anatawa12.fixRtm.rtm.item.ItemWithModelEx.hasOffset(stack)) {
+            list.add(TextFormatting.DARK_PURPLE + "(+Offset)");
+        }
+    }
 
-		itemStack.getTagCompound().setTag("State", state.writeToNBT());
+    protected abstract ResourceType getModelType(ItemStack itemStack);
 
-		if(this.selectedPlayer != null)
-		{
-			PacketNBT.sendToServer(this.selectedPlayer, this.selectedItem);
-		}
-	}
+    public ResourceState<T> getModelState(ItemStack itemStack) {
+        ResourceType type = this.getModelType(itemStack);
+        if (type != null) {
+            ResourceState<T> state = this.getNewState(itemStack, type);
+            if (itemStack.hasTagCompound()) {
+                state.readFromNBT(itemStack.getTagCompound().getCompoundTag("State"));
+            } else {
+                state.setResourceName(type.defaultName);
+                NBTTagCompound nbt = new NBTTagCompound();
+                nbt.setTag("State", state.writeToNBT());
+                itemStack.setTagCompound(nbt);
+            }
+            return state;
+        }
+        return null;
+    }
 
-	@Override
-	public ResourceState<T> getResourceState()
-	{
-		return this.getModelState(this.selectedItem);
-	}
+    protected abstract ResourceState<T> getNewState(ItemStack itemStack, ResourceType type);
 
-	@Override
-	public void updateResourceState(){}
+    public void setModelState(ItemStack itemStack, ResourceState<T> state) {
+        if (!itemStack.hasTagCompound()) {
+            itemStack.setTagCompound(new NBTTagCompound());
+        }
 
-	@Override
-	public int[] getSelectorPos()
-	{
-		return new int[3];
-	}
+        itemStack.getTagCompound().setTag("State", state.writeToNBT());
+    }
 
-	@Override
-	public boolean closeGui(ResourceState par1)
-	{
-		//ResourceState<T> state = this.getResourceState();
-		//state.setResourceName(par1);
-		this.setModelState(this.selectedItem, par1);
-		return true;
-	}
+    public class ResourceSelector implements IResourceSelector<T> {
+        private final ItemStack selectedItem;
+        private final EntityPlayer selectedPlayer;
+
+        public ResourceSelector(ItemArgHolder holder) {
+            this.selectedItem = holder.getItemStack();
+            this.selectedPlayer = holder.getPlayer();
+        }
+
+        public ResourceState<T> getResourceState() {
+            return getModelState(this.selectedItem);
+        }
+
+        public void updateResourceState() {
+        }
+
+        public int[] getSelectorPos() {
+            return new int[3];
+        }
+
+        public boolean closeGui(ResourceState par1) {
+            setModelState(this.selectedItem, par1);
+            PacketNBT.sendToServer(this.selectedPlayer, this.selectedItem);
+            return true;
+        }
+    }
 }

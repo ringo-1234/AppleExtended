@@ -1,10 +1,18 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.ngtlib.item;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.lwjgl.input.Keyboard;
 
 import jp.ngt.ngtlib.item.ItemArgHolderBase.ItemArgHolder;
 import jp.ngt.ngtlib.util.Usage;
@@ -21,48 +29,44 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.lwjgl.input.Keyboard;
 
-public class ItemCustom extends Item
-{
-	@Override
-	public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand)
-    {
-		return this.onItemRightClick((new ItemArgHolder()).setWorld(world).setPlayer(player).setHand(hand));
+import javax.annotation.Nullable;
+import java.util.List;
+
+public class ItemCustom extends Item {
+    @Override
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
+        return this.onItemRightClick((new ItemArgHolder()).setWorld(world).setPlayer(player).setHand(hand));
     }
 
-	protected ActionResult<ItemStack> onItemRightClick(ItemArgHolder holder)
-    {
-		return new ActionResult(EnumActionResult.PASS, holder.getItemStack());
+    protected ActionResult<ItemStack> onItemRightClick(ItemArgHolder holder) {
+        return new ActionResult(EnumActionResult.PASS, holder.getItemStack());
     }
 
-	@Override
-	public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ)
-    {
-		return this.onItemUse((new ItemArgHolder()).setPlayer(player).setWorld(world).setBlockPos(pos).setHand(hand).setFacing(facing), hitX, hitY, hitZ).getType();
+    @Override
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return this.onItemUse((new ItemArgHolder()).setPlayer(player).setWorld(world).setBlockPos(pos).setHand(hand).setFacing(facing), hitX, hitY, hitZ).getType();
     }
 
-	protected ActionResult<ItemStack> onItemUse(ItemArgHolder holder, float hitX, float hitY, float hitZ)
-    {
-		return new ActionResult(EnumActionResult.PASS, holder.getItemStack());
+    protected ActionResult<ItemStack> onItemUse(ItemArgHolder holder, float hitX, float hitY, float hitZ) {
+        return new ActionResult(EnumActionResult.PASS, holder.getItemStack());
     }
 
-	@SideOnly(Side.CLIENT)
-	@Override
-	public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag)
-    {
-		this.addInformation(new ItemArgHolder().setItemStack(stack).setWorld(world), tooltip, flag);
-		super.addInformation(stack, world, tooltip, flag);
+    @SideOnly(Side.CLIENT)
+    @Override
+    public void addInformation(ItemStack stack, @Nullable World world, List<String> tooltip, ITooltipFlag flag) {
+        this.addInformation(new ItemArgHolder().setItemStack(stack).setWorld(world), tooltip, flag);
+        super.addInformation(stack, world, tooltip, flag);
 
-		if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
-		{
-			Usage.INSTANCE.addTooltip(this, stack.getItemDamage(), tooltip);
-		}
-		else
-		{
-			tooltip.add(TextFormatting.YELLOW + "= Display Usage with L_Shift =");
-		}
+        if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+            Usage.INSTANCE.addTooltip(this, stack.getItemDamage(), tooltip);
+        } else {
+            tooltip.add(TextFormatting.YELLOW + "= Display Usage with L_Shift =");
+        }
     }
 
-	@SideOnly(Side.CLIENT)
-	protected void addInformation(ItemArgHolder holder, List<String> list, ITooltipFlag flag){}
+    @SideOnly(Side.CLIENT)
+    protected void addInformation(ItemArgHolder holder, List<String> list, ITooltipFlag flag) {
+    }
 }

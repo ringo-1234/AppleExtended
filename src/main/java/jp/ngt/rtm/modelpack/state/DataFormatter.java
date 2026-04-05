@@ -1,179 +1,156 @@
+/*
+ *
+ *  * AppleExtended
+ *  *
+ *  * Original code (c) 2020 anatawa12 and other contributors.
+ *  * Modifications (c) 2026 Applepie.
+ *  *
+ *  * This file is part of AppleExtended, which is a derivative work of fixRTM.
+ *  * Both are licensed under the GNU Lesser General Public License version 3.
+ *  * See LICENSE.txt in the mod root for full license text.
+ *
+ *
+ */
+
 package jp.ngt.rtm.modelpack.state;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
 
 import jp.ngt.ngtlib.io.NGTLog;
 import jp.ngt.rtm.modelpack.ModelPackManager;
 import jp.ngt.rtm.modelpack.cfg.ResourceConfig;
 import jp.ngt.rtm.modelpack.cfg.ResourceConfig.DMInitValue;
 
-public final class DataFormatter
-{
-	private final Map<String, IDataFilter> filterMap = new HashMap<>();
-	private final Map<String, String[]> suggestionMap = new HashMap<>();
-	private final DMInitValue[] initValues;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-	public DataFormatter(@Nullable ResourceConfig cfg)
-	{
-		if(cfg == null || cfg.defaultValues == null)
-		{
-			this.initValues = new DMInitValue[0];
-		}
-		else
-		{
-			this.initValues = cfg.defaultValues;
+public final class DataFormatter {
+    private final Map<String, IDataFilter> filterMap = new HashMap<>();
+    private final Map<String, String[]> suggestionMap = new HashMap<>();
+    private final DMInitValue[] initValues;
 
-			for(DMInitValue val : cfg.defaultValues)
-			{
-				DataType type = DataType.getType(val.type);
-				if(type != null)
-				{
-					this.addValue(type, val);
-				}
-			}
-		}
-	}
+    public DataFormatter(@Nullable ResourceConfig cfg) {
+        if (cfg == null || cfg.defaultValues == null) {
+            this.initValues = new DMInitValue[0];
+        } else {
+            this.initValues = cfg.defaultValues;
 
-	private void addValue(DataType type, DMInitValue val)
-	{
-		IDataFilter filter = null;
+            for (DMInitValue val : cfg.defaultValues) {
+                DataType type = DataType.getType(val.type);
+                if (type != null) {
+                    this.addValue(type, val);
+                }
+            }
+        }
+    }
 
-		if(type == DataType.INT || type == DataType.HEX)
-		{
-			if(val.minmax != null)
-			{
-				filter = (data)->{
-					int iData = (data instanceof String) ? Integer.valueOf((String)data) : (int)data;
-					return iData >= val.minmax[0] && iData <= val.minmax[1];
-				};
-			}
-		}
-		else if(type == DataType.DOUBLE)
-		{
-			if(val.minmax != null)
-			{
-				filter = (data)->{
-					double dData = (data instanceof String) ? Double.valueOf((String)data) : (double)data;
-					return dData >= val.minmax[0] && dData <= val.minmax[1];
-				};
-			}
-		}
-		else if(type == DataType.STRING)
-		{
-			if(val.pattern != null)
-			{
-				filter = (data)->{
-					String s0 = (String)data;
-					String start = val.pattern[0];
-					String contains = val.pattern[1];
-					String end = val.pattern[2];
-					return (start.isEmpty() || s0.startsWith(start)) && (contains.isEmpty() || s0.contains(contains)) && (end.isEmpty() || s0.endsWith(end));
-				};
-			}
-		}
+    private void addValue(DataType type, DMInitValue val) {
+        IDataFilter filter = null;
 
-		if(filter != null)
-		{
-			this.filterMap.put(val.key, filter);
-		}
+        if (type == DataType.INT || type == DataType.HEX) {
+            if (val.minmax != null) {
+                filter = (data) -> {
+                    int iData = (data instanceof String) ? Integer.valueOf((String) data) : (int) data;
+                    return iData >= val.minmax[0] && iData <= val.minmax[1];
+                };
+            }
+        } else if (type == DataType.DOUBLE) {
+            if (val.minmax != null) {
+                filter = (data) -> {
+                    double dData = (data instanceof String) ? Double.valueOf((String) data) : (double) data;
+                    return dData >= val.minmax[0] && dData <= val.minmax[1];
+                };
+            }
+        } else if (type == DataType.STRING) {
+            if (val.pattern != null) {
+                filter = (data) -> {
+                    String s0 = (String) data;
+                    String start = val.pattern[0];
+                    String contains = val.pattern[1];
+                    String end = val.pattern[2];
+                    return (start.isEmpty() || s0.startsWith(start)) && (contains.isEmpty() || s0.contains(contains)) && (end.isEmpty() || s0.endsWith(end));
+                };
+            }
+        }
 
-		if(type == DataType.BOOLEAN)
-		{
-			val.suggestions = new String[]{String.valueOf(false), String.valueOf(true)};
-		}
-		else
-		{
-			if(val.suggestions != null)
-			{
-				if(val.suggestions[0].equals("-file"))
-				{
-					if(filter != null)
-					{
-						List<File> list = ModelPackManager.INSTANCE.fileCache;
-						List<String> tempList = new ArrayList<>();
-						for(File file : list)
-						{
-							String path = file.getAbsolutePath();
-							if(filter.check(path))
-							{
-								tempList.add(pathToRL(path));
-							}
-						}
-						val.suggestions = tempList.toArray(new String[tempList.size()]);
-					}
-				}
-				else if(val.suggestions[0].equals("-value"))
-				{
-					int min = (int)(double)Double.valueOf(val.minmax[0]);
-					int max = (int)(double)Double.valueOf(val.minmax[1]);
-					val.suggestions = new String[max - min + 1];
-					for(int i = 0; i < val.suggestions.length; ++i)
-					{
-						val.suggestions[i] = String.valueOf(i + min);
-					}
-				}
-			}
-		}
+        if (filter != null) {
+            this.filterMap.put(val.key, filter);
+        }
 
-		if(val.suggestions != null)
-		{
-			this.suggestionMap.put(val.key, val.suggestions);
-		}
-	}
+        if (type == DataType.BOOLEAN) {
+            val.suggestions = new String[]{String.valueOf(false), String.valueOf(true)};
+        } else {
+            if (val.suggestions != null) {
+                if (val.suggestions[0].equals("-file")) {
+                    if (filter != null) {
+                        List<File> list = ModelPackManager.INSTANCE.fileCache;
+                        List<String> tempList = new ArrayList<>();
+                        for (File file : list) {
+                            String path = file.getAbsolutePath();
+                            if (filter.check(path)) {
+                                tempList.add(pathToRL(path));
+                            }
+                        }
+                        val.suggestions = tempList.toArray(new String[tempList.size()]);
+                    }
+                } else if (val.suggestions[0].equals("-value")) {
+                    int min = (int) (double) Double.valueOf(val.minmax[0]);
+                    int max = (int) (double) Double.valueOf(val.minmax[1]);
+                    val.suggestions = new String[max - min + 1];
+                    for (int i = 0; i < val.suggestions.length; ++i) {
+                        val.suggestions[i] = String.valueOf(i + min);
+                    }
+                }
+            }
+        }
 
-	/**ファイルパスをResourceLocationの書式に変換*/
-	private static String pathToRL(String path)
-	{
-		path = path.replace('\\', '/');
-		int i0 = path.indexOf("assets") + 7;
-		String s0 = path.substring(i0);
-		int i1 = s0.indexOf('/');
-		String domain = s0.substring(0, i1);
-		String path2 = s0.substring(i1 + 1);
-		return domain + ":" + path2;
-	}
+        if (val.suggestions != null) {
+            this.suggestionMap.put(val.key, val.suggestions);
+        }
+    }
 
-	public void initDataMap(DataMap dm)
-	{
-		dm.setFormatter(this);
+    /**
+     * ファイルパスをResourceLocationの書式に変換
+     */
+    private static String pathToRL(String path) {
+        path = path.replace('\\', '/');
+        int i0 = path.indexOf("assets") + 7;
+        String s0 = path.substring(i0);
+        int i1 = s0.indexOf('/');
+        String domain = s0.substring(0, i1);
+        String path2 = s0.substring(i1 + 1);
+        return domain + ":" + path2;
+    }
 
-		for(DMInitValue val : this.initValues)
-		{
-			String key = val.key;
-			String value = String.format("(%s)%s", val.type, val.value);
-			if(!dm.contains(key))
-			{
-				if(!dm.set(key, value, DataMap.SYNC_FLAG | DataMap.SAVE_FLAG))
-				{
-					NGTLog.debug("Failed to set value : %s=%s", key, value);
-				}
-			}
-		}
-	}
+    public void initDataMap(DataMap dm) {
+        dm.setFormatter(this);
 
-	public boolean check(String key, DataEntry value)
-	{
-		IDataFilter filter = this.filterMap.get(key);
-		if(filter != null)
-		{
-			return filter.check(value.get());
-		}
-		return true;
-	}
+        for (DMInitValue val : this.initValues) {
+            String key = val.key;
+            String value = String.format("(%s)%s", val.type, val.value);
+            if (!dm.contains(key)) {
+                if (!dm.set(key, value, DataMap.SYNC_FLAG | DataMap.SAVE_FLAG)) {
+                    NGTLog.debug("Failed to set value : %s=%s", key, value);
+                }
+            }
+        }
+    }
 
-	public IDataFilter getFilter(String key)
-	{
-		return this.filterMap.get(key);
-	}
+    public boolean check(String key, DataEntry value) {
+        IDataFilter filter = this.filterMap.get(key);
+        if (filter != null) {
+            return filter.check(value.get());
+        }
+        return true;
+    }
 
-	public String[] getSuggestions(String key)
-	{
-		return this.suggestionMap.get(key);
-	}
+    public IDataFilter getFilter(String key) {
+        return this.filterMap.get(key);
+    }
+
+    public String[] getSuggestions(String key) {
+        return this.suggestionMap.get(key);
+    }
 }
