@@ -168,16 +168,24 @@ public final class RTMKeyHandlerClient {
                 NGTLog.showChatMessage(new TextComponentString("Push EB"));
             } else if (KEY_CHIME_NEXT.isPressed()) {
                 TrainStateType type = TrainStateType.Announcement;
+                ModelSetTrain modelset = train.getResourceState().getResourceSet();
+                String[][] sa0 = modelset != null ? ((TrainConfig) modelset.getConfig()).sound_Announcement : null;
+                int maxIndex = (sa0 != null && sa0.length > 0) ? sa0.length - 1 : type.max;
                 int i0 = train.getVehicleState(type) + 1;
-                i0 = i0 < type.min ? type.max : (i0 > type.max ? 0 : i0);
+                if (i0 > maxIndex) i0 = 0;
                 train.syncVehicleState(type, (byte) i0);
-                NGTLog.showChatMessage(new TextComponentString("Next chime"));
+                String chimeName = getChimeName(train, i0);
+                NGTLog.showChatMessage(new TextComponentString("Next Chime: " + chimeName));
             } else if (KEY_CHIME_PREV.isPressed()) {
                 TrainStateType type = TrainStateType.Announcement;
+                ModelSetTrain modelset = train.getResourceState().getResourceSet();
+                String[][] sa0 = modelset != null ? ((TrainConfig) modelset.getConfig()).sound_Announcement : null;
+                int maxIndex = (sa0 != null && sa0.length > 0) ? sa0.length - 1 : type.max;
                 int i0 = train.getVehicleState(type) - 1;
-                i0 = i0 < type.min ? type.max : (i0 > type.max ? 0 : i0);
+                if (i0 < 0) i0 = maxIndex;
                 train.syncVehicleState(type, (byte) i0);
-                NGTLog.showChatMessage(new TextComponentString("Prev chime"));
+                String chimeName = getChimeName(train, i0);
+                NGTLog.showChatMessage(new TextComponentString("Prev Chime: " + chimeName));
             } else if (KEY_ROLE_UP.isPressed()) {
                 TrainStateType type = TrainStateType.Role;
                 int current = train.getVehicleState(type);
@@ -232,5 +240,15 @@ public final class RTMKeyHandlerClient {
                 }
             }
         }
+    }
+    private String getChimeName(EntityTrainBase train, int index) {
+        ModelSetTrain modelset = train.getResourceState().getResourceSet();
+        if (modelset != null) {
+            String[][] sa0 = ((TrainConfig) modelset.getConfig()).sound_Announcement;
+            if (sa0 != null && index < sa0.length && sa0[index][0] != null) {
+                return sa0[index][0];
+            }
+        }
+        return String.valueOf(index);
     }
 }
