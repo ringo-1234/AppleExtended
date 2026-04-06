@@ -17,6 +17,7 @@ package jp.apple;
 import jp.apple.config.AppleConfig;
 import jp.apple.log.AppleLogger;
 import jp.apple.log.BlockLogHandler;
+import jp.apple.proxy.IProxy;
 import jp.apple.reloader.ReloadGuiHandler;
 import jp.apple.replaymod.compat.ReplaySyncManager;
 import jp.apple.util.AppleDir;
@@ -24,6 +25,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
@@ -65,6 +67,12 @@ public class AppleLib {
     @Mod.Instance(MODID)
     public static AppleLib instance;
 
+    @SidedProxy(
+            clientSide = "jp.apple.proxy.ClientProxy",
+            serverSide = "jp.apple.proxy.ServerProxy"
+    )
+    public static IProxy proxy;
+
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         File mcRoot = event.getModConfigurationDirectory().getParentFile();
@@ -73,15 +81,14 @@ public class AppleLib {
         AppleConfig.init(event.getSuggestedConfigurationFile());
         MinecraftForge.EVENT_BUS.register(new BlockLogHandler());
         ReplaySyncManager.init();
-        if (event.getSide().isClient()) {
-            MinecraftForge.EVENT_BUS.register(new ReloadGuiHandler());
-            MinecraftForge.EVENT_BUS.register(new jp.apple.train.SoundBlocker());
-        }
+
+        proxy.preInit(event);
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         MinecraftForge.EVENT_BUS.register(new jp.apple.train.TrainTickHandler());
+        proxy.init(event);
     }
 
     @EventBusSubscriber(modid = AppleLib.MODID)
