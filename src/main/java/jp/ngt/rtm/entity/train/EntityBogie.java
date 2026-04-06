@@ -554,6 +554,8 @@ public final class EntityBogie extends Entity implements Lockable, jp.ngt.rtm.wo
     public boolean processInitialInteract(EntityPlayer player, EnumHand hand) {
         if (this.getTrain() != null) {
             if (player.isSneaking()) {
+                if (player.world.isRemote) {
+                    player.openGui(RTMCore.instance, RTMCore.guiIdSelectEntityModel,
                             player.world, this.getTrain().getEntityId(), 0, 0);
                 }
                 return true;
