@@ -283,7 +283,7 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
     @SideOnly(Side.CLIENT)
     @Override
     public double getMaxRenderDistanceSquared() {
-        return NGTUtil.getChunkLoadDistanceSq();
+        return NGTUtil.getChunkLoadDistanceSq() * 4;
     }
 
     @SideOnly(Side.CLIENT)
