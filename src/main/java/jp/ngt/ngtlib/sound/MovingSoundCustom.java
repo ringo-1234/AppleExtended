@@ -81,10 +81,7 @@ public class MovingSoundCustom extends MovingSound {
 
     @Override
     public float getVolume() {
-        if (this.soundRangeOverride > 0.0F) {
-            return this.soundRangeOverride / 16.0F;
-        }
-        return this.prevVolume >= -1.0F ? this.prevVolume : this.volume;
+        return this.volume;
     }
 
     @Override

@@ -37,7 +37,7 @@ public final class SoundRangeHelper {
 
         if (dist >= soundRange) return 0.0F;
 
-        float defaultRange = baseVolume * 16.0F;
+        float defaultRange = 16.0F;
 
         if (soundRange >= defaultRange) {
 

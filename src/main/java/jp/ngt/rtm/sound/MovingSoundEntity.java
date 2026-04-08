@@ -29,7 +29,7 @@ public class MovingSoundEntity extends MovingSoundCustom {
         super(par2Sound, par3Repeat);
         this.entity = par1Entity;
         this.baseVolume = RTMCore.trainSoundVol;
-        this.setSoundRange(jp.apple.config.AppleConfig.runningSoundRange);
+        this.volume = jp.apple.config.AppleConfig.runningSoundRange / 16.0F;
     }
 
     @Override
@@ -50,6 +50,7 @@ public class MovingSoundEntity extends MovingSoundCustom {
                     this.baseVolume,
                     jp.apple.config.AppleConfig.runningSoundRange,
                     this.xPosF, this.yPosF, this.zPosF);
+            this.volume = adjusted;
         }
     }
 

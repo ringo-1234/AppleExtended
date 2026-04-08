@@ -32,7 +32,7 @@ public class MovingSoundTileEntity extends MovingSoundCustom {
         this.xPosF = (float) this.entity.getPos().getX() + 0.5F;
         this.yPosF = (float) this.entity.getPos().getY() + 0.5F;
         this.zPosF = (float) this.entity.getPos().getZ() + 0.5F;
-        this.setSoundRange(jp.apple.config.AppleConfig.crossingSoundRange);
+        this.volume = jp.apple.config.AppleConfig.crossingSoundRange / 16.0F;
     }
 
     @Override
@@ -49,6 +49,7 @@ public class MovingSoundTileEntity extends MovingSoundCustom {
                     this.baseVolume,
                     jp.apple.config.AppleConfig.crossingSoundRange,
                     this.xPosF, this.yPosF, this.zPosF);
+            this.volume = adjusted;
         }
     }
 
@@ -56,6 +57,5 @@ public class MovingSoundTileEntity extends MovingSoundCustom {
     public void setVolume(float par1) {
         float v = par1 * RTMCore.trainSoundVol;
         this.baseVolume = v;
-        super.setVolume(v);
     }
 }
