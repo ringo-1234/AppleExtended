@@ -37,7 +37,9 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase implements IResourceSelector {
     public boolean breaking;
@@ -144,7 +146,7 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
     }
 
     public boolean isLoaded() {
-        return this.railPositions != null && this.railPositions.length > 0;
+        return (this.railPositions != null && this.railPositions.length > 0 && Arrays.stream(this.railPositions).allMatch(Objects::nonNull));
     }
 
     public RailPosition[] getRailPositions() {
