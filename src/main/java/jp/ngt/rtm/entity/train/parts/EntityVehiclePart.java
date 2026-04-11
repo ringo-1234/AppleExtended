@@ -227,7 +227,7 @@ public abstract class EntityVehiclePart extends EntityCustom {
     }
 
     public EntityVehicleBase getVehicle() {
-        if (this.parent == null) {
+        if (this.parent == null || this.parent.isDead) {
             int id = this.getDataManager().get(TRAIN_ID);
             Entity entity = this.world.getEntityByID(id);
             if (entity instanceof EntityVehicleBase) {
