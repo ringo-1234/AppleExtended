@@ -146,7 +146,7 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
     }
 
     public boolean isLoaded() {
-        return (this.railPositions != null && this.railPositions.length > 0 && Arrays.stream(this.railPositions).allMatch(Objects::nonNull));
+        return this.railPositions != null && this.railPositions.length > 0;
     }
 
     public RailPosition[] getRailPositions() {
