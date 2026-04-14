@@ -44,6 +44,7 @@ public class ItemBlockTrainModel extends ItemWithModel {
         this.block = block;
         this.setRegistryName(block.getRegistryName());
         this.setUnlocalizedName(block.getUnlocalizedName());
+        this.setCreativeTab(jp.apple.AppleLib.tabAppleLib);
     }
 
     @Override

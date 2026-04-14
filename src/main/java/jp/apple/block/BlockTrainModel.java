@@ -40,7 +40,6 @@ public class BlockTrainModel extends BlockContainer {
         super(Material.IRON);
         this.setUnlocalizedName("train_model_block");
         this.setRegistryName("train_model_block");
-        this.setCreativeTab(jp.apple.AppleLib.tabAppleLib);
     }
 
     @Override
