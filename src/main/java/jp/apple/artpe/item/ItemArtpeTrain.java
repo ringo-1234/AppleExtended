@@ -112,6 +112,7 @@ public class ItemArtpeTrain extends Item {
             train.setTrainStateData_NoSync(TrainStateType.Role, (byte) 1);
             train.setTrainStateData_NoSync(TrainStateType.Notch, (byte) -8);
             train.setTrainStateData_NoSync(TrainStateType.Direction, (byte) entryDir);
+            train.setTrainStateData_NoSync(TrainStateType.ChunkLoader, (byte) 1);
             train.setSpeed_NoSync(0.0F);
 
             train.prevPosX = train.lastTickPosX = train.posX;
@@ -145,7 +146,7 @@ public class ItemArtpeTrain extends Item {
         return EnumActionResult.SUCCESS;
     }
 
-    private RailMap findRailMap(World world, EntityPlayer player, int bx, int by, int bz) {
+    public RailMap findRailMap(World world, EntityPlayer player, int bx, int by, int bz) {
         for (int dy = 0; dy >= -2; dy--) {
             RailMap rm = TileEntityLargeRailBase.getRailMapFromCoordinates(
                     world, player, bx + 0.5D, by + dy, bz + 0.5D);
@@ -178,7 +179,7 @@ public class ItemArtpeTrain extends Item {
         return null;
     }
 
-    private PosRotation resolvePos(World world, EntityPlayer player,
+    public PosRotation resolvePos(World world, EntityPlayer player,
                                    RailContext ctx, double targetDist,
                                    float refYaw, double dirMul) {
         return traverseFromStart(world, player, ctx.railMap, ctx.baseDist,
@@ -272,7 +273,7 @@ public class ItemArtpeTrain extends Item {
                 edge.posZ + (Math.cos(radF) * cosP * overflow));
     }
 
-    private EntityTrainBase createTrainEntity(World world, String modelName) {
+    public EntityTrainBase createTrainEntity(World world, String modelName) {
         try {
             ModelSetVehicleBase<TrainConfig> modelSet =
                     ModelPackManager.INSTANCE.getResourceSet(RTMResource.TRAIN_EC, modelName);
@@ -288,7 +289,7 @@ public class ItemArtpeTrain extends Item {
         return new EntityTrainElectricCar(world, "");
     }
 
-    private List<TrainSet> getFormationFromItem(ItemStack stack) {
+    public static List<TrainSet> getFormationFromItem(ItemStack stack) {
         List<TrainSet> list = new ArrayList<>();
         if (stack.hasTagCompound()) {
             NBTTagList tagList = stack.getTagCompound().getTagList("formations", 10);
@@ -348,6 +349,160 @@ public class ItemArtpeTrain extends Item {
             this.posX = posX;
             this.posY = posY;
             this.posZ = posZ;
+        }
+    }
+    public static void spawnFormation(World world, ItemStack stack, BlockPos pos, EntityPlayer player) {
+        if (world.isRemote) return;
+
+        ItemArtpeTrain inst = (ItemArtpeTrain) stack.getItem();
+        RailMap rm0 = inst.findRailMap(world, player, pos.getX(), pos.getY(), pos.getZ());
+        if (rm0 == null) return;
+
+        List<TrainSet> trainSets = getFormationFromItem(stack);
+        if (trainSets.isEmpty()) return;
+
+        int startIndex = rm0.getNearlestPoint(SEARCH_SPLIT, pos.getX() + 0.5D, pos.getZ() + 0.5D);
+        double startDist = rm0.getLength() * ((double) startIndex / SEARCH_SPLIT);
+
+        float railYawAtStart = NGTMath.wrapAngle(rm0.getRailYaw(SEARCH_SPLIT, startIndex));
+        float fixedYaw = EntityBogie.fixBogieYaw(-player.rotationYaw, railYawAtStart);
+        boolean isReverse = Math.abs(NGTMath.wrapAngle(fixedYaw - railYawAtStart)) > 90.0F;
+        double dirMul = isReverse ? -1.0D : 1.0D;
+
+        long formationId = inst.getUniqueId();
+        Formation formation = new Formation(formationId, trainSets.size());
+        RailContext ctx = new RailContext(rm0, startDist);
+        float prevYaw = fixedYaw;
+
+        for (int i = 0; i < trainSets.size(); i++) {
+            TrainSet set = trainSets.get(i);
+            double offsetFromStart = set.posZ * dirMul;
+            double targetDist = startDist + offsetFromStart;
+            PosRotation pr = inst.resolvePos(world, player, ctx, targetDist, prevYaw, dirMul);
+            prevYaw = pr.yaw;
+
+            EntityTrainBase train = inst.createTrainEntity(world, set.modelName);
+            int entryDir = set.dir;
+            float finalYaw = pr.yaw + (entryDir == 1 ? 180.0F : 0.0F);
+
+            train.setPositionAndRotation(pr.posX, pr.posY, pr.posZ, finalYaw, pr.pitch);
+            train.rotationRoll = pr.roll;
+            train.prevRotationRoll = pr.roll;
+
+            world.spawnEntity(train);
+
+            train.getResourceState().setResourceName(set.modelName);
+            train.setTrainStateData_NoSync(TrainStateType.Role, (byte) 1);
+            train.setTrainStateData_NoSync(TrainStateType.Notch, (byte) -8);
+            train.setTrainStateData_NoSync(TrainStateType.Direction, (byte) entryDir);
+            train.setTrainStateData_NoSync(TrainStateType.ChunkLoader, (byte) 1);
+            train.setSpeed_NoSync(0.0F);
+
+            train.prevPosX = train.lastTickPosX = train.posX;
+            train.prevPosY = train.lastTickPosY = train.posY;
+            train.prevPosZ = train.lastTickPosZ = train.posZ;
+
+            if (train.existBogies()) {
+                train.getBogie(0).isActivated = true;
+                train.getBogie(1).isActivated = true;
+            }
+
+            FormationEntry entry = new FormationEntry(train, i, entryDir);
+            formation.entries[i] = entry;
+            train.setFormation(formation);
+            train.updateResourceState();
+        }
+
+        try {
+            Method realloc = Formation.class.getDeclaredMethod("reallocation");
+            realloc.setAccessible(true);
+            realloc.invoke(formation);
+
+            Method sendPacket = Formation.class.getDeclaredMethod("sendPacket");
+            sendPacket.setAccessible(true);
+            sendPacket.invoke(formation);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (!player.capabilities.isCreativeMode) stack.shrink(1);
+    }
+
+    public static void spawnFormation(World world, ItemStack stack, BlockPos railPos, float spawnYaw) {
+        if (world.isRemote) return;
+
+        ItemArtpeTrain inst = (ItemArtpeTrain) stack.getItem();
+
+        RailMap rm0 = inst.findRailMap(world, null, railPos.getX(), railPos.getY(), railPos.getZ());
+        if (rm0 == null) return;
+
+        List<TrainSet> trainSets = getFormationFromItem(stack);
+        if (trainSets.isEmpty()) return;
+
+        int startIndex = rm0.getNearlestPoint(SEARCH_SPLIT, railPos.getX() + 0.5D, railPos.getZ() + 0.5D);
+        double startDist = rm0.getLength() * ((double) startIndex / SEARCH_SPLIT);
+
+        float railYawAtStart = NGTMath.wrapAngle(rm0.getRailYaw(SEARCH_SPLIT, startIndex));
+        float fixedYaw = EntityBogie.fixBogieYaw(spawnYaw, railYawAtStart);
+
+        boolean isReverse = Math.abs(NGTMath.wrapAngle(fixedYaw - railYawAtStart)) > 90.0F;
+        double dirMul = isReverse ? -1.0D : 1.0D;
+
+        long formationId = inst.getUniqueId();
+        Formation formation = new Formation(formationId, trainSets.size());
+        RailContext ctx = new RailContext(rm0, startDist);
+        float prevYaw = fixedYaw;
+
+        for (int i = 0; i < trainSets.size(); i++) {
+            TrainSet set = trainSets.get(i);
+            double offsetFromStart = set.posZ * dirMul;
+            double targetDist = startDist + offsetFromStart;
+
+            PosRotation pr = inst.resolvePos(world, null, ctx, targetDist, prevYaw, dirMul);
+            prevYaw = pr.yaw;
+
+            EntityTrainBase train = inst.createTrainEntity(world, set.modelName);
+            int entryDir = set.dir;
+            float finalYaw = pr.yaw + (entryDir == 1 ? 180.0F : 0.0F);
+
+            train.setPositionAndRotation(pr.posX, pr.posY, pr.posZ, finalYaw, pr.pitch);
+            train.rotationRoll = pr.roll;
+            train.prevRotationRoll = pr.roll;
+
+            world.spawnEntity(train);
+
+            train.getResourceState().setResourceName(set.modelName);
+            train.setTrainStateData_NoSync(TrainStateType.Role, (byte) 1);
+            train.setTrainStateData_NoSync(TrainStateType.Notch, (byte) -8);
+            train.setTrainStateData_NoSync(TrainStateType.Direction, (byte) entryDir);
+            train.setTrainStateData_NoSync(TrainStateType.ChunkLoader, (byte) 1);
+            train.setSpeed_NoSync(0.0F);
+
+            train.prevPosX = train.lastTickPosX = train.posX;
+            train.prevPosY = train.lastTickPosY = train.posY;
+            train.prevPosZ = train.lastTickPosZ = train.posZ;
+
+            if (train.existBogies()) {
+                train.getBogie(0).isActivated = true;
+                train.getBogie(1).isActivated = true;
+            }
+
+            FormationEntry entry = new FormationEntry(train, i, entryDir);
+            formation.entries[i] = entry;
+            train.setFormation(formation);
+            train.updateResourceState();
+        }
+
+        try {
+            Method realloc = Formation.class.getDeclaredMethod("reallocation");
+            realloc.setAccessible(true);
+            realloc.invoke(formation);
+
+            Method sendPacket = Formation.class.getDeclaredMethod("sendPacket");
+            sendPacket.setAccessible(true);
+            sendPacket.invoke(formation);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
