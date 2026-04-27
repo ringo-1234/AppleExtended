@@ -56,6 +56,8 @@ import java.util.List;
 
 public final class EntityBogie extends Entity implements Lockable, jp.ngt.rtm.world.IChunkLoader {
     private Ticket ticket;
+    private int prevChunkCoordX = Integer.MIN_VALUE;
+    private int prevChunkCoordZ = Integer.MIN_VALUE;
     public static final DataParameter<Integer> TRAIN_ID = EntityDataManager.<Integer>createKey(EntityBogie.class, DataSerializers.VARINT);
     public static final DataParameter<Byte> BOGIE_STATE = EntityDataManager.<Byte>createKey(EntityBogie.class, DataSerializers.BYTE);
 
@@ -666,13 +668,23 @@ public final class EntityBogie extends Entity implements Lockable, jp.ngt.rtm.wo
 
     private void updateChunks() {
         if (!this.world.isRemote) {
-            this.forceChunkLoading();
+            if (this.isChunkLoaderEnable()) {
+                if (this.ticket == null || this.chunkCoordX != this.prevChunkCoordX || this.chunkCoordZ != this.prevChunkCoordZ) {
+                    this.forceChunkLoading();
+                }
+            } else {
+                this.releaseTicket();
+            }
+
+            this.prevChunkCoordX = this.chunkCoordX;
+            this.prevChunkCoordZ = this.chunkCoordZ;
         }
     }
 
     @Override
     public boolean isChunkLoaderEnable() {
-        return !this.isDead;
+        EntityTrainBase train = this.getTrain();
+        return !this.isDead && train != null && train.isChunkLoaderEnable();
     }
 
     @Override

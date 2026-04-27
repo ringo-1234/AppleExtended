@@ -30,7 +30,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public final class RTMEntity {
-    public static final byte FREQ_VEHICLE = 3;
+    public static final byte FREQ_VEHICLE = 2;
     public static final byte FREQ_INSTALLED = 10;
 
     private static short nextId;

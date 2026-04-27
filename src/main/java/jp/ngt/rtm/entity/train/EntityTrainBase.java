@@ -955,9 +955,9 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 
     private Ticket ticket;
     private final Set<ChunkPos> loadedChunks = new java.util.LinkedHashSet<>();
-    private int prevChunkCoordX;
-    private int prevChunkCoordZ;
-    private int prevChunkLoaderRadius;
+    private int prevChunkCoordX = Integer.MIN_VALUE;
+    private int prevChunkCoordZ = Integer.MIN_VALUE;
+    private int prevChunkLoaderRadius = Integer.MIN_VALUE;
 
     private void updateChunks() {
         if (this.isChunkLoaderEnable()) {
@@ -1013,26 +1013,29 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
     @Override
     public void forceChunkLoading(int x, int z) {
         if (!this.world.isRemote) {
+            int chunkLoaderRadius = this.getVehicleState(TrainState.TrainStateType.ChunkLoader);
+            boolean radiusChanged = chunkLoaderRadius != this.prevChunkLoaderRadius;
+            boolean moved = x != this.prevChunkCoordX || z != this.prevChunkCoordZ;
+
             if (this.ticket == null && !this.requestTicket()) {
                 return;
             }
 
-            if (this.getVehicleState(TrainState.TrainStateType.ChunkLoader) != this.prevChunkLoaderRadius
-                    || x != this.prevChunkCoordX || z != this.prevChunkCoordZ) {
-                this.setupChunks(x, z);
+            if (!radiusChanged && !moved && !this.loadedChunks.isEmpty()) {
+                return;
             }
 
-            int chunkLoadSquareRadius = this.getVehicleState(TrainState.TrainStateType.ChunkLoader) * 2 + 1;
+            this.setupChunks(x, z);
+
+            int chunkLoadSquareRadius = chunkLoaderRadius * 2 + 1;
             this.ticket.setChunkListDepth(Math.min(chunkLoadSquareRadius * chunkLoadSquareRadius, ForgeChunkManager.getMaxChunkDepthFor("rtm")));
 
             for (ChunkPos chunkpos : this.loadedChunks) {
                 ForgeChunkManager.forceChunk(this.ticket, chunkpos);
-                ForgeChunkManager.reorderChunk(this.ticket, chunkpos);
             }
 
             ChunkPos chunkpos1 = new ChunkPos(x, z);
             ForgeChunkManager.forceChunk(this.ticket, chunkpos1);
-            ForgeChunkManager.reorderChunk(this.ticket, chunkpos1);
         }
     }
 
