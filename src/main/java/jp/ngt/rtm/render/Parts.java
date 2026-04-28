@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm.render;
 
+import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.renderer.GLHelper;
 import jp.ngt.ngtlib.renderer.GLObject;
 import jp.ngt.ngtlib.renderer.NGTRenderHelper;
@@ -40,6 +41,7 @@ public class Parts {
     }
 
     public GroupObject[] getObjects(IModelNGT model) {
+        CachedModelUtil.prepareSync(model);
         if (this.objs == null) {
             this.objs = new GroupObject[this.objNames.length];
             for (int i = 0; i < this.objs.length; ++i) {
@@ -61,6 +63,10 @@ public class Parts {
     public void render(PartsRenderer renderer) {
         boolean smoothing = renderer.modelSet.getConfig().smoothing;
         IModelNGT model = renderer.modelObj.model;
+        if (!CachedModelUtil.prepare(model)) {
+            return;
+        }
+
         if (model.getGroupObjects().isEmpty())//NGTZ
         {
             model.renderOnly(smoothing, this.objNames);

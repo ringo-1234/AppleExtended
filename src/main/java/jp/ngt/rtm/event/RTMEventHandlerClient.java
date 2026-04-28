@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm.event;
 
+import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.renderer.GLHelper;
 import jp.ngt.ngtlib.util.NGTUtilClient;
 import jp.ngt.rtm.ClientProxy;
@@ -67,6 +68,15 @@ public final class RTMEventHandlerClient {
             Camera.INSTANCE.onRenderGameOverlayPre();
         }
         this.guiInGame.onRenderGui(event);
+    }
+
+    @SubscribeEvent
+    public void onRenderDebugText(RenderGameOverlayEvent.Text event) {
+        if (!Minecraft.getMinecraft().gameSettings.showDebugInfo) {
+            return;
+        }
+
+        event.getLeft().addAll(CachedModelUtil.getDebugLines());
     }
 
     @SubscribeEvent

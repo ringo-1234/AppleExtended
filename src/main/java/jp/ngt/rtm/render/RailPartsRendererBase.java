@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm.render;
 
+import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.io.ScriptUtil;
 import jp.ngt.ngtlib.math.NGTMath;
 import jp.ngt.ngtlib.renderer.*;
@@ -130,14 +131,24 @@ public class RailPartsRendererBase extends TileEntityPartsRenderer<ModelSetRail>
 
         if (!hasGLList)//ディスプレイリスト生成
         {
+            if (!CachedModelUtil.prepare(this.modelSet.modelObj.model)) {
+                rail.shouldRerenderRail = true;
+                return;
+            }
+
             float[][] fa = this.createRailPos(rail);
             if (fa != null) {
                 BlockPos pos = rail.getPos();
                 int[] brightness = this.getRailBrightness(rail.getWorld(), pos.getX(), pos.getY(), pos.getZ(), fa);
                 FloatBuffer fb = this.createMatrix(fa);
+                List<GroupObject> groups = this.modelSet.modelObj.model.getGroupObjects();
+                if (groups.isEmpty()) {
+                    rail.shouldRerenderRail = true;
+                    return;
+                }
 
                 GLHelper.startCompile(rail.glLists[this.currentRailIndex]);//GL_COMPILE_AND_EXECUTEは画面がチラつく
-                this.tessellateParts(rail, fb, brightness, this.modelSet.modelObj.model.getGroupObjects());
+                this.tessellateParts(rail, fb, brightness, groups);
                 GLHelper.endCompile();
 
                 rail.shouldRerenderRail = false;
@@ -295,6 +306,10 @@ public class RailPartsRendererBase extends TileEntityPartsRenderer<ModelSetRail>
     }
 
     public String[] getAllObjNames() {
+        if (!CachedModelUtil.prepare(this.modelObj.model)) {
+            return new String[0];
+        }
+
         List<GroupObject> gObj = this.modelObj.model.getGroupObjects();
         String[] aStr = new String[gObj.size()];
         for (int i = 0; i < aStr.length; ++i) {

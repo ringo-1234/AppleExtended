@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm.entity.util;
 
+import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.math.NGTMath;
 import jp.ngt.ngtlib.math.PooledVec3;
 import jp.ngt.ngtlib.math.Vec3;
@@ -106,6 +107,7 @@ public final class CollisionObj {
      */
     @SideOnly(Side.CLIENT)
     private void initFaceList(IModelNGT model, String[] names) {
+        CachedModelUtil.prepareSync(model);
         boolean addAll = false;
         List<String> nameList = new ArrayList<>();
         if (names != null) {

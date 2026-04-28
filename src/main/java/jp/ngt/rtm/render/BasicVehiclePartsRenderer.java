@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm.render;
 
+import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.renderer.model.GroupObject;
 import jp.ngt.ngtlib.renderer.model.NGTOModel;
 import jp.ngt.ngtlib.util.NGTUtil;
@@ -44,6 +45,7 @@ public class BasicVehiclePartsRenderer extends VehiclePartsRenderer {
 
     @Override
     public void init(ModelSetVehicleBase par1, ModelObject par2) {
+        CachedModelUtil.prepareSync(par2.model);
         VehicleBaseConfig cfg = par1.getConfig();
         List<String> list = new ArrayList<String>();
 
