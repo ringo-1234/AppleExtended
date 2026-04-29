@@ -17,11 +17,16 @@ package jp.apple.artpe.gui;
 import jp.ngt.rtm.RTMCore;
 import jp.ngt.rtm.gui.GuiSelectModel;
 import jp.ngt.rtm.modelpack.IResourceSelector;
+import jp.ngt.rtm.modelpack.ModelPackManager;
+import jp.ngt.rtm.modelpack.cfg.TrainConfig;
 import jp.ngt.rtm.modelpack.modelset.ResourceSet;
 import jp.ngt.rtm.network.PacketSelectResource;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.world.World;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GuiSelectModelFilter extends GuiSelectModel {
 
@@ -30,25 +35,23 @@ public class GuiSelectModelFilter extends GuiSelectModel {
 
     }
 
-    private void filterTestTrains() {
+    private void rebuildTrainListForEcAndDc() {
         try {
             java.lang.reflect.Field field = GuiSelectModel.class.getDeclaredField("modelListAll");
             field.setAccessible(true);
-            java.util.List<ResourceSet> list = (java.util.List<ResourceSet>) field.get(this);
-
-            if (list != null) {
-                list.removeIf(set -> {
-                    Object cfg = set.getConfig();
-                    if (cfg instanceof jp.ngt.rtm.modelpack.cfg.TrainConfig) {
-                        jp.ngt.rtm.modelpack.cfg.TrainConfig tCfg = (jp.ngt.rtm.modelpack.cfg.TrainConfig) cfg;
-                        String subType = tCfg.getSubType();
-                        if ("EC".equalsIgnoreCase(subType)) {
-                            return false;
-                        }
-                    }
-                    return true;
-                });
+            List<ResourceSet> allTrainModels = ModelPackManager.INSTANCE.getModelList(jp.ngt.rtm.RTMResource.TRAIN_EC);
+            List<ResourceSet> filtered = new ArrayList<>();
+            for (ResourceSet set : allTrainModels) {
+                Object cfg = set.getConfig();
+                if (!(cfg instanceof TrainConfig)) {
+                    continue;
+                }
+                String subType = ((TrainConfig) cfg).getSubType();
+                if ("EC".equalsIgnoreCase(subType) || "DC".equalsIgnoreCase(subType)) {
+                    filtered.add(set);
+                }
             }
+            field.set(this, filtered);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -58,7 +61,7 @@ public class GuiSelectModelFilter extends GuiSelectModel {
     public void initGui() {
         super.initGui();
 
-        filterTestTrains();
+        rebuildTrainListForEcAndDc();
         try {
             java.lang.reflect.Method m = GuiSelectModel.class.getDeclaredMethod("resetModelList");
             m.setAccessible(true);
