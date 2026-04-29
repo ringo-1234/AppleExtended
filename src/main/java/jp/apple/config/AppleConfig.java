@@ -23,7 +23,6 @@ public class AppleConfig {
     public static final String CATEGORY_SECURITY = "security";
     public static final String CATEGORY_SOUND = "sound";
     public static final String CATEGORY_SOUND_RANGE = "sound_range";
-    public static final String CATEGORY_LOAD = "load";
 
     public static float runningSoundRange = 16.0F;
     public static float crossingSoundRange = 64.0F;
@@ -34,8 +33,6 @@ public class AppleConfig {
 
     public static boolean enableJointSound = true;
     public static boolean enableNotchSound = true;
-    public static int cachedModelMemoryLimitMiB = 256;
-    public static int cachedModelProtectSeconds = 10;
 
     public static void init(File file) {
         Configuration cfg = new Configuration(file);
@@ -57,23 +54,6 @@ public class AppleConfig {
                     64.0F, 1.0F, 1024.0F, "Set the range in which sound can be heard.");
             hornSoundRange = cfg.getFloat("hornSoundRange", CATEGORY_SOUND_RANGE,
                     16.0F, 1.0F, 1024.0F, "Set the range in which sound can be heard.");
-
-            cachedModelMemoryLimitMiB = cfg.getInt(
-                    "cachedModelMemoryLimitMiB",
-                    CATEGORY_LOAD,
-                    256,
-                    16,
-                    8192,
-                    "Maximum in-memory size of cached polygon models (MiB)."
-            );
-            cachedModelProtectSeconds = cfg.getInt(
-                    "cachedModelProtectSeconds",
-                    CATEGORY_LOAD,
-                    10,
-                    0,
-                    600,
-                    "Do not evict cached polygon models used within this number of seconds."
-            );
 
         } catch (Exception e) {
             e.printStackTrace();

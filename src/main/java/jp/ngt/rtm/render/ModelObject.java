@@ -14,7 +14,6 @@
 
 package jp.ngt.rtm.render;
 
-import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.io.FileType;
 import jp.ngt.ngtlib.io.NGTText;
 import jp.ngt.ngtlib.io.ResourceLocationCustom;
@@ -95,7 +94,6 @@ public class ModelObject {
 
         this.renderer = (par3 == null) ? this.getPartsRenderer(par1.rendererPath, this.model, args) : par3;
         this.renderer.init(par2, this);
-        CachedModelUtil.compact(this.model);
 
         this.vshPath = par1.vertexShaderPath;
         this.fshPath = par1.fragmentShaderPath;
@@ -236,10 +234,6 @@ public class ModelObject {
     }
 
     public void renderWithTexture(Object entity, RenderPass pass, float partialTick) {
-        if (!CachedModelUtil.prepare(this.model)) {
-            return;
-        }
-
         for (int i = 0; i < this.textures.length; ++i) {
             if (this.useTexture) {
                 ResourceLocation texture = null;

@@ -14,7 +14,6 @@
 
 package jp.ngt.rtm.render;
 
-import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.renderer.GLHelper;
 import jp.ngt.ngtlib.renderer.GLObject;
 import jp.ngt.ngtlib.renderer.model.Face;
@@ -72,23 +71,13 @@ public class RailPartsRenderer2 extends RailPartsRendererBase {
 
         if (!hasGLList)//ディスプレイリスト生成
         {
-            if (!CachedModelUtil.prepare(this.modelSet.modelObj.model)) {
-                rail.shouldRerenderRail = true;
-                return;
-            }
-
             float[][] fa = this.createRailPos(rail);
             if (fa != null) {
                 BlockPos pos = rail.getPos();
                 int[] brightness = this.getRailBrightness(rail.getWorld(), pos.getX(), pos.getY(), pos.getZ(), fa);
                 FloatBuffer fb = this.createMatrix(fa);
-                List<GroupObject> groups = this.modelSet.modelObj.model.getGroupObjects();
-                if (groups.isEmpty()) {
-                    rail.shouldRerenderRail = true;
-                    return;
-                }
 
-                FloatBuffer buffer = this.genFBuffer(rail, fb, brightness, groups);
+                FloatBuffer buffer = this.genFBuffer(rail, fb, brightness, this.modelSet.modelObj.model.getGroupObjects());
                 rail.glLists[this.currentRailIndex] = this.genVBO(buffer);
 
                 rail.shouldRerenderRail = false;

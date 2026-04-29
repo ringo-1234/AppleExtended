@@ -14,7 +14,6 @@
 
 package jp.ngt.rtm.event;
 
-import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.renderer.GLHelper;
 import jp.ngt.ngtlib.util.NGTUtilClient;
 import jp.ngt.rtm.ClientProxy;
@@ -26,7 +25,6 @@ import jp.ngt.rtm.entity.npc.EntityNPC;
 import jp.ngt.rtm.entity.train.parts.EntityFloor;
 import jp.ngt.rtm.gui.GuiIngameCustom;
 import jp.ngt.rtm.gui.camera.Camera;
-import jp.ngt.rtm.modelpack.ModelPackManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderLivingBase;
 import net.minecraft.entity.EntityLivingBase;
@@ -41,7 +39,6 @@ import org.lwjgl.opengl.GL11;
 @SideOnly(Side.CLIENT)
 public final class RTMEventHandlerClient {
     private final GuiIngameCustom guiInGame;
-    private boolean compactedAfterModelConstruct;
 
     public RTMEventHandlerClient(Minecraft par1) {
         this.guiInGame = new GuiIngameCustom(par1);
@@ -56,11 +53,6 @@ public final class RTMEventHandlerClient {
     @SubscribeEvent
     public void onTick(RenderWorldLastEvent event)//entityRenderer.renderWorldPassの最後
     {
-        if (!this.compactedAfterModelConstruct && ModelPackManager.INSTANCE.modelConstructed) {
-            CachedModelUtil.compactAll();
-            this.compactedAfterModelConstruct = true;
-        }
-
         byte viewMode = ClientProxy.getViewMode(NGTUtilClient.getMinecraft().player);
         if (viewMode == 4) {
             Camera.INSTANCE.onRenderWorldPost();
@@ -75,15 +67,6 @@ public final class RTMEventHandlerClient {
             Camera.INSTANCE.onRenderGameOverlayPre();
         }
         this.guiInGame.onRenderGui(event);
-    }
-
-    @SubscribeEvent
-    public void onRenderDebugText(RenderGameOverlayEvent.Text event) {
-        if (!Minecraft.getMinecraft().gameSettings.showDebugInfo) {
-            return;
-        }
-
-        event.getLeft().addAll(CachedModelUtil.getDebugLines());
     }
 
     @SubscribeEvent

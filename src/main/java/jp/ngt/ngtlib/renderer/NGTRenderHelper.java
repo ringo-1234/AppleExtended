@@ -14,7 +14,6 @@
 
 package jp.ngt.ngtlib.renderer;
 
-import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.math.NGTMath;
 import jp.ngt.ngtlib.renderer.model.Face;
 import jp.ngt.ngtlib.renderer.model.GroupObject;
@@ -93,10 +92,6 @@ public final class NGTRenderHelper {
     }
 
     public static void renderCustomModelEveryParts(IModelNGT model, byte matId, boolean except, boolean smoothing, int mode, String... parts) {
-        if (!CachedModelUtil.prepare(model)) {
-            return;
-        }
-
         NGTTessellator tessellator = NGTTessellator.instance;
         //IRenderer tessellator = PolygonRenderer.INSTANCE;
         //VertexArray2 tessellator = new VertexArray2(0xFFFFFF);

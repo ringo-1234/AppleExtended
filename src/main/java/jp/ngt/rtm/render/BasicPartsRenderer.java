@@ -14,7 +14,6 @@
 
 package jp.ngt.rtm.render;
 
-import jp.apple.fix.model.CachedModelUtil;
 import jp.ngt.ngtlib.renderer.model.GroupObject;
 import jp.ngt.rtm.modelpack.modelset.ModelSetBase;
 import net.minecraft.world.World;
@@ -36,7 +35,6 @@ public class BasicPartsRenderer<T, MS extends ModelSetBase> extends PartsRendere
 
     @Override
     public void init(MS par1, ModelObject par2) {
-        CachedModelUtil.prepareSync(par2.model);
         List<GroupObject> goList = par2.model.getGroupObjects();
         String[] array = new String[goList.size()];
         for (int i = 0; i < array.length; ++i) {
