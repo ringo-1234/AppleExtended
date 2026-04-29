@@ -1,1 +1,21 @@
+name: Post Release to X
 
+on:
+  release:
+    types: [published]
+
+jobs:
+  post-to-x:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to X
+        uses: Daniele-Savi/twitter-post-action@v2
+        with:
+          username: ${{ secrets.X_USERNAME }}
+          password: ${{ secrets.X_PASSWORD }}
+          email: ${{ secrets.X_EMAIL }}
+
+          tweet: |
+            【 ${{ github.event.repository.name }} 】
+            ${{ github.event.release.name || github.event.release.tag_name }}
+            ${{ github.event.release.html_url }}
