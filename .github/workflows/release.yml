@@ -1,4 +1,4 @@
-name: Post Release to X (Free Version)
+name: Release to X
 
 on:
   release:
