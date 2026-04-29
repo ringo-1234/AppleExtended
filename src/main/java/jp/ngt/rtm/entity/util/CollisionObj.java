@@ -107,18 +107,26 @@ public final class CollisionObj {
      */
     @SideOnly(Side.CLIENT)
     private void initFaceList(IModelNGT model, String[] names) {
-        CachedModelUtil.prepareSync(model);
+        if (!CachedModelUtil.prepareSync(model)) {
+            return;
+        }
         boolean addAll = false;
         List<String> nameList = new ArrayList<>();
         if (names != null) {
             NGTUtil.addArray(nameList, names);
-            addAll = names[0].equals("-all");
+            addAll = names.length > 0 && "-all".equals(names[0]);
         }
 
         for (GroupObject go : model.getGroupObjects()) {
+            if (go == null || go.name == null || go.faces == null) {
+                continue;
+            }
             if (addAll || nameList.contains(go.name)) {
                 ColParts parts = new ColParts(go.name);
                 for (Face face : go.faces) {
+                    if (face == null || face.faceNormal == null) {
+                        continue;
+                    }
                     if (face.faceNormal.getY() > -Y_LIMIT) {
                         ColFace cFace = new ColFace();
                         cFace.setData(face);

@@ -36,6 +36,10 @@ public final class CachedModelUtil {
         CachedModelManager.getInstance().compactModel(model);
     }
 
+    public static void compactAll() {
+        CachedModelManager.getInstance().compactAllTrackedModels();
+    }
+
     public static boolean prepare(IModelNGT model) {
         return CachedModelManager.getInstance().prepareModel(model);
     }

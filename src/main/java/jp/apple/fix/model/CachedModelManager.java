@@ -101,17 +101,24 @@ final class CachedModelManager {
             InputStream[] streams = this.inputStreams(resource);
             PolygonModel model = ModelLoader.loadModel(streams, fileName, accuracy, args);
             if (model == null) {
-                return null;
+                LOGGER.warn("Primary cached-model loader returned null: {}. Falling back to legacy loader.", fileName);
+                return this.fallbackLegacyLoader(resource, accuracy, args);
             }
 
             CachedPolygonModel.INSTANCE.putCachedModel(pack, resource, accuracy, model);
             return this.createCachedModel(pack, resource, accuracy, args, model);
         } catch (IOException e) {
             throw new ModelFormatException("Failed to load model : " + fileName, e);
+        } catch (Throwable t) {
+            LOGGER.warn("Primary cached-model loader failed for {}. Falling back to legacy loader.", fileName, t);
+            return this.fallbackLegacyLoader(resource, accuracy, args);
         }
     }
 
     void compactModel(IModelNGT model) {
+        if (isModelPackConstructionThread()) {
+            return;
+        }
         if (model instanceof AsyncCachedModel) {
             ((AsyncCachedModel) model).compactLoadedModel();
         }
@@ -119,6 +126,9 @@ final class CachedModelManager {
 
     boolean prepareModel(IModelNGT model) {
         if (model instanceof AsyncCachedModel) {
+            if (isModelPackConstructionThread()) {
+                return ((AsyncCachedModel) model).prepare(true);
+            }
             return ((AsyncCachedModel) model).prepare(false);
         }
         return true;
@@ -159,6 +169,19 @@ final class CachedModelManager {
                 ),
                 ""
         );
+    }
+
+    void compactAllTrackedModels() {
+        List<AsyncCachedModel> models;
+        synchronized (this.trackedModels) {
+            models = new ArrayList<>(this.trackedModels);
+        }
+
+        for (AsyncCachedModel model : models) {
+            if (model != null) {
+                model.compactLoadedModel();
+            }
+        }
     }
 
     private ModelStateSnapshot snapshotModels() {
@@ -317,6 +340,38 @@ final class CachedModelManager {
         return new InputStream[]{mainStream, mtlStream};
     }
 
+    private PolygonModel fallbackLegacyLoader(ResourceLocation resource, VecAccuracy accuracy, Object[] args) {
+        return com.anatawa12.fixRtm.ngtlib.renderer.model.ModelLoaderKt.loadModel(resource, accuracy, args);
+    }
+
+    private static boolean isModelPackConstructionThread() {
+        Thread current = Thread.currentThread();
+        String name = current.getName();
+        if (name != null) {
+            if (name.startsWith("ForkJoinPool-")) {
+                return true;
+            }
+            if ("RTM ModelPack Construct".equals(name) || "RTM ModelPack Load".equals(name)) {
+                return true;
+            }
+        }
+
+        for (StackTraceElement element : current.getStackTrace()) {
+            String className = element.getClassName();
+            if (className == null) {
+                continue;
+            }
+
+            if (className.contains("modelpack.init.ExModelPackConstructThread")
+                    || className.contains("modelpack.init.ModelPackConstructThread")
+                    || className.contains("modelpack.init.ModelPackLoadThread")) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private File getCacheFile(FIXModelPack pack, ResourceLocation resource, VecAccuracy accuracy) {
         File baseDir = new File(UtilsKt.getFixCacheDir(), "polygon-model");
         File packDir = new File(baseDir, pack.getFile().getName());
@@ -441,7 +496,7 @@ final class CachedModelManager {
                 return;
             }
 
-            LOGGER.info(
+            LOGGER.debug(
                     "Discarding cached model from memory: model={}, reason=post-init-compact, weight={} bytes",
                     this.header.modelName,
                     this.header.weight
@@ -482,7 +537,7 @@ final class CachedModelManager {
                 return;
             }
 
-            LOGGER.info(
+            LOGGER.debug(
                     "Queueing dynamic cached model load: model={}, weight={} bytes",
                     this.header.modelName,
                     this.header.weight
@@ -505,7 +560,7 @@ final class CachedModelManager {
 
                 this.pendingModel = model;
                 this.state.set(LoadState.READY);
-                LOGGER.info(
+                LOGGER.debug(
                         "Completed dynamic cached model load: model={}, weight={} bytes",
                         this.header.modelName,
                         this.header.weight
@@ -570,7 +625,7 @@ final class CachedModelManager {
             }
 
             if (this.loadedModel != null) {
-                LOGGER.info(
+                LOGGER.debug(
                         "Discarding cached model from memory: model={}, reason={}, weight={} bytes",
                         this.header.modelName,
                         reason,
