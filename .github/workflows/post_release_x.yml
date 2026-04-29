@@ -1,4 +1,4 @@
-name: Post Release to X
+name: Release to X
 
 on:
   release:
