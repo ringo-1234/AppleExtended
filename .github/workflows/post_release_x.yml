@@ -1,4 +1,4 @@
-name: Post Release to X
+name: Post Release to X (Free Version)
 
 on:
   release:
@@ -8,41 +8,14 @@ jobs:
   post-to-x:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Post to X
+        uses: Daniele-Savi/twitter-post-action@v2
         with:
-          python-version: "3.x"
+          username: ${{ secrets.X_USERNAME }}
+          password: ${{ secrets.X_PASSWORD }}
+          email: ${{ secrets.X_EMAIL }}
 
-      - name: Install dependencies
-        run: pip install tweepy
-
-      - name: Run post script
-        env:
-          X_API_KEY: ${{ secrets.X_API_KEY }}
-          X_API_SECRET: ${{ secrets.X_API_SECRET }}
-          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
-          X_ACCESS_TOKEN_SECRET: ${{ secrets.X_ACCESS_TOKEN_SECRET }}
-        run: |
-          python - <<EOF
-          import os
-          import tweepy
-
-          client = tweepy.Client(
-              consumer_key=os.environ['X_API_KEY'],
-              consumer_secret=os.environ['X_API_SECRET'],
-              access_token=os.environ['X_ACCESS_TOKEN'],
-              access_token_secret=os.environ['X_ACCESS_TOKEN_SECRET']
-          )
-
-          full_repo = "${{ github.repository }}"
-          repo_name = full_repo.split('/')[-1]
-          release_title = "${{ github.event.release.name }}" or "${{ github.event.release.tag_name }}"
-          release_url = "${{ github.event.release.html_url }}"
-
-          tweet_text = f"【 {repo_name} 】\n{release_title}\n{release_url}"
-
-          client.create_tweet(text=tweet_text)
-          EOF
+          tweet: |
+            【 ${{ github.event.repository.name }} 】
+            ${{ github.event.release.name || github.event.release.tag_name }}
+            ${{ github.event.release.html_url }}
