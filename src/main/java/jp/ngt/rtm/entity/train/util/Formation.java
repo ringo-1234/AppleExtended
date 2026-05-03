@@ -44,14 +44,20 @@ public final class Formation {
 
     public static Formation readFromNBT(NBTTagCompound nbt, boolean withEntries) {
         long fid = nbt.getLong("FormationId");
-        int num = nbt.getInteger("Size");
+        int num = Math.max(1, nbt.getInteger("Size"));
         Formation formation = new Formation(fid, num);
+
         if (withEntries) {
             NBTTagList tagList = nbt.getTagList("Entries", 10);
             for (int i = 0; i < tagList.tagCount(); ++i) {
                 FormationEntry entry = FormationEntry.readFromNBT(tagList.getCompoundTagAt(i));
-                if (entry != null) {
-                    formation.setEntry(entry, i);
+                if (entry == null) continue;
+
+                int idx = entry.entryId & 0xFF;
+                if (idx < 0 || idx >= formation.entries.length) continue;
+
+                formation.setEntry(entry, idx);
+                if (entry.train != null) {
                     entry.train.setFormation(formation);
                 }
             }
@@ -85,6 +91,8 @@ public final class Formation {
     }
 
     private void setEntry(FormationEntry entry, int par2) {
+        if (entry == null) return;
+        if (par2 < 0 || par2 >= this.entries.length) return;
         this.entries[par2] = entry;
     }
 
@@ -98,6 +106,9 @@ public final class Formation {
     }
 
     public void setTrain(EntityTrainBase par1, int par3, int par5) {
+        if (par1 == null) return;
+        if (par3 < 0 || par3 >= this.entries.length) return;
+
         this.setEntry(new FormationEntry(par1, par3, par5), par3);
         if (!par1.getEntityWorld().isRemote) {
             this.sendPacket();

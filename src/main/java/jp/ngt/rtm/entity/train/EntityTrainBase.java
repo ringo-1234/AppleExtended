@@ -118,7 +118,11 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 
         NBTTagCompound entryData = new NBTTagCompound();
         this.writeFormationData(entryData);
-        nbt.setTag("FormationEntry", entryData);
+        if (!entryData.hasNoTags()) {
+            nbt.setTag("FormationEntry", entryData);
+        } else {
+            nbt.removeTag("FormationEntry");
+        }
 
         nbt.setInteger("trainDir", this.getTrainDirection());
         nbt.setBoolean("cabDir", this.getDataManager().get(CAB_DIRECTION));
@@ -142,27 +146,48 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
         jp.apple.replaymod.compat.ReplaySyncManager.patchMetadata(this, nbt);
         super.readEntityFromNBT(nbt);
 
-        NBTTagCompound nbttagcompound = nbt.getCompoundTag("FormationEntry");
-        this.readFormationData(nbttagcompound);
+        if (nbt.hasKey("FormationEntry", 10)) {
+            this.readFormationData(nbt.getCompoundTag("FormationEntry"));
+        } else {
+            this.formation = FormationManager.getInstance().createNewFormation(this);
+        }
 
         this.setTrainDirection(nbt.getInteger("trainDir"));
         this.getDataManager().set(CAB_DIRECTION, nbt.getBoolean("cabDir"));
     }
 
     private void readFormationData(NBTTagCompound nbt) {
-        long i = nbt.getLong("FormationId");
-        byte b0 = nbt.getByte("EntryPos");
-        byte b1 = nbt.getByte("EntryDir");
-        Formation formation = FormationManager.getInstance().getFormation(i);
-        if (formation == null) {
+        if (nbt == null || nbt.hasNoTags() || !nbt.hasKey("FormationId")) {
+            this.formation = FormationManager.getInstance().createNewFormation(this);
+            return;
+        }
+
+        long fid = nbt.getLong("FormationId");
+        int entryPos = nbt.getByte("EntryPos") & 0xFF;
+        byte entryDir = nbt.getByte("EntryDir");
+
+        if (fid <= 0L) {
+            this.formation = FormationManager.getInstance().createNewFormation(this);
+            return;
+        }
+
+        Formation fm = FormationManager.getInstance().getFormation(fid);
+        if (fm == null) {
             this.formation = FormationManager.getInstance().createNewFormation(this);
             if (!jp.ngt.ngtlib.util.NGTUtil.isServer()) {
-                com.anatawa12.fixRtm.network.NetworkHandler.sendPacketServer(new com.anatawa12.fixRtm.network.RequestFormation(i));
+                com.anatawa12.fixRtm.network.NetworkHandler.sendPacketServer(
+                        new com.anatawa12.fixRtm.network.RequestFormation(fid));
             }
-        } else {
-            this.formation = formation;
-            formation.setTrain(this, b0, b1);
+            return;
         }
+
+        if (entryPos < 0 || entryPos >= fm.size()) {
+            this.formation = FormationManager.getInstance().createNewFormation(this);
+            return;
+        }
+
+        this.formation = fm;
+        fm.setTrain(this, entryPos, entryDir);
     }
 
     @Override
@@ -227,7 +252,7 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 
     @Override
     protected void updateMovement() {
-        if (this.formation.isFrontCar(this)) {
+        if (this.formation != null && this.formation.isFrontCar(this)) {
             this.formation.updateTrainMovement();
         }
     }
@@ -736,8 +761,7 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 
     @Override
     public void setSpeed(float par1) {
-        if (this.world.isRemote) {
-        } else if (this.isControlCar()) {
+        if (!this.world.isRemote && this.isControlCar() && this.formation != null) {
             this.formation.setSpeed(par1);
         }
     }
