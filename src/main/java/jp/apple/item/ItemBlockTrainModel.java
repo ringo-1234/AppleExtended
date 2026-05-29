@@ -114,6 +114,14 @@ public class ItemBlockTrainModel extends ItemWithModel {
                                 trainTe.setOffset(0, 0.2325F, 0, false);
                             }
 
+                            trainTe.setRotationXYZS(
+                                    trainTe.getRotationX(),
+                                    trainTe.rotationYaw,
+                                    trainTe.getRotationZ(),
+                                    trainTe.getScale(),
+                                    false
+                            );
+
                             trainTe.markDirty();
                             world.notifyBlockUpdate(placePos, iblockstate, iblockstate, 3);
                         }

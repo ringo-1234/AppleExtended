@@ -69,7 +69,10 @@ public class BlockTrainModel extends BlockContainer {
         super.onBlockPlacedBy(worldIn, pos, state, placer, stack);
         TileEntity te = worldIn.getTileEntity(pos);
         if (te instanceof TileEntityTrainModel) {
-            ((TileEntityTrainModel) te).rotationYaw = placer.rotationYawHead;
+            float yaw = placer.rotationYawHead;
+            float normalized = ((yaw % 360f) + 360f) % 360f;
+            float snapped = Math.round(normalized / 45f) * 45f;
+            ((TileEntityTrainModel) te).rotationYaw = snapped;
         }
     }
 
