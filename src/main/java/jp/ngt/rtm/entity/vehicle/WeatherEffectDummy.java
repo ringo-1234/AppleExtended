@@ -32,9 +32,19 @@ public final class WeatherEffectDummy extends Entity {
         return this.parent;
     }
 
+    public boolean isLinkedTo(EntityVehicleBase vehicle) {
+        return this.parent == vehicle || this.getEntityId() == vehicle.getEntityId();
+    }
+
     @Override
     public void onUpdate() {
         super.onUpdate();
+        if (this.shouldRemove()) {
+            this.setDead();
+            NGTLog.debug("[WED] Remove %d", this.parent.getEntityId());
+            return;
+        }
+
         this.lastTickPosX = this.posX;
         this.lastTickPosY = this.posY;
         this.lastTickPosZ = this.posZ;
@@ -43,11 +53,12 @@ public final class WeatherEffectDummy extends Entity {
         this.posZ = this.parent.posZ;
         this.rotationYaw = this.parent.rotationYaw;
         this.rotationPitch = this.parent.rotationPitch;
+    }
 
-        if (this.parent.isDead) {
-            this.setDead();
-            NGTLog.debug("[WED] Remove %d", this.parent.getEntityId());
-        }
+    private boolean shouldRemove() {
+        return this.parent.isDead
+                || this.parent.world != this.world
+                || !this.world.loadedEntityList.contains(this.parent);
     }
 
     @Override

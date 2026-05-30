@@ -46,6 +46,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends EntityCustom implements IResourceSelector {
@@ -669,8 +670,24 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
 
     @Override
     public void onRemovedFromWorld() {
+        this.removeWeatherEffectDummy();
         super.onRemovedFromWorld();
         com.anatawa12.fixRtm.rtm.entity.vehicle.EntityVehicleBaseKt.onRemovedFromWorld(this);
+    }
+
+    private void removeWeatherEffectDummy() {
+        if (this.world == null || !this.world.isRemote) {
+            return;
+        }
+
+        Iterator<Entity> iterator = this.world.weatherEffects.iterator();
+        while (iterator.hasNext()) {
+            Entity entity = iterator.next();
+            if (entity instanceof WeatherEffectDummy && ((WeatherEffectDummy) entity).isLinkedTo(this)) {
+                entity.setDead();
+                iterator.remove();
+            }
+        }
     }
 
     @Override

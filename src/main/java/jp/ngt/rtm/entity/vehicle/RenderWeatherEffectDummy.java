@@ -32,6 +32,10 @@ public final class RenderWeatherEffectDummy extends Render<WeatherEffectDummy> {
     @Override
     public void doRender(WeatherEffectDummy dummy, double renderX, double renderY, double renderZ, float par8, float partialTick) {
         EntityVehicleBase vehicle = dummy.getParent();
+        if (dummy.isDead || vehicle.isDead || vehicle.world != dummy.world) {
+            return;
+        }
+
         double dummyX = dummy.lastTickPosX + (dummy.posX - dummy.lastTickPosX) * (double) partialTick;
         double dummyY = dummy.lastTickPosY + (dummy.posY - dummy.lastTickPosY) * (double) partialTick;
         double dummyZ = dummy.lastTickPosZ + (dummy.posZ - dummy.lastTickPosZ) * (double) partialTick;
