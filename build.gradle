@@ -41,6 +41,7 @@ dependencies {
 
     implementation 'io.sigpipe:jbsdiff:1.0'
     implementation 'org.sejda.imageio:webp-imageio:0.1.6'
+    implementation 'org.codehaus.groovy:groovy-jsr223:2.5.23'
 }
 
 jar {
@@ -53,6 +54,12 @@ jar {
         include 'META-INF/services/**'
         exclude 'META-INF/MANIFEST.MF'
         exclude 'mcmod.info'
+    }
+
+    from {
+        configurations.runtimeClasspath.findAll {
+            it.name.contains('groovy')
+        }.collect { zipTree(it) }
     }
 
     manifest {

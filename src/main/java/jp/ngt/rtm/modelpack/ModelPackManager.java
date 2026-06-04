@@ -359,5 +359,6 @@ public final class ModelPackManager {
         this.resourceCache.clear();
         this.scriptCache.clear();
         this.fileCache.clear();
+        jp.apple.script.ScriptLoader.clearGroovyCache();
     }
 }

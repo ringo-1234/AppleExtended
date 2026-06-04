@@ -26,6 +26,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.script.ScriptEngine;
 
+import jp.apple.script.ScriptLoader;
+
 public abstract class ModelSetVehicleBase<T extends VehicleBaseConfig> extends ModelSetBase<T> {
     @SideOnly(Side.CLIENT)
     public ResourceLocation rollsignTexture;
@@ -62,7 +64,7 @@ public abstract class ModelSetVehicleBase<T extends VehicleBaseConfig> extends M
             this.rollsignTexture = cfg.rollsignTexture == null ? null : ModelPackManager.INSTANCE.getResource(cfg.rollsignTexture);
 
             if (this.cfg.soundScriptPath != null) {
-                this.soundSE = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(this.getConfig().soundScriptPath);
+                this.soundSE = ScriptLoader.load(this.getConfig().soundScriptPath);
             }
         }
     }

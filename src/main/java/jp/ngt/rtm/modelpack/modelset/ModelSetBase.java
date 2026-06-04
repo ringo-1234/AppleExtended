@@ -26,6 +26,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.script.ScriptEngine;
 
+import jp.apple.script.ScriptLoader;
+
 public abstract class ModelSetBase<T extends ModelConfig> extends ResourceSet<T> {
     @SideOnly(Side.CLIENT)
     public ModelObject modelObj;
@@ -53,7 +55,7 @@ public abstract class ModelSetBase<T extends ModelConfig> extends ResourceSet<T>
     @Override
     public void constructOnServer() {
         if (this.cfg.serverScriptPath != null) {
-            this.serverSE = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(((ModelConfig) this.cfg).serverScriptPath);
+            this.serverSE = ScriptLoader.load(((ModelConfig) this.cfg).serverScriptPath);
         }
     }
 
@@ -62,11 +64,11 @@ public abstract class ModelSetBase<T extends ModelConfig> extends ResourceSet<T>
     public void constructOnClient() {
         if (!this.isDummy()) {
             if (this.cfg.serverScriptPath != null) {
-                this.serverSE = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(((ModelConfig) this.cfg).serverScriptPath);
+                this.serverSE = ScriptLoader.load(((ModelConfig) this.cfg).serverScriptPath);
             }
 
             if (this.cfg.guiScriptPath != null) {
-                this.guiSE = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(((ModelConfig) this.cfg).guiScriptPath);
+                this.guiSE = ScriptLoader.load(((ModelConfig) this.cfg).guiScriptPath);
                 this.guiTexture = ModelPackManager.INSTANCE.getResource(this.cfg.guiTexture);
             }
         }

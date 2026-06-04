@@ -22,10 +22,12 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.script.ScriptEngine;
 
+import jp.apple.script.ScriptLoader;
+
 @SideOnly(Side.CLIENT)
 public final class RTMRenderers {
     public static <R extends PartsRenderer> R getRendererWithScript(ResourceLocation par1, String... args) {
-        ScriptEngine scriptengine = com.anatawa12.fixRtm.scripting.FIXScriptUtil.getScriptAndDoScript(par1.toString());
+        ScriptEngine scriptengine = ScriptLoader.load(par1.toString());
         String s1 = (String) ScriptUtil.getScriptField(scriptengine, "renderClass");
         R r = (R) getRenderer(s1, args);
         r.setScript(scriptengine, par1);
