@@ -39,6 +39,8 @@ import org.lwjgl.util.vector.Vector3f;
 import javax.script.ScriptEngine;
 import java.util.*;
 
+import jp.apple.script.api.gif.ScriptGifRenderer;
+
 @SideOnly(Side.CLIENT)
 public abstract class PartsRenderer<T, MS extends ModelSetBase> {
     public static final String PACKAGE_NAME = "jp.ngt.rtm.render";
@@ -181,7 +183,13 @@ public abstract class PartsRenderer<T, MS extends ModelSetBase> {
             GLHelper.startMousePicking(1.0F);
         }
 
+        if (this.modelObj != null) {
+            ScriptGifRenderer.setCurrentModelObject(this.modelObj);
+        }
+
         this.execScriptFunc("render", t, pass.id, partialTick);
+
+        ScriptGifRenderer.clearCurrentModelObject();
 
         if (pass == RenderPass.PICK) {
             int hits = GLHelper.finishMousePicking();

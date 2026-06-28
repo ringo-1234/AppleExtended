@@ -360,5 +360,6 @@ public final class ModelPackManager {
         this.scriptCache.clear();
         this.fileCache.clear();
         jp.apple.script.ScriptLoader.clearGroovyCache();
+        jp.apple.script.api.gif.ScriptGifRenderer.clearCache();
     }
 }
