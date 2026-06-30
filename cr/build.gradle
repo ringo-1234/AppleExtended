@@ -119,7 +119,7 @@ jar {
                 "Implementation-Version": "${version}",
                 "Implementation-Vendor" :"apple-rtm",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-                "FMLCorePlugin": "com.anatawa12.fixRtm.asm.FixRtmCorePlugin",
+                "FMLCorePlugin": "jp.apple.asm.AppleCoreMod",
                 "FMLCorePluginContainsFMLMod": "true",
                 "ForceLoadAsMod": "true",
                 "FMLAT": "fix-rtm_at.cfg"
