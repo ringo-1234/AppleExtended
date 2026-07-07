@@ -6,6 +6,7 @@ import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 
 import javax.script.ScriptEngine;
 import java.io.File;
+import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +53,25 @@ public final class GroovyScriptEngine {
                         GroovyScriptEngine.class.getClassLoader()
                 );
                 gcl.addURL(rootUrl);
+
+                final File rootDirFinal = ("file".equals(rootUrl.getProtocol())) ? new File(rootUrl.getPath()) : null;
+                if (rootDirFinal != null) {
+                    gcl.setResourceLoader(filename -> {
+                        String relativePath = filename.replace('.', '/') + ".groovy";
+                        File f = new File(rootDirFinal, relativePath);
+                        NGTLog.debug("[GroovyScriptEngine] resourceLoader lookup: " + filename + " -> " + f.getAbsolutePath());
+                        boolean exists = f.exists();
+                        if (exists) {
+                            try {
+                                return f.toURI().toURL();
+                            } catch (Exception e) {
+                                return null;
+                            }
+                        }
+                        return null;
+                    });
+                }
+
                 return gcl;
             } catch (Exception e) {
                 throw new RuntimeException("Failed to create GroovyClassLoader for: " + scriptPath, e);
@@ -86,7 +106,19 @@ public final class GroovyScriptEngine {
             return new URL("jar:file:" + zipPath + "!/" + inZipRoot);
         } else {
             String rootPath = absPath.substring(0, idx) + "assets/minecraft/";
-            return new File(rootPath).toURI().toURL();
+            File rootDir = new File(rootPath);
+
+            if (!rootDir.exists() || !rootDir.isDirectory()) {
+                NGTLog.debug("[GroovyScriptEngine] WARNING: computed pack root does not exist as directory: " + rootDir.getAbsolutePath());
+            }
+            String rawPath = rootDir.getAbsolutePath().replace(File.separatorChar, '/');
+            if (!rawPath.startsWith("/")) {
+                rawPath = "/" + rawPath;
+            }
+            if (!rawPath.endsWith("/")) {
+                rawPath = rawPath + "/";
+            }
+            return new URL("file", "", rawPath);
         }
     }
 

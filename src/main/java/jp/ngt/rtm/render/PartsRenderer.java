@@ -32,11 +32,13 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.codehaus.groovy.jsr223.GroovyScriptEngineImpl;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 
 import javax.script.ScriptEngine;
+import java.net.URLClassLoader;
 import java.util.*;
 
 import jp.apple.script.api.gif.ScriptGifRenderer;
@@ -75,7 +77,19 @@ public abstract class PartsRenderer<T, MS extends ModelSetBase> {
     private void execScriptFunc(String func, Object... args) {
         try {
             ScriptUtil.doScriptFunction(this.script, func, args);
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            try {
+                if (this.script instanceof GroovyScriptEngineImpl) {
+                    ClassLoader cl = ((GroovyScriptEngineImpl) this.script).getClassLoader();
+                    NGTLog.debug("[PartsRenderer] exec classloader identityHash=" + System.identityHashCode(cl) + " class=" + cl.getClass().getName());
+                    if (cl instanceof URLClassLoader) {
+                        NGTLog.debug("[PartsRenderer] urls=" + Arrays.toString(((URLClassLoader) cl).getURLs()));
+                    }
+                    NGTLog.debug("[PartsRenderer] classloader toString=" + cl.toString());
+                }
+            } catch (Throwable t2) {
+                NGTLog.debug("[PartsRenderer] failed to inspect classloader: " + t2);
+            }
             throw new RuntimeException("On " + func + " script : " + this.modelSet.getConfig().getName(), e);
         }
     }

@@ -14,6 +14,8 @@ public final class ScriptLoader {
 
     private ScriptLoader() {}
 
+    private static final Object GROOVY_COMPILE_LOCK = new Object();
+
     public static ScriptEngine load(String scriptPath) {
         if (scriptPath == null) {
             return null;
@@ -37,9 +39,11 @@ public final class ScriptLoader {
             net.minecraft.util.ResourceLocation rl =
                     ModelPackManager.INSTANCE.getResource(scriptPath);
 
-            try (InputStream is = NGTFileLoader.getInputStream(rl);
-                 InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
-                engine.eval(reader);
+            synchronized (GROOVY_COMPILE_LOCK) {
+                try (InputStream is = NGTFileLoader.getInputStream(rl);
+                     InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
+                    engine.eval(reader);
+                }
             }
 
             engine.put(com.anatawa12.fixRtm.scripting.FIXScriptUtil.SCRIPT_NAME_PROPERTY, scriptPath);

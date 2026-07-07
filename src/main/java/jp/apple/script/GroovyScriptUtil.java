@@ -54,6 +54,11 @@ public final class GroovyScriptUtil {
     }
 
     public static Object doScriptFunction(ScriptEngine engine, String func, Object... args) {
+        if (engine instanceof org.codehaus.groovy.jsr223.GroovyScriptEngineImpl) {
+            ClassLoader cl = ((org.codehaus.groovy.jsr223.GroovyScriptEngineImpl) engine).getClassLoader();
+            jp.ngt.ngtlib.io.NGTLog.debug("[GroovyScriptUtil] exec classloader identityHash="
+                    + System.identityHashCode(cl) + " class=" + cl.getClass().getName());
+        }
         try {
             return ((Invocable) engine).invokeFunction(func, args);
         } catch (NoSuchMethodException e) {
