@@ -20,17 +20,21 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AppleLogger {
     private static File currentLogFile;
     private static final SimpleDateFormat logDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+
+    private static BufferedWriter writer;
+    private static final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+    private static Thread writerThread;
+    private static volatile boolean running = false;
 
     public static void init() {
         if (!AppleConfig.enableBlockChangeLog) return;
@@ -43,9 +47,39 @@ public class AppleLogger {
         }
         String fileName = "blockchange-" + fileDateFormat.format(new Date()) + ".log";
         currentLogFile = new File(logDir, fileName);
+
+        try {
+            writer = new BufferedWriter(new FileWriter(currentLogFile, true));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        running = true;
+        writerThread = new Thread(AppleLogger::processQueue, "AppleLogger-Writer");
+        writerThread.setDaemon(true);
+        writerThread.start();
     }
 
-    public static synchronized void logBlockChange(EntityPlayer player, BlockPos pos, IBlockState state, String action) {
+    private static void processQueue() {
+        while (running || !queue.isEmpty()) {
+            try {
+                String line = queue.poll(500, java.util.concurrent.TimeUnit.MILLISECONDS);
+                if (line != null) {
+                    writer.write(line);
+                    writer.newLine();
+                    if (queue.isEmpty()) {
+                        writer.flush();
+                    }
+                }
+            } catch (InterruptedException ignored) {
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void logBlockChange(EntityPlayer player, BlockPos pos, IBlockState state, String action) {
         if (currentLogFile == null) return;
 
         String time = logDateFormat.format(new Date());
@@ -54,9 +88,18 @@ public class AppleLogger {
         String coords = String.format("%d %d %d", pos.getX(), pos.getY(), pos.getZ());
         String line = String.format("[%s] %s %s %s %s", time, username, action, blockName, coords);
 
-        try (PrintWriter out = new PrintWriter(new FileWriter(currentLogFile, true))) {
-            out.println(line);
-        } catch (IOException e) {
+        queue.offer(line);
+    }
+
+    public static void shutdown() {
+        running = false;
+        try {
+            if (writerThread != null) writerThread.join(2000);
+            if (writer != null) {
+                writer.flush();
+                writer.close();
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
