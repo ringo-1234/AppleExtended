@@ -179,44 +179,49 @@ public final class NGTFileLoader {
         return chooser;
     }
 
-    public static synchronized File selectFile(FileType... types) {
-        final JFileChooser chooser = getCustomChooser("Select File");
-        chooser.setAcceptAllFileFilterUsed(false);
-        for (FileType type : types) {
-            FileFilter filter = new FileNameExtensionFilter(type.getDescription(), type.getExtension());
-            chooser.addChoosableFileFilter(filter);
-        }
-
-        int state = chooser.showOpenDialog(null);
-        if (state == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            PREV_OPENED_FOLDER = file.getParentFile();
-            return file;
-        }
-
-        return null;
+    public static File selectFile(FileType... types) {
+        return showChooser(true, types);
     }
 
-    public static synchronized File saveFile(FileType... types) {
-        final JFileChooser chooser = getCustomChooser("Save File");
-        chooser.setAcceptAllFileFilterUsed(false);
-        for (FileType type : types) {
-            FileFilter filter = new FileNameExtensionFilter(type.getDescription(), type.getExtension());
-            chooser.addChoosableFileFilter(filter);
-        }
+    public static File saveFile(FileType... types) {
+        return showChooser(false, types);
+    }
 
-        int state = chooser.showSaveDialog(null);
-        if (state == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            PREV_OPENED_FOLDER = file.getParentFile();
-            if (!file.getName().contains(".")) {
-                FileNameExtensionFilter filter = (FileNameExtensionFilter) chooser.getFileFilter();
-                file = new File(file.getAbsolutePath() + "." + filter.getExtensions()[0]);
+    private static synchronized File showChooser(boolean open, FileType... types) {
+        final File[] result = new File[1];
+
+        Runnable task = () -> {
+            JFileChooser chooser = getCustomChooser(open ? "Select File" : "Save File");
+            chooser.setAcceptAllFileFilterUsed(false);
+            for (FileType type : types) {
+                FileFilter filter = new FileNameExtensionFilter(type.getDescription(), type.getExtension());
+                chooser.addChoosableFileFilter(filter);
             }
-            return file;
+
+            int state = open ? chooser.showOpenDialog(null) : chooser.showSaveDialog(null);
+            if (state == JFileChooser.APPROVE_OPTION) {
+                File file = chooser.getSelectedFile();
+                PREV_OPENED_FOLDER = file.getParentFile();
+                if (!open && !file.getName().contains(".")) {
+                    FileNameExtensionFilter filter = (FileNameExtensionFilter) chooser.getFileFilter();
+                    file = new File(file.getAbsolutePath() + "." + filter.getExtensions()[0]);
+                }
+                result[0] = file;
+            }
+        };
+
+        try {
+            if (SwingUtilities.isEventDispatchThread()) {
+                task.run();
+            } else {
+                SwingUtilities.invokeAndWait(task);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
 
-        return null;
+        return result[0];
     }
 
     public static InputStream getInputStream(ResourceLocation par1) throws IOException {
