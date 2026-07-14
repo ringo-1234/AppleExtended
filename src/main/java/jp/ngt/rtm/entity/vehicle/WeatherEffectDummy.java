@@ -45,9 +45,9 @@ public final class WeatherEffectDummy extends Entity {
             return;
         }
 
-        this.lastTickPosX = this.posX;
-        this.lastTickPosY = this.posY;
-        this.lastTickPosZ = this.posZ;
+        this.lastTickPosX = this.parent.lastTickPosXPublic;
+        this.lastTickPosY = this.parent.lastTickPosYPublic;
+        this.lastTickPosZ = this.parent.lastTickPosZPublic;
         this.posX = this.parent.posX;
         this.posY = this.parent.posY;
         this.posZ = this.parent.posZ;

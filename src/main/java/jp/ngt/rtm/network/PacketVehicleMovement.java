@@ -39,6 +39,7 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
     public byte type;
     public int vehicleX, vehicleY, vehicleZ;
     public float vehicleYaw, vehiclePitch, vehicleRoll, vehicleSpeed;
+    public long serverTick;
 
     public PacketVehicleMovement() {
     }
@@ -51,6 +52,7 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
         this.vehicleZ = NGTMath.floor(par1.posZ * SAMPLING);
         this.vehicleYaw = par1.rotationYaw;
         this.vehiclePitch = par1.rotationPitch;
+        this.serverTick = par1.ticksExisted;
         if (par1 instanceof EntityVehicleBase) {
             this.type = 2;
             this.vehicleRoll = ((EntityVehicleBase) par1).getRoll();
@@ -75,6 +77,7 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
         buffer.writeFloat(this.vehiclePitch);
         buffer.writeFloat(this.vehicleRoll);
         buffer.writeFloat(this.vehicleSpeed);
+        buffer.writeLong(this.serverTick);
     }
 
     @Override
@@ -88,6 +91,7 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
         this.vehiclePitch = buffer.readFloat();
         this.vehicleRoll = buffer.readFloat();
         this.vehicleSpeed = buffer.readFloat();
+        this.serverTick = buffer.readLong();
     }
 
     @Override
@@ -110,11 +114,13 @@ public class PacketVehicleMovement implements IMessage, IMessageHandler<PacketVe
             entity.serverPosX = EntityTracker.getPositionLong(x);
             entity.serverPosY = EntityTracker.getPositionLong(y);
             entity.serverPosZ = EntityTracker.getPositionLong(z);
-            entity.setPositionAndRotationDirect(x, y, z, message.vehicleYaw, message.vehiclePitch, RTMEntity.FREQ_VEHICLE, false);
-
             if (entity instanceof EntityVehicleBase) {
+                ((EntityVehicleBase) entity).setPositionAndRotationDirect(x, y, z, message.vehicleYaw, message.vehiclePitch,
+                        RTMEntity.FREQ_VEHICLE, false, message.serverTick);
                 ((EntityVehicleBase) entity).setRollAndSpeed(message.vehicleSpeed, message.vehicleRoll);
             } else {
+                entity.setPositionAndRotationDirect(x, y, z, message.vehicleYaw, message.vehiclePitch,
+                        RTMEntity.FREQ_VEHICLE, false);
                 ((EntityBogie) entity).setRoll(message.vehicleRoll);
             }
         } else {

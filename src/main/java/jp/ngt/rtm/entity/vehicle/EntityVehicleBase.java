@@ -41,6 +41,7 @@ import net.minecraft.entity.MoverType;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -55,6 +56,7 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     public static final int MAX_DOOR_MOVE = 60;
     public static final int MAX_PANTOGRAPH_MOVE = 40;
     public static final float TO_ANGULAR_VELOCITY = (float) (360.0D / Math.PI);
+    private static final int RENDER_DELAY_TICKS = 3;
 
     private ResourceState<T> state = new ResourceState<>(this.getSubType(), this);
     private ScriptExecuter executer = new ScriptExecuter();
@@ -92,6 +94,24 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     protected double vehicleX, vehicleY, vehicleZ;
     @SideOnly(Side.CLIENT)
     protected float vehicleYaw, vehiclePitch, vehicleRoll;
+
+    @SideOnly(Side.CLIENT)
+    private static class Snapshot {
+        final long tick;
+        final double x, y, z;
+        final float yaw, pitch, roll;
+
+        Snapshot(long tick, double x, double y, double z, float yaw, float pitch, float roll) {
+            this.tick = tick;
+            this.x = x; this.y = y; this.z = z;
+            this.yaw = yaw; this.pitch = pitch; this.roll = roll;
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private final java.util.ArrayDeque<Snapshot> snapshotBuffer = new java.util.ArrayDeque<>();
+    @SideOnly(Side.CLIENT)
+    private long serverTickOffset = Long.MIN_VALUE;
 
     public EntityVehicleBase(World world) {
         super(world);
@@ -215,6 +235,8 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     /**
      * Entity.onUpdate()を上書き
      */
+    public double lastTickPosXPublic, lastTickPosYPublic, lastTickPosZPublic;
+
     protected void onVehicleUpdate() {
         super.onUpdate();
 
@@ -292,16 +314,44 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
 
     @SideOnly(Side.CLIENT)
     protected void updatePosAndRotationClient() {
-        if (this.vehiclePosRotationInc > 0) {
-            float d0 = 1.0F / (float) this.vehiclePosRotationInc;
-            this.posX += (this.vehicleX - this.posX) * d0;
-            this.posY += (this.vehicleY - this.posY) * d0;
-            this.posZ += (this.vehicleZ - this.posZ) * d0;
-            this.rotationYaw += NGTMath.wrapAngle((float) (this.vehicleYaw - (double) this.rotationYaw)) * d0;
-            this.rotationPitch += (this.vehiclePitch - (double) this.rotationPitch) * d0;
-            float roll = this.getRoll() + (this.vehicleRoll - (float) this.getRoll()) * (float) d0;
-            this.rotationRoll = roll;
-            --this.vehiclePosRotationInc;
+        if (this.snapshotBuffer.isEmpty()) {
+            return;
+        }
+
+        if (this.serverTickOffset == Long.MIN_VALUE) {
+            this.serverTickOffset = this.snapshotBuffer.peekLast().tick - this.ticksExisted;
+        }
+
+        long renderTick = (this.ticksExisted + this.serverTickOffset) - RENDER_DELAY_TICKS;
+
+        Snapshot before = null;
+        Snapshot after = null;
+        for (Snapshot s : this.snapshotBuffer) {
+            if (s.tick <= renderTick) {
+                before = s;
+            } else if (after == null) {
+                after = s;
+                break;
+            }
+        }
+
+        if (before != null && after != null && after.tick > before.tick) {
+            float t = (float) (renderTick - before.tick) / (float) (after.tick - before.tick);
+            t = MathHelper.clamp(t, 0.0F, 1.0F);
+
+            this.posX = before.x + (after.x - before.x) * t;
+            this.posY = before.y + (after.y - before.y) * t;
+            this.posZ = before.z + (after.z - before.z) * t;
+            this.rotationYaw = before.yaw + NGTMath.wrapAngle(after.yaw - before.yaw) * t;
+            this.rotationPitch = before.pitch + (after.pitch - before.pitch) * t;
+            this.rotationRoll = before.roll + (after.roll - before.roll) * t;
+        } else if (before != null) {
+            this.posX = before.x;
+            this.posY = before.y;
+            this.posZ = before.z;
+            this.rotationYaw = before.yaw;
+            this.rotationPitch = before.pitch;
+            this.rotationRoll = before.roll;
         }
 
         this.setRotation(this.rotationYaw, this.rotationPitch);
@@ -431,16 +481,19 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     }
 
     @SideOnly(Side.CLIENT)
-    @Override
-    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int par6, boolean par10) {
-        this.vehiclePosRotationInc = par6;
-        this.vehicleX = x;
-        this.vehicleY = y;
-        this.vehicleZ = z;
-        this.vehicleYaw = yaw;
-        this.vehiclePitch = pitch;
+    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int par6, boolean par10, long serverTick) {
+        long tickKey;
+        if (serverTick >= 0) {
+            tickKey = serverTick;
+        } else {
+            tickKey = this.ticksExisted;
+        }
 
+        this.snapshotBuffer.addLast(new Snapshot(tickKey, x, y, z, yaw, pitch, this.vehicleRoll));
 
+        while (this.snapshotBuffer.size() > 16) {
+            this.snapshotBuffer.removeFirst();
+        }
     }
 
     @SideOnly(Side.CLIENT)
