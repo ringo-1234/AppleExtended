@@ -121,10 +121,13 @@ public abstract class EntityVehiclePart extends EntityCustom {
 
     @Override
     public AxisAlignedBB getCollisionBox(Entity par1) {
+        return null;
+        /*
         if (par1 instanceof EntityVehiclePart || par1 instanceof EntityVehicleBase || par1 instanceof EntityBogie) {
             return null;
         }
         return par1.getEntityBoundingBox();
+        */
     }
 
     @Override

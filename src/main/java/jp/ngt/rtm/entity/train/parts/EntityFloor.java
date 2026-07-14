@@ -68,6 +68,11 @@ public class EntityFloor extends EntityVehiclePart {
     }
 
     @Override
+    public AxisAlignedBB getCollisionBoundingBox() {
+        return null;
+    }
+
+    @Override
     public void onLoadVehicle() {
         this.getVehicle().setFloor(this);
     }

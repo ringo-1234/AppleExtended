@@ -129,7 +129,8 @@ public final class EntityBogie extends Entity implements Lockable, jp.ngt.rtm.wo
 
     @Override
     public AxisAlignedBB getCollisionBoundingBox() {
-        return this.getEntityBoundingBox();
+        return null;
+        //return this.getEntityBoundingBox();
     }
 
     @Override
