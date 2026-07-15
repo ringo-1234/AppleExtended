@@ -95,7 +95,6 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     @SideOnly(Side.CLIENT)
     protected float vehicleYaw, vehiclePitch, vehicleRoll;
 
-    @SideOnly(Side.CLIENT)
     private static class Snapshot {
         final long tick;
         final double x, y, z;
@@ -108,9 +107,7 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
         }
     }
 
-    @SideOnly(Side.CLIENT)
     private final java.util.ArrayDeque<Snapshot> snapshotBuffer = new java.util.ArrayDeque<>();
-    @SideOnly(Side.CLIENT)
     private long serverTickOffset = Long.MIN_VALUE;
 
     public EntityVehicleBase(World world) {

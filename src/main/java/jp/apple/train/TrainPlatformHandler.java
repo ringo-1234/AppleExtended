@@ -76,7 +76,6 @@ public class TrainPlatformHandler {
         }
     }
 
-    @SideOnly(Side.CLIENT)
     private static final Set<UUID> ridingPlayersClient = Collections.newSetFromMap(new WeakHashMap<>());
 
     @SideOnly(Side.CLIENT)
@@ -102,7 +101,6 @@ public class TrainPlatformHandler {
         }
     }
 
-    @SideOnly(Side.CLIENT)
     private static final Map<UUID, double[]> pendingOffsetClient = new WeakHashMap<>();
 
     @SideOnly(Side.CLIENT)
