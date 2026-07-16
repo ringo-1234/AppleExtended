@@ -56,7 +56,7 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     public static final int MAX_DOOR_MOVE = 60;
     public static final int MAX_PANTOGRAPH_MOVE = 40;
     public static final float TO_ANGULAR_VELOCITY = (float) (360.0D / Math.PI);
-    private static final int RENDER_DELAY_TICKS = 3;
+    private static final int RENDER_DELAY_TICKS = 6;
 
     private ResourceState<T> state = new ResourceState<>(this.getSubType(), this);
     private ScriptExecuter executer = new ScriptExecuter();
@@ -108,7 +108,8 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     }
 
     private final java.util.ArrayDeque<Snapshot> snapshotBuffer = new java.util.ArrayDeque<>();
-    private long serverTickOffset = Long.MIN_VALUE;
+    private double targetOffset = Double.NaN;
+    private double smoothedOffset = Double.NaN;
 
     public EntityVehicleBase(World world) {
         super(world);
@@ -311,15 +312,17 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
 
     @SideOnly(Side.CLIENT)
     protected void updatePosAndRotationClient() {
-        if (this.snapshotBuffer.isEmpty()) {
+        if (this.snapshotBuffer.isEmpty() || Double.isNaN(this.smoothedOffset)) {
             return;
         }
 
-        if (this.serverTickOffset == Long.MIN_VALUE) {
-            this.serverTickOffset = this.snapshotBuffer.peekLast().tick - this.ticksExisted;
+        if (!Double.isNaN(this.targetOffset)) {
+            double perTickAlpha = 0.06D;
+            this.smoothedOffset += (this.targetOffset - this.smoothedOffset) * perTickAlpha;
         }
 
-        long renderTick = (this.ticksExisted + this.serverTickOffset) - RENDER_DELAY_TICKS;
+        double renderTickD = (double) this.ticksExisted + this.smoothedOffset - RENDER_DELAY_TICKS;
+        long renderTick = (long) Math.floor(renderTickD);
 
         Snapshot before = null;
         Snapshot after = null;
@@ -333,7 +336,7 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
         }
 
         if (before != null && after != null && after.tick > before.tick) {
-            float t = (float) (renderTick - before.tick) / (float) (after.tick - before.tick);
+            float t = (float) ((renderTickD - before.tick) / (double) (after.tick - before.tick));
             t = MathHelper.clamp(t, 0.0F, 1.0F);
 
             this.posX = before.x + (after.x - before.x) * t;
@@ -477,19 +480,23 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
 
     }
 
+    @Override
+    @SideOnly(Side.CLIENT)
+    public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int posRotationIncrements, boolean teleport) {
+        this.setPositionAndRotationDirect(x, y, z, yaw, pitch, posRotationIncrements, teleport, -1L);
+    }
+
     @SideOnly(Side.CLIENT)
     public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int par6, boolean par10, long serverTick) {
-        long tickKey;
-        if (serverTick >= 0) {
-            tickKey = serverTick;
-        } else {
-            tickKey = this.ticksExisted;
-        }
-
+        long tickKey = (serverTick >= 0) ? serverTick : this.ticksExisted;
         this.snapshotBuffer.addLast(new Snapshot(tickKey, x, y, z, yaw, pitch, this.vehicleRoll));
-
         while (this.snapshotBuffer.size() > 16) {
             this.snapshotBuffer.removeFirst();
+        }
+
+        this.targetOffset = (double) tickKey - (double) this.ticksExisted;
+        if (Double.isNaN(this.smoothedOffset)) {
+            this.smoothedOffset = this.targetOffset;
         }
     }
 
