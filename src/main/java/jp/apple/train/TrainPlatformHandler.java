@@ -41,10 +41,6 @@ public class TrainPlatformHandler {
         double dz = train.posZ - train.prevPosZ;
         float dYaw = MathHelper.wrapDegrees(train.rotationYaw - train.prevRotationYaw);
 
-        if (dx == 0.0D && dy == 0.0D && dz == 0.0D && dYaw == 0.0F) {
-            return;
-        }
-
         double halfLength = getHalfLength(train);
         double halfWidth = EntityTrainBase.TRAIN_WIDTH / 2.0D + SIDE_MARGIN;
 
@@ -63,12 +59,14 @@ public class TrainPlatformHandler {
                 continue;
             }
 
-            UUID uuid = entity.getUniqueID();
+            EntityPlayer player = (EntityPlayer) entity;
+            UUID uuid = player.getUniqueID();
             boolean alreadyRiding = ridingPlayers.contains(uuid);
             double margin = alreadyRiding ? RIDE_MARGIN : SURFACE_MARGIN;
 
-            boolean standing = isStandingOnTop(train, halfLength, halfWidth, entity, margin, alreadyRiding);
+            boolean standing = isStandingOnTop(train, halfLength, halfWidth, player, margin, alreadyRiding);
             if (standing) {
+                movePlayerWithTrain(player, dx, dy, dz, dYaw, train);
                 ridingPlayers.add(uuid);
             } else if (alreadyRiding) {
                 ridingPlayers.remove(uuid);
@@ -76,35 +74,7 @@ public class TrainPlatformHandler {
         }
     }
 
-    private static final Set<UUID> ridingPlayersClient = Collections.newSetFromMap(new WeakHashMap<>());
-
-    @SideOnly(Side.CLIENT)
-    public static void updateStandingEntitiesClient(EntityTrainBase train) {
-        EntityPlayer player = net.minecraft.client.Minecraft.getMinecraft().player;
-        if (player == null || player.isRiding()) return;
-
-        double dx = train.posX - train.prevPosX;
-        double dy = train.posY - train.prevPosY;
-        double dz = train.posZ - train.prevPosZ;
-        float dYaw = MathHelper.wrapDegrees(train.rotationYaw - train.prevRotationYaw);
-
-        double halfLength = getHalfLength(train);
-        double halfWidth = EntityTrainBase.TRAIN_WIDTH / 2.0D + SIDE_MARGIN;
-        boolean alreadyRiding = ridingPlayersClient.contains(player.getUniqueID());
-        double margin = alreadyRiding ? RIDE_MARGIN : SURFACE_MARGIN;
-
-        if (isStandingOnTop(train, halfLength, halfWidth, player, margin, alreadyRiding)) {
-            ridingPlayersClient.add(player.getUniqueID());
-            moveLocalPlayer(player, dx, dy, dz, dYaw, train);
-        } else {
-            ridingPlayersClient.remove(player.getUniqueID());
-        }
-    }
-
-    private static final Map<UUID, double[]> pendingOffsetClient = new WeakHashMap<>();
-
-    @SideOnly(Side.CLIENT)
-    private static void moveLocalPlayer(EntityPlayer player, double dx, double dy, double dz, float dYaw, EntityTrainBase train) {
+    private static void movePlayerWithTrain(EntityPlayer player, double dx, double dy, double dz, float dYaw, EntityTrainBase train) {
         double addX;
         double addZ;
 
@@ -127,20 +97,7 @@ public class TrainPlatformHandler {
         double yError = trainTopY - player.posY;
         double yCorrection = MathHelper.clamp(yError * Y_CORRECTION_FACTOR, -MAX_Y_CORRECTION, MAX_Y_CORRECTION);
 
-        double[] pending = pendingOffsetClient.computeIfAbsent(player.getUniqueID(), k -> new double[3]);
-        pending[0] += addX;
-        pending[1] += dy + yCorrection;
-        pending[2] += addZ;
-
-        double smoothing = 0.6D;
-        double stepX = pending[0] * smoothing;
-        double stepY = pending[1] * smoothing;
-        double stepZ = pending[2] * smoothing;
-
-        player.move(net.minecraft.entity.MoverType.SELF, stepX, stepY, stepZ);
-        pending[0] -= stepX;
-        pending[1] -= stepY;
-        pending[2] -= stepZ;
+        player.move(net.minecraft.entity.MoverType.SELF, addX, dy + yCorrection, addZ);
 
         player.motionY = 0.0D;
         player.fallDistance = 0.0F;

@@ -233,13 +233,13 @@ public abstract class EntityTrainBase extends EntityVehicleBase<ModelSetTrain> i
 
         super.onVehicleUpdate();
 
+        jp.apple.train.TrainPlatformHandler.updateStandingEntities(this);
+
         if (this.world.isRemote) {
             this.spawnSmoke();
-            jp.apple.train.TrainPlatformHandler.updateStandingEntitiesClient(this);
         } else {
             this.updateChunks();
             this.updateATS();
-            jp.apple.train.TrainPlatformHandler.updateStandingEntities(this);
         }
     }
 
