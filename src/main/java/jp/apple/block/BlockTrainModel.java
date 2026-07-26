@@ -72,7 +72,7 @@ public class BlockTrainModel extends BlockContainer {
             float yaw = placer.rotationYawHead;
             float normalized = ((yaw % 360f) + 360f) % 360f;
             float snapped = Math.round(normalized / 45f) * 45f;
-            ((TileEntityTrainModel) te).rotationYaw = snapped;
+            ((TileEntityTrainModel) te).setRotation(snapped, false);
         }
     }
 

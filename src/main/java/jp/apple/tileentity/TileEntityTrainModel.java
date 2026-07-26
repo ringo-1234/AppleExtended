@@ -27,7 +27,6 @@ import net.minecraft.util.math.BlockPos;
 public class TileEntityTrainModel extends TileEntityPlaceable implements IResourceSelector<ModelSetTrain> {
 
     private final ResourceState<ModelSetTrain> resourceState;
-    public float rotationYaw;
 
     public TileEntityTrainModel() {
         this.resourceState = new ResourceState<>(
@@ -73,14 +72,12 @@ public class TileEntityTrainModel extends TileEntityPlaceable implements IResour
         } else {
             this.resourceState.readFromNBT(compound);
         }
-        this.rotationYaw = compound.getFloat("RotationYaw");
     }
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
         super.writeToNBT(compound); 
         compound.setTag("State", this.resourceState.writeToNBT());
-        compound.setFloat("RotationYaw", this.rotationYaw);
         return compound;
     }
 
