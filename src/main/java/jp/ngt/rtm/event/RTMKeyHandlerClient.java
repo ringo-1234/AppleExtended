@@ -47,6 +47,10 @@ import org.lwjgl.input.Keyboard;
 public final class RTMKeyHandlerClient {
     private int notchTimer = 0;
 
+    private int countPressingBackTicks = 0;
+    private int countPressingForwardTicks = 0;
+    private static final int WS_REPEAT_START_TICKS = 10;
+
     private static final String CATG_RTM = "key.rtm.category";
     public static final RTMKeyHandlerClient INSTANCE = new RTMKeyHandlerClient();
     public static final KeyBinding KEY_HORN = new KeyBinding("key.rtm.horn", Keyboard.KEY_P, CATG_RTM);
@@ -75,6 +79,10 @@ public final class RTMKeyHandlerClient {
     public void onTickStart() {
         Minecraft mc = NGTUtilClient.getMinecraft();
         EntityPlayer player = mc.player;
+        
+        boolean keyBindBackPressed = mc.gameSettings.keyBindBack.isPressed();
+        boolean keyBindForwardPressed = mc.gameSettings.keyBindForward.isPressed();
+
         if (mc.gameSettings.keyBindJump.isKeyDown()) {
             if (player.isRiding() && player.getRidingEntity() instanceof EntityVehicle) {
                 this.sendKeyToServer(RTMCore.KEY_JUMP, "");
@@ -110,6 +118,24 @@ public final class RTMKeyHandlerClient {
             } else {
                 this.notchTimer = 0;
             }
+
+            if (mc.gameSettings.keyBindBack.isKeyDown()) {
+                countPressingBackTicks++;
+            } else {
+                countPressingBackTicks = 0;
+            }
+
+            if (mc.gameSettings.keyBindForward.isKeyDown()) {
+                countPressingForwardTicks++;
+            } else {
+                countPressingForwardTicks = 0;
+            }
+
+            if (keyBindBackPressed || countPressingBackTicks > WS_REPEAT_START_TICKS) {
+                train.syncNotch(1);
+            } else if (keyBindForwardPressed || countPressingForwardTicks > WS_REPEAT_START_TICKS) {
+                train.syncNotch(-1);
+            }
         }
     }
 
@@ -131,15 +157,7 @@ public final class RTMKeyHandlerClient {
         EntityPlayer player = mc.player;
         Entity riding = player.getRidingEntity();
 
-        if (mc.gameSettings.keyBindBack.isPressed()) {
-            if (player.isRiding() && riding instanceof EntityTrainBase) {
-                ((EntityTrainBase) riding).syncNotch(1);
-            }
-        } else if (mc.gameSettings.keyBindForward.isPressed()) {
-            if (player.isRiding() && riding instanceof EntityTrainBase) {
-                ((EntityTrainBase) riding).syncNotch(-1);
-            }
-        } else if (mc.gameSettings.keyBindJump.isKeyDown()) {
+        if (mc.gameSettings.keyBindJump.isKeyDown()) {
         } else if (mc.gameSettings.keyBindSneak.isKeyDown()) {
         } else if (KEY_HORN.isPressed()) {
             if (player.isRiding()) {
