@@ -62,4 +62,8 @@ public class HighlightItemChecker {
         if (stack.isEmpty()) return false;
         return stack.getItem() instanceof jp.ngt.mcte.item.ItemMiniature;
     }
+    public static boolean isItemBlockTrainModel(ItemStack stack) {
+        if (stack.isEmpty()) return false;
+        return stack.getItem() instanceof jp.apple.item.ItemBlockTrainModel;
+    }
 }

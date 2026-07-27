@@ -72,6 +72,13 @@ public class ClientProxy implements IProxy {
                         .color(0.5F, 0.0F, 1.0F)  // 紫
                         .build()
         );
+        HighlightRegistry.register(
+                HighlightEntry.builder()
+                        .item(stack -> HighlightItemChecker.isItemBlockTrainModel(stack))
+                        .block(block -> block instanceof jp.apple.block.BlockTrainModel)
+                        .color(0.0F, 0.8F, 1.0F) //みずいろ
+                        .build()
+        );
     }
 
     @Override
