@@ -34,10 +34,15 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
 
+import jp.apple.render.item.CustomIconItemStackRenderer;
+import jp.ngt.rtm.modelpack.cfg.ModelConfig;
+import net.minecraft.util.ResourceLocation;
+
 public abstract class ItemWithModel<T extends ResourceSet> extends ItemCustom {
     public ItemWithModel() {
         super();
         this.setHasSubtypes(true);
+        this.setTileEntityItemStackRenderer(CustomIconItemStackRenderer.INSTANCE);
     }
 
     @Override
@@ -136,5 +141,27 @@ public abstract class ItemWithModel<T extends ResourceSet> extends ItemCustom {
             PacketNBT.sendToServer(this.selectedPlayer, this.selectedItem);
             return true;
         }
+    }
+    public ResourceLocation getCustomIconTexture(ItemStack itemStack) {
+        if (!ModelPackManager.INSTANCE.modelLoaded) {
+            return null;
+        }
+        ResourceState<T> state = this.getModelState(itemStack);
+        if (state == null) {
+            return null;
+        }
+        T resourceSet = state.getResourceSet();
+        if (resourceSet == null || resourceSet.isDummy()) {
+            return null;
+        }
+        Object cfg = resourceSet.getConfig();
+        if (!(cfg instanceof ModelConfig)) {
+            return null;
+        }
+        String tex = ((ModelConfig) cfg).customIconTexture;
+        if (tex == null || tex.isEmpty()) {
+            return null;
+        }
+        return ModelPackManager.INSTANCE.getResource(tex);
     }
 }

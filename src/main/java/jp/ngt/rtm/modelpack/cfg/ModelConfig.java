@@ -52,6 +52,8 @@ public abstract class ModelConfig extends ResourceConfig {
      */
     public float[] renderAABB;
 
+    public String customIconTexture;
+    
     /**
      * 当たり判定に使用するパーツ名
      * 現状VehicleModelのみ適用

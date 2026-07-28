@@ -242,9 +242,13 @@ public final class RTMItem {
         }
     }
 
+    public static final java.util.Map<ModelResourceLocation, Item> MODEL_TO_ITEM = new java.util.HashMap<>();
+
     @SideOnly(Side.CLIENT)
     public static void registerItemModel(Item item, int meta, String name) {
-        ModelLoader.setCustomModelResourceLocation(item, meta, new ModelResourceLocation(RTMCore.MODID + ":" + name, "inventory"));
+        ModelResourceLocation mrl = new ModelResourceLocation(RTMCore.MODID + ":" + name, "inventory");
+        ModelLoader.setCustomModelResourceLocation(item, meta, mrl);
+        MODEL_TO_ITEM.put(mrl, item);
     }
 
     public enum MaterialType implements SerializableItemType {
