@@ -24,6 +24,8 @@ public class EntityCar extends EntityVehicle {
     public EntityCar(World world) {
         super(world);
         this.stepHeight = 2.0F;
+        this.renderDelayTicks = 1;
+        this.perTickAlpha = 0.6D;
     }
 
     @Override

@@ -57,6 +57,10 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     public static final int MAX_PANTOGRAPH_MOVE = 40;
     public static final float TO_ANGULAR_VELOCITY = (float) (360.0D / Math.PI);
     private static final int RENDER_DELAY_TICKS = 6;
+    private static final double DEFAULT_PER_TICK_ALPHA = 0.06D;
+
+    protected int renderDelayTicks = RENDER_DELAY_TICKS;
+    protected double perTickAlpha = DEFAULT_PER_TICK_ALPHA;
 
     private ResourceState<T> state = new ResourceState<>(this.getSubType(), this);
     private ScriptExecuter executer = new ScriptExecuter();
@@ -317,11 +321,10 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
         }
 
         if (!Double.isNaN(this.targetOffset)) {
-            double perTickAlpha = 0.06D;
-            this.smoothedOffset += (this.targetOffset - this.smoothedOffset) * perTickAlpha;
+            this.smoothedOffset += (this.targetOffset - this.smoothedOffset) * this.perTickAlpha;
         }
 
-        double renderTickD = (double) this.ticksExisted + this.smoothedOffset - RENDER_DELAY_TICKS;
+        double renderTickD = (double) this.ticksExisted + this.smoothedOffset - this.renderDelayTicks;
         long renderTick = (long) Math.floor(renderTickD);
 
         Snapshot before = null;
