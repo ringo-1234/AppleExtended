@@ -608,12 +608,16 @@ public final class RenderMarkerBlock extends TileEntitySpecialRenderer<TileEntit
             if (dx != 0.0D && dz != 0.0D) {
                 RailPosition railposition3 = this.getNeighborRail(marker);
                 float f2 = (float) Math.atan2(dx, dz);
-                float f13 = (float) (dx / (double) MathHelper.sin(f2));
                 float f3 = NGTMath.toDegrees(f2);
+
+                float f13 = (float) (Math.sqrt(dx * dx + dz * dz) * (dz >= 0.0D ? 1.0D : -1.0D));
 
                 if (curElm == MarkerElement.HORIZONTIAL) {
                     if (railposition3 != null && marker.getState(MarkerState.FIT_NEIGHBOR)) {
                         f3 = MathHelper.wrapDegrees(railposition3.anchorYaw + 180.0F);
+                    }
+                    if (f3 == rp.anchorYaw && f13 == rp.anchorLengthHorizontal) {
+                        return false;
                     }
                     rp.anchorYaw = f3;
                     rp.anchorLengthHorizontal = f13;
@@ -624,6 +628,9 @@ public final class RenderMarkerBlock extends TileEntitySpecialRenderer<TileEntit
                     } else if (fitOpposite) {
                         double dy = targetVec.y - rp.posY;
                         f4 = (float) NGTMath.toDegrees(Math.atan2(dy, NGTMath.firstSqrt(dx * dx + dz * dz)));
+                    }
+                    if (f4 == rp.anchorPitch && f13 == rp.anchorLengthVertical) {
+                        return false;
                     }
                     rp.anchorPitch = f4;
                     rp.anchorLengthVertical = f13;
