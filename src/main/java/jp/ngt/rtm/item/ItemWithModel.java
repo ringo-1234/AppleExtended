@@ -42,7 +42,9 @@ public abstract class ItemWithModel<T extends ResourceSet> extends ItemCustom {
     public ItemWithModel() {
         super();
         this.setHasSubtypes(true);
-        this.setTileEntityItemStackRenderer(CustomIconItemStackRenderer.INSTANCE);
+        if (net.minecraftforge.fml.relauncher.FMLLaunchHandler.side() == Side.CLIENT) {
+            jp.apple.render.item.ClientIconSetup.apply(this);
+        }
     }
 
     @Override
