@@ -13,7 +13,7 @@ apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
-version = '2.5.1'
+version = '2.5.2'
 group = 'jp.apple.rtm'
 archivesBaseName = 'AppleExtended-Added-forge1.12.2'
 
