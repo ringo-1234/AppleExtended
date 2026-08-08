@@ -29,7 +29,7 @@ import java.util.List;
 
 @SideOnly(Side.CLIENT)
 public class PlayerCameraTrain {
-    private static final double SEARCH_RANGE = 6.0D;
+    private static final double SEARCH_RANGE = 25.0D;
 
     private static EntityTrainBase lastTrain = null;
     private static float lastAppliedTrainYaw = Float.NaN;
@@ -74,15 +74,17 @@ public class PlayerCameraTrain {
     }
 
     private static EntityTrainBase findNearestTrainPlayerIsOn(EntityPlayer player) {
-        AxisAlignedBB box = player.getEntityBoundingBox().grow(SEARCH_RANGE, 2.0D, SEARCH_RANGE);
+        AxisAlignedBB box = player.getEntityBoundingBox().grow(SEARCH_RANGE, 3.0D, SEARCH_RANGE);
         List<Entity> list = player.world.getEntitiesWithinAABB(EntityTrainBase.class, box);
         EntityTrainBase nearest = null;
         double nearestDistSq = Double.MAX_VALUE;
         for (Entity e : list) {
             EntityTrainBase train = (EntityTrainBase) e;
-            double feetY = player.getEntityBoundingBox().minY;
-            double trainTopY = train.posY + EntityTrainBase.TRAIN_HEIGHT;
-            if (Math.abs(feetY - trainTopY) > 1.0D) continue;
+            
+            if (!isPlayerStandingOnTrain(player, train)) {
+                continue;
+            }
+
             double distSq = train.getDistanceSq(player);
             if (distSq < nearestDistSq) {
                 nearestDistSq = distSq;
@@ -90,5 +92,39 @@ public class PlayerCameraTrain {
             }
         }
         return nearest;
+    }
+    private static boolean isPlayerStandingOnTrain(EntityPlayer player, EntityTrainBase train) {
+        double halfLength = getHalfLength(train);
+        double halfWidth = EntityTrainBase.TRAIN_WIDTH / 2.0D + 0.15D;
+
+        double relX = player.posX - train.posX;
+        double relZ = player.posZ - train.posZ;
+
+        double rad = Math.toRadians(train.rotationYaw);
+        double sin = Math.sin(rad);
+        double cos = Math.cos(rad);
+
+        double localLength = relX * sin + relZ * cos;
+        double localWidth = relX * cos - relZ * sin;
+
+        double widthMargin = halfWidth + 0.5D;
+        double lengthMargin = halfLength + 0.3D;
+
+        boolean horizontalOverlap = Math.abs(localWidth) <= widthMargin && Math.abs(localLength) <= lengthMargin;
+        if (!horizontalOverlap) {
+            return false;
+        }
+        double feetY = player.getEntityBoundingBox().minY;
+        double trainTopY = train.posY + EntityTrainBase.TRAIN_HEIGHT;
+        return feetY >= trainTopY - 1.0D && feetY <= trainTopY + 0.5D;
+    }
+    private static double getHalfLength(EntityTrainBase train) {
+        if (train.getResourceState() != null && train.getResourceState().getResourceSet() != null) {
+            jp.ngt.rtm.modelpack.cfg.TrainConfig cfg = train.getResourceState().getResourceSet().getConfig();
+            if (cfg != null) {
+                return cfg.trainDistance;
+            }
+        }
+        return EntityTrainBase.TRAIN_WIDTH / 2.0D;
     }
 }
