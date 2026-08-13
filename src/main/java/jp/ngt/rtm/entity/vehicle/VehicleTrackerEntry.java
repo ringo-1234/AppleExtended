@@ -53,6 +53,8 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
     private boolean isDataInitialized;
     private Entity rider;
     private boolean isTrain;
+    
+    private final java.util.Set<Integer> trackedPlayerIds = new java.util.HashSet<>();
 
     public VehicleTrackerEntry(Entity par2) {
         super(par2, 256, 256, RTMEntity.FREQ_VEHICLE, false);
@@ -87,9 +89,19 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
             this.posZ = this.trackedEntity.posZ;
             this.isDataInitialized = true;
             this.playerEntitiesUpdated = true;
-            this.updatePlayerEntities(par1);
         }
+        this.updatePlayerEntities(par1);
 
+        this.trackedPlayerIds.removeIf(id -> {
+            boolean stillWatching = false;
+            for (EntityPlayer p : par1) {
+                if (p instanceof EntityPlayerMP && p.getEntityId() == id) {
+                    stillWatching = this.isPlayerWatchingThisChunk((EntityPlayerMP) p) || this.trackedEntity.forceSpawn;
+                    break;
+                }
+            }
+            return !stillWatching;
+        });
 
         List<Entity> list = this.trackedEntity.getPassengers();
         if (!list.equals(this.passengers)) {
@@ -151,10 +163,11 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
 
     @Override
     public void removeFromTrackedPlayers(EntityPlayerMP playerMP) {
-        if (this.trackingPlayers.contains(playerMP)) {
+        if (this.trackingPlayers.contains(playerMP) || this.trackedPlayerIds.contains(playerMP.getEntityId())) {
             this.trackedEntity.removeTrackingPlayer(playerMP);
             playerMP.removeEntity(this.trackedEntity);
             this.trackingPlayers.remove(playerMP);
+            this.trackedPlayerIds.remove(playerMP.getEntityId());
         }
     }
 
@@ -162,8 +175,10 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
     public void updatePlayerEntity(EntityPlayerMP par1) {
         if (par1 != this.trackedEntity) {
             if (this.isVisibleTo(par1)) {
-                if (!this.trackingPlayers.contains(par1) && (this.isPlayerWatchingThisChunk(par1) || this.trackedEntity.forceSpawn)) {
+                boolean alreadyTracked = this.trackingPlayers.contains(par1) || this.trackedPlayerIds.contains(par1.getEntityId());
+                if (!alreadyTracked && (this.isPlayerWatchingThisChunk(par1) || this.trackedEntity.forceSpawn)) {
                     this.trackingPlayers.add(par1);
+                    this.trackedPlayerIds.add(par1.getEntityId());
                     Packet packet = FMLNetworkHandler.getEntitySpawningPacket(this.trackedEntity);
                     par1.connection.sendPacket(packet);
 
@@ -179,8 +194,9 @@ public final class VehicleTrackerEntry extends EntityTrackerEntry {
 
                     ForgeEventFactory.onStartEntityTracking(this.trackedEntity, par1);
                 }
-            } else if (this.trackingPlayers.contains(par1)) {
+            } else if (this.trackingPlayers.contains(par1) || this.trackedPlayerIds.contains(par1.getEntityId())) {
                 this.trackingPlayers.remove(par1);
+                this.trackedPlayerIds.remove(par1.getEntityId());
                 par1.removeEntity(this.trackedEntity);
                 ForgeEventFactory.onStopEntityTracking(trackedEntity, par1);
             }
