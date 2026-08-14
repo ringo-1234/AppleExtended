@@ -131,7 +131,7 @@ public final class ModelPackLoadThread extends Thread {
                 crashreport = NGTUtilClient.getMinecraft().addGraphicsAndWorldToCrashReport(crashreport);
                 NGTUtilClient.getMinecraft().displayCrashReport(crashreport);
             } else {
-                com.anatawa12.fixRtm.FixRtm.INSTANCE.reportCrash$fixRtm(crashreport);
+                com.anatawa12.fixRtm.FixRtm.INSTANCE.reportCrash(crashreport);
             }
         } finally {
             if (this.displayWindow && !this.debug) {

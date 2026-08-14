@@ -28,10 +28,3 @@ forge*changelog.txt
 .DS_Store
 # Applepie
 libs/
-/src/main/resources/_COROUTINE/
-/src/main/resources/com/
-/src/main/resources/io/
-/src/main/resources/kotlin/
-/src/main/resources/kotlinx/
-/src/main/resources/org/
-/src/main/resources/assets/fix-rtm/
