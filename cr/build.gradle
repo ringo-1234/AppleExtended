@@ -6,6 +6,15 @@ plugins {
     id 'com.gtnewhorizons.retrofuturagradle' version '2.0.3'
 }
 
+repositories {
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+    }
+    maven { url = 'https://cleanroommc.com' }
+    maven { url = 'https://minecraftforge.net' }
+}
+
 version = propertyString('mod_version')
 group = propertyString('root_package')
 
@@ -71,7 +80,8 @@ if (atFile.exists()) {
 }
 
 dependencies {
-    compileOnly fileTree(dir: "${rootProject.projectDir}/libs", include: ['*.jar'])
+    //compileOnly fileTree(dir: "${rootProject.projectDir}/libs", include: ['*.jar'])
+    compileOnly "curse.maven:replaymod-775651:4798232"
 
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2'
