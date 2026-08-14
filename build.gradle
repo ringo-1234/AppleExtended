@@ -125,6 +125,10 @@ repositories {
         name = 'Minecraft Forge'
         url = 'https://maven.minecraftforge.net'
     }
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+    }
 }
 
 configurations {
@@ -155,7 +159,8 @@ dependencies {
 
     compileOnly 'org.twitter4j:twitter4j-core:4.0.7'
     compileOnly 'com.github.sarxos:webcam-capture:0.3.12'
-    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly "curse.maven:replaymod-775651:4798232"
+    //compileOnly fileTree(dir: 'libs', include: ['*.jar'])
 
     if (propertyBool('use_jetbrains_annotations')) {
         compileOnly 'org.jetbrains:annotations:26.1.0'
