@@ -66,7 +66,7 @@ public final class NGTText {
         List<String> list = new ArrayList<>();
         InputStreamReader inputstreamreader;
         if (encoding == null || encoding.isEmpty()) {
-            com.anatawa12.fixRtm.libs.kotlin.Pair<java.nio.charset.Charset, InputStream> pair = com.anatawa12.fixRtm.ngtlib.renderer.model.PolygonModelCharsetDetector.INSTANCE.detectCharset(is, java.nio.charset.Charset.defaultCharset());
+            kotlin.Pair<java.nio.charset.Charset, InputStream> pair = com.anatawa12.fixRtm.ngtlib.renderer.model.PolygonModelCharsetDetector.INSTANCE.detectCharset(is, java.nio.charset.Charset.defaultCharset());
             inputstreamreader = new InputStreamReader(pair.component2(), pair.component1());
         } else {
             try {

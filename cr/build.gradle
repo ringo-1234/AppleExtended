@@ -1,20 +1,17 @@
-buildscript {
-    repositories {
-        maven { url = 'https://maven.minecraftforge.net' }
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
-    }
+plugins {
+    id 'java'
+    id 'eclipse'
+    id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '2.1.0'
+    id 'com.gtnewhorizons.retrofuturagradle' version '2.0.3'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
-apply plugin: 'maven-publish'
+version = propertyString('mod_version')
+group = propertyString('root_package')
 
-version = '2.4.4'
-group = 'jp.apple.rtm'
-archivesBaseName = 'AppleExtended-Added-forge1.12.2-cleanroom'
+base {
+    archivesName = 'AppleExtended-forge1.12.2-cleanroom'
+}
 
 ext {
     graalJsVersion = '25.0.2'
@@ -25,66 +22,60 @@ configurations {
     graalJsRuntime
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-tasks.register('mergeSources', Copy) {
-    from file("${rootProject.projectDir}/src/main/java")
-    into file("${project.buildDir}/src/merged/java")
-
-    from file("src/main/java")
-    into file("${project.buildDir}/src/merged/java")
-
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
-
-tasks.register('mergeResources', Copy) {
-    from file("${rootProject.projectDir}/src/main/resources")
-    into file("${project.buildDir}/src/merged/resources")
-
-    from file("src/main/resources")
-    into file("${project.buildDir}/src/merged/resources")
-
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
 
 sourceSets {
     main {
         java {
-            srcDirs = [file("${project.buildDir}/src/merged/java")]
+            srcDirs = [
+                    file("${rootProject.projectDir}/src/main/java"),
+                    file("${rootProject.projectDir}/fixrtm/src/main/java"),
+                    file("src/main/java")
+            ]
+            exclude { it.file.absolutePath == "${rootProject.projectDir}/src/main/java/jp/ngt/ngtlib/io/ScriptUtil.java" }
+        }
+        kotlin {
+            srcDirs = [
+                    file("${rootProject.projectDir}/src/main/java"),
+                    file("${rootProject.projectDir}/fixrtm/src/main/java"),
+                    file("src/main/java"),
+                    file("src/main/kotlin")
+            ]
         }
         resources {
-            srcDirs = [file("${project.buildDir}/src/merged/resources")]
+            srcDirs = [
+                    file("${rootProject.projectDir}/src/main/resources"),
+                    file("${rootProject.projectDir}/fixrtm/src/main/resources"),
+                    file("src/main/resources")
+            ]
         }
     }
 }
 
-tasks.named('compileJava') {
-    dependsOn mergeSources
-}
-tasks.named('processResources') {
-    dependsOn mergeResources
-}
-
 minecraft {
-    mappings channel: 'snapshot', version: '20171003-1.12'
+    mcVersion = '1.12.2'
+    mcpMappingChannel = 'snapshot'
+    mcpMappingVersion = '20171003'
+    useDependencyAccessTransformers = true
+}
 
-    accessTransformer = file("${rootProject.projectDir}/src/main/resources/META-INF/fix-rtm_at.cfg")
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-        }
+def atFile = rootProject.file('src/main/resources/META-INF/fix-rtm_at.cfg')
+if (atFile.exists()) {
+    tasks.named('applyJST').configure {
+        accessTransformerFiles.from(atFile)
     }
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2860'
-
     compileOnly fileTree(dir: "${rootProject.projectDir}/libs", include: ['*.jar'])
-    compileOnly files("${rootProject.projectDir}/libs/core.jar")
+
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2'
+    implementation 'com.anatawa12.sai:sai:0.0.2'
 
     implementation 'io.sigpipe:jbsdiff:1.0'
     implementation 'org.sejda.imageio:webp-imageio:0.1.6'
@@ -97,6 +88,20 @@ dependencies {
 
     implementation 'org.codehaus.groovy:groovy-jsr223:2.5.23'
 }
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}
+/*
+tasks.named('compileKotlin', org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configure {
+    source(sourceSets.main.java)
+    libraries.from(sourceSets.main.compileClasspath)
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
+    }
+}*/
 
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -127,9 +132,9 @@ jar {
     }
 }
 
-def mergedGraalServicesDir = file("$buildDir/generated/graal-services")
+def mergedGraalServicesDir = file("${project.layout.buildDirectory.get()}/generated/graal-services")
 
-task generateGraalServiceDescriptors {
+tasks.register('generateGraalServiceDescriptors') {
     inputs.files(configurations.graalJsRuntime)
     outputs.dir(mergedGraalServicesDir)
 
@@ -176,13 +181,13 @@ task generateGraalServiceDescriptors {
     }
 }
 
-task graalLibsJar(type: Jar) {
-    dependsOn generateGraalServiceDescriptors
+tasks.register('graalLibsJar', Jar) {
+    dependsOn tasks.named('generateGraalServiceDescriptors')
 
     archiveBaseName = graalLibsBaseName
     archiveVersion = "${version}"
     archiveClassifier = ''
-    destinationDirectory = file("$buildDir/libs")
+    destinationDirectory = file("${project.layout.buildDirectory.get()}/libs")
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
@@ -211,16 +216,41 @@ task graalLibsJar(type: Jar) {
     }
 }
 
-jar.finalizedBy('reobfJar')
-
-task copyJarToTest(type: Copy) {
-    dependsOn 'reobfJar'
-    dependsOn 'graalLibsJar'
-    from "build/libs"
+tasks.register('copyJarToTest', Copy) {
+    dependsOn tasks.named('jar')
+    dependsOn tasks.named('reobfJar')
+    dependsOn tasks.named('graalLibsJar')
+    from "${project.layout.buildDirectory.get()}/libs"
     into "/Users/S/Library/Application Support/PrismLauncher/instances/CleanRoom/minecraft/mods"
-    include "${archivesBaseName}-${version}.jar"
+    include "${base.archivesName.get()}-${version}.jar"
     include "${graalLibsBaseName}-${version}.jar"
 }
 
-build.dependsOn copyJarToTest
-build.dependsOn graalLibsJar
+tasks.named('build') {
+    dependsOn tasks.named('copyJarToTest')
+    dependsOn tasks.named('graalLibsJar')
+}
+
+tasks.matching { it.name == 'compilePatchedMcKotlin' }.configureEach {
+    dependsOn tasks.matching { it.name == 'decompressDecompiledSources' }
+}
+tasks.matching { it.name == 'compileInjectedTagsKotlin' }.configureEach {
+    dependsOn tasks.matching { it.name == 'injectTags' }
+}
+tasks.matching { it.name == 'compileMcLauncherKotlin' }.configureEach {
+    dependsOn tasks.matching { it.name == 'createMcLauncherFiles' }
+}
+tasks.register('printKotlinClasspath') {
+    doLast {
+        println "=== compileKotlin classpath ==="
+        tasks.named('compileKotlin', org.jetbrains.kotlin.gradle.tasks.KotlinCompile).get().libraries.files.each {
+            println it
+        }
+    }
+}
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions {
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+        apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+    }
+}
