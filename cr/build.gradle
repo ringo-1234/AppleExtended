@@ -227,11 +227,14 @@ tasks.register('graalLibsJar', Jar) {
 }
 
 tasks.register('copyJarToTest', Copy) {
+    def destDir = file("/Users/S/Library/Application Support/PrismLauncher/instances/CleanRoom/minecraft/mods")
+    onlyIf { destDir.exists() }
+    
     dependsOn tasks.named('jar')
     dependsOn tasks.named('reobfJar')
     dependsOn tasks.named('graalLibsJar')
     from "${project.layout.buildDirectory.get()}/libs"
-    into "/Users/S/Library/Application Support/PrismLauncher/instances/CleanRoom/minecraft/mods"
+    into destDir
     include "${base.archivesName.get()}-${version}.jar"
     include "${graalLibsBaseName}-${version}.jar"
 }
