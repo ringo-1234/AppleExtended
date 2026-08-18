@@ -329,7 +329,12 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
 
         Snapshot before = null;
         Snapshot after = null;
-        for (Snapshot s : this.snapshotBuffer) {
+        Snapshot[] snapshots;
+        synchronized (this.snapshotBuffer) {
+            snapshots = this.snapshotBuffer.toArray(new Snapshot[0]);
+        }
+
+        for (Snapshot s : snapshots) {
             if (s.tick <= renderTick) {
                 before = s;
             } else if (after == null) {
@@ -492,9 +497,11 @@ public abstract class EntityVehicleBase<T extends ModelSetVehicleBase> extends E
     @SideOnly(Side.CLIENT)
     public void setPositionAndRotationDirect(double x, double y, double z, float yaw, float pitch, int par6, boolean par10, long serverTick) {
         long tickKey = (serverTick >= 0) ? serverTick : this.ticksExisted;
-        this.snapshotBuffer.addLast(new Snapshot(tickKey, x, y, z, yaw, pitch, this.vehicleRoll));
-        while (this.snapshotBuffer.size() > 16) {
-            this.snapshotBuffer.removeFirst();
+        synchronized (this.snapshotBuffer) {
+            this.snapshotBuffer.addLast(new Snapshot(tickKey, x, y, z, yaw, pitch, this.vehicleRoll));
+            while (this.snapshotBuffer.size() > 16) {
+                this.snapshotBuffer.removeFirst();
+            }
         }
 
         this.targetOffset = (double) tickKey - (double) this.ticksExisted;
