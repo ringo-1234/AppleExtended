@@ -50,5 +50,6 @@ jobs:
         with:
           name: AppleExtended-forge1.12.2
           path: |
+            build/shadowing/*.jar
             build/libs/*.jar
             cr/build/libs/*.jar
