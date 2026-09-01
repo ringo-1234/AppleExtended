@@ -93,10 +93,10 @@ dependencies {
     runtimeOnly "org.graalvm.js:js-scriptengine:${graalJsVersion}"
     runtimeOnly "org.graalvm.polyglot:js:${graalJsVersion}"
 
+    implementation 'org.apache.groovy:groovy-jsr223:4.0.27'
+
     graalJsRuntime "org.graalvm.js:js-scriptengine:${graalJsVersion}"
     graalJsRuntime "org.graalvm.polyglot:js:${graalJsVersion}"
-
-    implementation 'org.codehaus.groovy:groovy-jsr223:2.5.23'
 }
 
 kotlin {
@@ -113,16 +113,40 @@ tasks.named('compileKotlin', org.jetbrains.kotlin.gradle.tasks.KotlinCompile).co
     }
 }*/
 
+def mergedGraalServicesDir = file("${project.layout.buildDirectory.get()}/generated/graal-services")
+
 jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    zip64 = true
 
-    from(sourceSets.main.resources.srcDirs) {
-        include '**/*.class'
-        include '**/*.kotlin_module'
-        include 'assets/**'
-        include 'META-INF/services/**'
+    from(sourceSets.main.output) {
         exclude 'META-INF/MANIFEST.MF'
-        exclude 'mcmod.info'
+    }
+
+    from {
+        def graalFiles = configurations.graalJsRuntime.files
+
+        configurations.runtimeClasspath.files
+                .findAll { File file ->
+                    def name = file.name
+                    return name.endsWith('.jar') &&
+                            !name.contains("minecraft") &&
+                            !name.contains("forge") &&
+                            !graalFiles.contains(file)
+                }
+                .collect { zipTree(it) }
+    } {
+        exclude 'META-INF/MANIFEST.MF'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        exclude 'module-info.class'
+        exclude 'META-INF/versions/**/module-info.class'
+        exclude 'META-INF/services/javax.script.ScriptEngineFactory'
+    }
+    from(mergedGraalServicesDir) {
+        include 'META-INF/services/**'
     }
 
     manifest {
@@ -142,10 +166,8 @@ jar {
     }
 }
 
-def mergedGraalServicesDir = file("${project.layout.buildDirectory.get()}/generated/graal-services")
-
 tasks.register('generateGraalServiceDescriptors') {
-    inputs.files(configurations.graalJsRuntime)
+    inputs.files(configurations.runtimeClasspath)
     outputs.dir(mergedGraalServicesDir)
 
     doLast {
@@ -154,7 +176,7 @@ tasks.register('generateGraalServiceDescriptors') {
 
         Map<String, LinkedHashSet<String>> merged = new LinkedHashMap<>()
 
-        configurations.graalJsRuntime.files.each { File dependencyJar ->
+        configurations.runtimeClasspath.files.each { File dependencyJar ->
             if (!dependencyJar.name.endsWith('.jar')) {
                 return
             }
@@ -164,10 +186,7 @@ tasks.register('generateGraalServiceDescriptors') {
                 java.util.Enumeration<? extends java.util.zip.ZipEntry> entries = zipFile.entries()
                 while (entries.hasMoreElements()) {
                     java.util.zip.ZipEntry entry = entries.nextElement()
-                    if (entry.isDirectory()) {
-                        continue
-                    }
-                    if (!entry.name.startsWith('META-INF/services/')) {
+                    if (entry.isDirectory() || !entry.name.startsWith('META-INF/services/')) {
                         continue
                     }
 
@@ -178,6 +197,7 @@ tasks.register('generateGraalServiceDescriptors') {
                             .findAll { it && !it.startsWith('#') }
                             .each { lines.add(it) }
                 }
+            } catch (Exception e) {
             } finally {
                 zipFile.close()
             }
@@ -189,6 +209,10 @@ tasks.register('generateGraalServiceDescriptors') {
             outputFile.setText(lines.join('\n') + '\n', 'UTF-8')
         }
     }
+}
+
+tasks.named('jar') {
+    dependsOn 'generateGraalServiceDescriptors'
 }
 
 tasks.register('graalLibsJar', Jar) {
