@@ -47,7 +47,7 @@ setDefaultProperty 'publish_to_curseforge', true, false
 setDefaultProperty 'mixin_connector_class', false, ''
 
 version = propertyString('mod_version')
-group = propertyString('root_package')
+group = "com.github.ringo-1234"
 
 base {
     archivesName = 'AppleExtended-forge1.12.2'
