@@ -43,6 +43,7 @@ public final class RailPosition {
     public float constLimitWP, constLimitWN;
 
     public double posX, posY, posZ;
+    public double offsetX, offsetY, offsetZ;
 
     public String scriptName;
     public String scriptArgs;
@@ -67,14 +68,22 @@ public final class RailPosition {
     }
 
     public void init() {
-        this.posX = (double) this.blockX + 0.5D + (double) REVISION[this.direction][0];
-        this.posY = (double) this.blockY + (double) (this.height + 1) * BlockLargeRailBase.THICKNESS;
-        this.posZ = (double) this.blockZ + 0.5D + (double) REVISION[this.direction][1];
+        this.posX = (double) this.blockX + 0.5D + (double) REVISION[this.direction][0] + this.offsetX;
+        this.posY = (double) this.blockY + (double) (this.height + 1) * BlockLargeRailBase.THICKNESS + this.offsetY;
+        this.posZ = (double) this.blockZ + 0.5D + (double) REVISION[this.direction][1] + this.offsetZ;
+    }
+
+    public void setPosition(double x, double y, double z) {
+        this.offsetX = x - ((double) this.blockX + 0.5D + (double) REVISION[this.direction][0]);
+        this.offsetY = y - ((double) this.blockY + (double) (this.height + 1) * BlockLargeRailBase.THICKNESS);
+        this.offsetZ = z - ((double) this.blockZ + 0.5D + (double) REVISION[this.direction][1]);
+        this.init();
     }
 
     public void addHeight(double par1) {
         int h2 = (int) (par1 / BlockLargeRailBase.THICKNESS);
         this.height = (byte) (this.height + h2);
+        this.init();
     }
 
     public static RailPosition readFromNBT(NBTTagCompound nbt, RailPosition base) {
@@ -112,6 +121,16 @@ public final class RailPosition {
         railposition.constLimitHN = nbt.getFloat("Const_Limit_HN");
         railposition.constLimitWP = nbt.getFloat("Const_Limit_WP");
         railposition.constLimitWN = nbt.getFloat("Const_Limit_WN");
+        if (nbt.hasKey("OffsetX")) {
+            railposition.offsetX = nbt.getDouble("OffsetX");
+        }
+        if (nbt.hasKey("OffsetY")) {
+            railposition.offsetY = nbt.getDouble("OffsetY");
+        }
+        if (nbt.hasKey("OffsetZ")) {
+            railposition.offsetZ = nbt.getDouble("OffsetZ");
+        }
+        railposition.init();
         if (nbt.hasKey("Script")) {
             railposition.scriptName = nbt.getString("Script");
             railposition.scriptArgs = nbt.getString("Args");
@@ -138,6 +157,16 @@ public final class RailPosition {
         nbt.setFloat("Const_Limit_WP", this.constLimitWP);
         nbt.setFloat("Const_Limit_WN", this.constLimitWN);
 
+        if (this.offsetX != 0.0D) {
+            nbt.setDouble("OffsetX", this.offsetX);
+        }
+        if (this.offsetY != 0.0D) {
+            nbt.setDouble("OffsetY", this.offsetY);
+        }
+        if (this.offsetZ != 0.0D) {
+            nbt.setDouble("OffsetZ", this.offsetZ);
+        }
+
         if (this.hasScript()) {
             nbt.setString("Script", this.scriptName);
             nbt.setString("Args", this.scriptArgs);
@@ -148,7 +177,7 @@ public final class RailPosition {
 
     public void setHeight(byte par1) {
         this.height = par1;
-        this.posY = (double) this.blockY + (double) (par1 + 1) * BlockLargeRailBase.THICKNESS;
+        this.init();
     }
 
     public void movePos(int x, int y, int z) {

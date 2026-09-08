@@ -170,7 +170,7 @@ public class RailPartsRendererBase extends TileEntityPartsRenderer<ModelSetRail>
      * @return {x, y, z, yaw, pitch, roll}
      */
     protected float[][] createRailPos(TileEntityLargeRailCore par1) {
-        float[] rev = RailPosition.REVISION[par1.getRailPositions()[0].direction];
+        RailPosition originRP = par1.getRailPositions()[0];
         RailMap[] rms = par1.getAllRailMaps();
         if (rms != null) {
             List<float[]> list = new ArrayList<float[]>();
@@ -179,8 +179,8 @@ public class RailPartsRendererBase extends TileEntityPartsRenderer<ModelSetRail>
                 double[] stPoint = rm.getRailPos(max, 0);
                 //double startH = rm.getRailHeight(max, 0);//カント付けた時端が沈む
                 double startH = rm.getStartRP().posY;
-                float moveX = (float) (stPoint[1] - ((double) par1.getStartPoint()[0] + 0.5D + (double) rev[0]));
-                float moveZ = (float) (stPoint[0] - ((double) par1.getStartPoint()[2] + 0.5D + (double) rev[1]));
+                float moveX = (float) (stPoint[1] - originRP.posX);
+                float moveZ = (float) (stPoint[0] - originRP.posZ);
 
                 for (int i = 0; i <= max; ++i) {
                     double[] curPoint = rm.getRailPos(max, i);
@@ -310,11 +310,10 @@ public class RailPartsRendererBase extends TileEntityPartsRenderer<ModelSetRail>
     public void renderRailMapStatic(TileEntityLargeRailSwitchCore tileEntity, RailMap rm, int max, int startIndex, int endIndex, Parts... pArray) {
         double[] origPos = rm.getRailPos(max, 0);
         double origHeight = rm.getRailHeight(max, 0);
-        int[] startPos = tileEntity.getStartPoint();
-        float[] revXZ = RailPosition.REVISION[tileEntity.getRailPositions()[0].direction];
+        RailPosition originRP = tileEntity.getRailPositions()[0];
         //レール全体の始点からの移動差分
-        float moveX = (float) (origPos[1] - ((double) startPos[0] + 0.5D + (double) revXZ[0]));
-        float moveZ = (float) (origPos[0] - ((double) startPos[2] + 0.5D + (double) revXZ[1]));
+        float moveX = (float) (origPos[1] - originRP.posX);
+        float moveZ = (float) (origPos[0] - originRP.posZ);
 
         //頂点-中間点
         for (int i = startIndex; i <= endIndex; ++i) {
