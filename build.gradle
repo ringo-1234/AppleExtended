@@ -524,6 +524,20 @@ build.dependsOn shadowModJar
 build.dependsOn copyJarToTest
 build.dependsOn copyJarToServer
 
-artifacts {
-    archives shadowModJar
+// (./gradlew publish)
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'jp.apple'
+            artifactId = 'AppleExtended-forge1.12.2'
+            version = project.version
+            artifact tasks.named('shadowModJar')
+        }
+    }
+    repositories {
+        maven {
+            name = 'localStaticRepo'
+            url = uri(layout.projectDirectory.dir("../kirtmuna-maven"))
+        }
+    }
 }
