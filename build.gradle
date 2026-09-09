@@ -523,3 +523,7 @@ compileJava.dependsOn(compileKotlin)
 build.dependsOn shadowModJar
 build.dependsOn copyJarToTest
 build.dependsOn copyJarToServer
+
+artifacts {
+    archives shadowModJar
+}
