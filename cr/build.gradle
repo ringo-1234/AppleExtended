@@ -28,6 +28,8 @@ ext {
 }
 
 configurations {
+    shade
+    implementation.extendsFrom shade
     graalJsRuntime
 }
 
@@ -81,19 +83,20 @@ if (atFile.exists()) {
 
 dependencies {
     //compileOnly fileTree(dir: "${rootProject.projectDir}/libs", include: ['*.jar'])
+    shade 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
+    shade 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2'
+    shade 'com.anatawa12.sai:sai:0.0.2'
+    shade 'io.sigpipe:jbsdiff:1.0'
+    shade 'org.sejda.imageio:webp-imageio:0.1.6'
+    shade 'org.apache.groovy:groovy-jsr223:4.0.27'
+
     compileOnly "curse.maven:replaymod-775651:4798232"
 
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.9.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2'
-    implementation 'com.anatawa12.sai:sai:0.0.2'
 
-    implementation 'io.sigpipe:jbsdiff:1.0'
-    implementation 'org.sejda.imageio:webp-imageio:0.1.6'
 
     runtimeOnly "org.graalvm.js:js-scriptengine:${graalJsVersion}"
     runtimeOnly "org.graalvm.polyglot:js:${graalJsVersion}"
 
-    implementation 'org.apache.groovy:groovy-jsr223:4.0.27'
 
     graalJsRuntime "org.graalvm.js:js-scriptengine:${graalJsVersion}"
     graalJsRuntime "org.graalvm.polyglot:js:${graalJsVersion}"
@@ -124,17 +127,7 @@ jar {
     }
 
     from {
-        def graalFiles = configurations.graalJsRuntime.files
-
-        configurations.runtimeClasspath.files
-                .findAll { File file ->
-                    def name = file.name
-                    return name.endsWith('.jar') &&
-                            !name.contains("minecraft") &&
-                            !name.contains("forge") &&
-                            !graalFiles.contains(file)
-                }
-                .collect { zipTree(it) }
+        configurations.shade.files.collect { zipTree(it) }
     } {
         exclude 'META-INF/MANIFEST.MF'
         exclude 'META-INF/INDEX.LIST'
