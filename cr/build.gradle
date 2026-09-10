@@ -284,3 +284,23 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
         apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
     }
 }
+// (./gradlew publish)
+publishing {
+    publications {
+        appleMavenRepo(MavenPublication) {
+            groupId = 'jp.apple'
+            artifactId = 'AppleExtended-forge1.12.2-cleanroom'
+            version = project.version
+
+            artifact(tasks.named('reobfJar')) {
+                classifier = null
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = 'localStaticRepo'
+            url = uri(layout.projectDirectory.dir("../../kirtmuna-maven"))
+        }
+    }
+}
