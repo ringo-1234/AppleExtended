@@ -14,8 +14,10 @@
 
 package jp.ngt.rtm.rail;
 
+import jp.ngt.ngtlib.block.BlockUtil;
 import jp.ngt.ngtlib.math.AABBInt;
 import jp.ngt.ngtlib.math.NGTMath;
+import jp.ngt.rtm.RTMRail;
 import jp.ngt.rtm.network.PacketLargeRailCore;
 import jp.ngt.rtm.rail.util.*;
 import net.minecraft.entity.Entity;
@@ -164,5 +166,37 @@ public class TileEntityLargeRailSwitchCore extends TileEntityLargeRailCore {
         sb.append("Y:").append(box.sizeY()).append(", ");
         sb.append("Z:").append(box.sizeZ());
         return sb.toString();
+    }
+
+    @Override
+    protected void invalidateRailMapCache() {
+        this.switchObj = null;
+    }
+    
+    @Override
+    protected void reconcilePositionBlocks(RailPosition[] oldPositions, RailPosition[] newPositions) {
+        int[] start = this.getStartPoint();
+        
+        for (RailPosition oldRp : oldPositions) {
+            boolean stillUsed = false;
+            for (RailPosition newRp : newPositions) {
+                if (newRp.blockX == oldRp.blockX && newRp.blockY == oldRp.blockY && newRp.blockZ == oldRp.blockZ) {
+                    stillUsed = true;
+                    break;
+                }
+            }
+            if (!stillUsed && BlockUtil.getBlock(this.world, oldRp.blockX, oldRp.blockY, oldRp.blockZ) instanceof BlockLargeRailSwitchBase) {
+                BlockUtil.setAir(this.world, oldRp.blockX, oldRp.blockY, oldRp.blockZ);
+            }
+        }
+        
+        for (RailPosition newRp : newPositions) {
+            if (!(BlockUtil.getBlock(this.world, newRp.blockX, newRp.blockY, newRp.blockZ) instanceof BlockLargeRailSwitchBase)) {
+                BlockUtil.setBlock(this.world, newRp.blockX, newRp.blockY, newRp.blockZ, RTMRail.largeRailSwitchBase, 0, 3);
+                TileEntityLargeRailSwitchBase base =
+                        (TileEntityLargeRailSwitchBase) BlockUtil.getTileEntity(this.world, newRp.blockX, newRp.blockY, newRp.blockZ);
+                base.setStartPoint(start[0], start[1], start[2]);
+            }
+        }
     }
 }

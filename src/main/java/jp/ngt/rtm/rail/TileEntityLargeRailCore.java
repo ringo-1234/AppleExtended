@@ -14,11 +14,13 @@
 
 package jp.ngt.rtm.rail;
 
+import jp.ngt.ngtlib.block.BlockUtil;
 import jp.ngt.ngtlib.math.AABBInt;
 import jp.ngt.ngtlib.renderer.GLHelper;
 import jp.ngt.ngtlib.renderer.GLObject;
 import jp.ngt.ngtlib.util.NGTUtil;
 import jp.ngt.rtm.RTMCore;
+import jp.ngt.rtm.RTMRail;
 import jp.ngt.rtm.RTMResource;
 import jp.ngt.rtm.modelpack.IResourceSelector;
 import jp.ngt.rtm.modelpack.state.ResourceState;
@@ -28,10 +30,12 @@ import jp.ngt.rtm.rail.util.RailMap;
 import jp.ngt.rtm.rail.util.RailMapBasic;
 import jp.ngt.rtm.rail.util.RailMapCustom;
 import jp.ngt.rtm.rail.util.RailPosition;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -155,6 +159,7 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
 
     public void setRailPositions(RailPosition[] par1) {
         this.railPositions = par1;
+        this.railmap = null;
     }
 
     public int getSignal() {
@@ -367,4 +372,74 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
     }
 
     public abstract String getRailShapeName();
+
+    protected void invalidateRailMapCache() {
+        this.railmap = null;
+    }
+    
+    protected Block getBallastBlock() {
+        return RTMRail.largeRailBase;
+    }
+
+    public boolean relocateRail(RailPosition[] newPositions) {
+        if (this.world == null || this.world.isRemote || !this.isLoaded()) {
+            return false;
+        }
+
+        ResourceStateRail prop = this.getResourceState();
+        RailMap[] oldMaps = this.getAllRailMaps();
+        RailPosition[] oldPositions = this.railPositions;
+        
+        this.railPositions = newPositions;
+        this.invalidateRailMapCache();
+        RailMap[] newMaps = this.getAllRailMaps();
+
+        if (newMaps == null || newMaps.length == 0) {
+            this.railPositions = oldPositions;
+            this.invalidateRailMapCache();
+            return false;
+        }
+        for (RailMap rm : newMaps) {
+            if (!rm.canPlaceRail(this.world, false, prop)) {
+                this.railPositions = oldPositions;
+                this.invalidateRailMapCache();
+                return false;
+            }
+        }
+        
+        if (oldMaps != null) {
+            for (RailMap rm : oldMaps) {
+                this.clearBallast(rm, prop);
+            }
+        }
+        
+        int[] start = this.getStartPoint();
+        Block ballast = this.getBallastBlock();
+        for (RailMap rm : newMaps) {
+            rm.setRail(this.world, ballast, start[0], start[1], start[2], prop);
+        }
+
+        this.reconcilePositionBlocks(oldPositions, newPositions);
+        
+        this.markDirty();
+        this.sendPacket();
+
+        return true;
+    }
+
+    protected void reconcilePositionBlocks(RailPosition[] oldPositions, RailPosition[] newPositions) {
+    }
+
+    private void clearBallast(RailMap rm, ResourceStateRail prop) {
+        for (int[] pos : rm.getRailBlockList(prop, true)) {
+            int x = pos[0], y = pos[1], z = pos[2];
+            if (BlockUtil.getBlock(this.world, x, y, z) instanceof BlockLargeRailBase) {
+                TileEntityLargeRailBase rail = (TileEntityLargeRailBase) BlockUtil.getTileEntity(this.world, x, y, z);
+                TileEntityLargeRailCore core2 = rail.getRailCore();
+                if (core2 == null || core2 == this) {
+                    this.world.setBlockToAir(new BlockPos(x, y, z));
+                }
+            }
+        }
+    }
 }
