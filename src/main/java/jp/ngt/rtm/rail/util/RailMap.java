@@ -192,9 +192,16 @@ public abstract class RailMap {
      * ブロックの設置
      */
     public void setRail(World world, Block block, int x0, int y0, int z0, ResourceStateRail prop) {
-        this.createRailList(prop);
+        this.prepareBaseBlocks(world, x0, y0, z0);
+        this.placeRailBlocks(world, block, x0, y0, z0, prop);
+    }
+    
+    public void prepareBaseBlocks(World world, int x0, int y0, int z0) {
         this.setBaseBlock(world, x0, y0, z0);
+    }
 
+    public void placeRailBlocks(World world, Block block, int x0, int y0, int z0, ResourceStateRail prop) {
+        this.createRailList(prop);
         for (int i = 0; i < this.rails.size(); ++i) {
             int x = this.rails.get(i)[0];
             int y = this.rails.get(i)[1];
