@@ -224,7 +224,7 @@ public class ItemRail extends ItemWithModel {
 
     public static ItemStack copyItemFromRail(TileEntityLargeRailCore core) {
         ItemStack itemstack = getRailItem(core.getResourceState());
-        RailPosition[] arailposition = core.getRailPositions();
+        RailPosition[] arailposition = core.getLogicalRailPositions();
         if (arailposition == null) return ItemStack.EMPTY;
         setRPToItem(itemstack, arailposition);
         String s = core.getRailShapeName();

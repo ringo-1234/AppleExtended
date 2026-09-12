@@ -165,10 +165,8 @@ public class BlockLargeRailBase extends BlockContainerCustomWithMeta {
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         TileEntityLargeRailCore core = this.getCore(world, pos);
         if (!world.isRemote && core != null && !core.breaking) {
-            RailMap[] railmaps = core.getAllRailMaps();
-            for (RailMap rm : railmaps) {
-                rm.breakRail(world, core.getResourceState(), core);
-            }
+            core.breaking = true;
+            core.breakLogicalRail();
         }
         super.breakBlock(world, pos, state);
     }

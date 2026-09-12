@@ -381,6 +381,48 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
         return RTMRail.largeRailBase;
     }
 
+    public boolean isSameLogicalRail(TileEntityLargeRailCore other) {
+        return this == other;
+    }
+
+    public RailPosition[] getLogicalRailPositions() {
+        return this.railPositions;
+    }
+
+    public List<int[]> getRailGroupCorePositions() {
+        int[] pos = this.getStartPoint();
+        return java.util.Collections.singletonList(new int[]{pos[0], pos[1], pos[2]});
+    }
+
+    public boolean isLogicalRailOccupied() {
+        return this.isCollidedTrain;
+    }
+
+    public void breakLogicalRail() {
+        RailMap[] maps = this.getAllRailMaps();
+        if (maps != null) {
+            for (RailMap rm : maps) {
+                rm.breakRail(this.world, this.getResourceState(), this);
+            }
+        }
+    }
+    
+    public int getRailRenderMinimumSplit() {
+        return 0;
+    }
+
+    public int getRailRenderEndOffset() {
+        return 0;
+    }
+
+    public boolean shouldRenderRailStartCap() {
+        return true;
+    }
+
+    public boolean shouldRenderRailEndCap() {
+        return true;
+    }
+
     public boolean relocateRail(RailPosition[] newPositions) {
         if (this.world == null || this.world.isRemote || !this.isLoaded()) {
             return false;
