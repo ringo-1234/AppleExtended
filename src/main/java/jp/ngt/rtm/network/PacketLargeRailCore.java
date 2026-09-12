@@ -15,6 +15,7 @@
 package jp.ngt.rtm.network;
 
 import io.netty.buffer.ByteBuf;
+import jp.apple.rail.TileEntityLargeRailSectionCore;
 import jp.ngt.ngtlib.event.TickProcessEntry;
 import jp.ngt.ngtlib.event.TickProcessQueue;
 import jp.ngt.ngtlib.network.PacketCustom;
@@ -36,6 +37,7 @@ import net.minecraftforge.fml.relauncher.Side;
 public class PacketLargeRailCore extends PacketCustom implements IMessageHandler<PacketLargeRailCore, IMessage> {
     public static final byte TYPE_NORMAL = 0;
     public static final byte TYPE_SWITCH = 2;
+    public static final byte TYPE_SECTION = 3;
 
     private byte dataType;
     private int sX, sY, sZ;
@@ -55,11 +57,16 @@ public class PacketLargeRailCore extends PacketCustom implements IMessageHandler
         this.sZ = tile.getStartPoint()[2];
         NBTTagCompound nbt = new NBTTagCompound();
         tile.writeRailStates(nbt);
+        if (tile instanceof TileEntityLargeRailSectionCore) {
+            ((TileEntityLargeRailSectionCore) tile).writeSectionData(nbt);
+        }
         this.property = nbt;
         this.railPositions = tile.getRailPositions();
 
         switch (par2Type) {
             case TYPE_NORMAL:
+                break;
+            case TYPE_SECTION:
                 break;
             case TYPE_SWITCH:
                 TileEntityLargeRailSwitchCore tile1 = (TileEntityLargeRailSwitchCore) tile;
@@ -128,6 +135,8 @@ public class PacketLargeRailCore extends PacketCustom implements IMessageHandler
             tile0.setRailPositions(message.railPositions);
             if (message.dataType == TYPE_NORMAL && tile instanceof TileEntityLargeRailNormalCore) {
                 ;
+            } else if (message.dataType == TYPE_SECTION && tile instanceof TileEntityLargeRailSectionCore) {
+                ((TileEntityLargeRailSectionCore) tile).readSectionData(message.property);
             } else if (message.dataType == TYPE_SWITCH && tile instanceof TileEntityLargeRailSwitchCore) {
                 TileEntityLargeRailSwitchCore tile1 = (TileEntityLargeRailSwitchCore) tile;
                 //tile1.setSwitchType(message.type);

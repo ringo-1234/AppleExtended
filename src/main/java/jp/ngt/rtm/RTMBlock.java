@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm;
 
+import jp.apple.rail.TileEntityLargeRailSectionCore;
 import jp.ngt.ngtlib.block.BlockUtil;
 import jp.ngt.ngtlib.item.ItemBlockCustom;
 import jp.ngt.ngtlib.item.ItemColoredBlock;
@@ -203,6 +204,7 @@ public final class RTMBlock {
         registerBlockModel(movingMachine, 1, "vehicle_generator");
 
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityLargeRailNormalCore.class, RenderLargeRail.INSTANCE);
+        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityLargeRailSectionCore.class, RenderLargeRail.INSTANCE);
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityLargeRailSwitchCore.class, RenderLargeRail.INSTANCE);
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTurnTableCore.class, new RenderTurntable());
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityInsulator.class, RenderElectricalWiring.INSTANCE);

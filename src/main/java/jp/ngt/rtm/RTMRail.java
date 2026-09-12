@@ -14,6 +14,7 @@
 
 package jp.ngt.rtm;
 
+import jp.apple.rail.TileEntityLargeRailSectionCore;
 import jp.ngt.ngtlib.util.NGTRegHandler;
 import jp.ngt.rtm.rail.*;
 import net.minecraft.block.Block;
@@ -35,6 +36,7 @@ public final class RTMRail {
 
         GameRegistry.registerTileEntity(TileEntityLargeRailBase.class, "TERailBase");
         GameRegistry.registerTileEntity(TileEntityLargeRailNormalCore.class, "TERailCore");
+        GameRegistry.registerTileEntity(TileEntityLargeRailSectionCore.class, "TERailSectionCore");
         GameRegistry.registerTileEntity(TileEntityLargeRailSwitchBase.class, "TERailSwitchBase");
         GameRegistry.registerTileEntity(TileEntityLargeRailSwitchCore.class, "TERailSwitchCore");
         GameRegistry.registerTileEntity(TileEntityTurnTableCore.class, "TETurntableCore");
