@@ -126,6 +126,10 @@ public abstract class TileEntityLargeRailCore extends TileEntityLargeRailBase im
     }
 
     protected void writeRailData(NBTTagCompound nbt) {
+        if (this.railPositions == null || this.railPositions.length < 2 || this.railPositions[0] == null || this.railPositions[1] == null) {
+            return;
+        }
+        
         nbt.setTag("StartRP", this.railPositions[0].writeToNBT());
         nbt.setTag("EndRP", this.railPositions[1].writeToNBT());
         nbt.setInteger("fixRTMRailMapVersion", this.fixRTMRailMapVersion);
