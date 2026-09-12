@@ -14,7 +14,7 @@
 
 package jp.ngt.rtm.rail;
 
-import jp.ngt.ngtlib.block.BlockArgHolder;
+import jp.apple.rail.TileEntityLargeRailSectionCore;import jp.apple.rail.util.RailChunkSectioner;import jp.apple.rail.util.RailMapSection;import jp.apple.rail.util.RailSection;import jp.ngt.ngtlib.block.BlockArgHolder;
 import jp.ngt.ngtlib.block.BlockContainerCustomWithMeta;
 import jp.ngt.ngtlib.block.BlockUtil;
 import jp.ngt.ngtlib.math.NGTMath;
@@ -47,7 +47,7 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.List;import java.util.UUID;
 
 public class BlockMarker extends BlockContainerCustomWithMeta {
     public final MarkerType markerType;
@@ -228,6 +228,13 @@ public class BlockMarker extends BlockContainerCustomWithMeta {
     private static boolean createNormalRail(World world, RailPosition start, RailPosition end, ResourceStateRail prop, boolean makeRail, boolean isCreative) {
         RailMap railmap = new RailMapBasic(start, end, RailMapBasic.fixRTMRailMapVersionCurrent);
         if (makeRail && railmap.canPlaceRail(world, isCreative, prop)) {
+            if (prop.autoSplit) {
+                List<RailSection> sections = RailChunkSectioner.split((RailMapBasic) railmap);
+                if (sections.size() > 1) {
+                    return createSectionedRail(world, (RailMapBasic) railmap, sections, prop, isCreative);
+                }
+            }
+
             railmap.setRail(world, RTMRail.largeRailBase, start.blockX, start.blockY, start.blockZ, prop);
             BlockUtil.setBlock(world, start.blockX, start.blockY, start.blockZ, RTMRail.largeRailCore, 0, 3);
             TileEntityLargeRailCore tileentitylargerailcore = (TileEntityLargeRailCore) BlockUtil.getTileEntity(world, start.blockX, start.blockY, start.blockZ);
@@ -381,6 +388,68 @@ public class BlockMarker extends BlockContainerCustomWithMeta {
 
             return false;
         }
+    }
+
+    private static boolean createSectionedRail(World world, RailMapBasic source, List<RailSection> sections,
+                                               ResourceStateRail prop, boolean isCreative) {
+        UUID groupId = UUID.randomUUID();
+        RailPosition logicalStart = copyRailPosition(source.getStartRP());
+        RailPosition logicalEnd = copyRailPosition(source.getEndRP());
+        RailPosition[] logicalPositions = new RailPosition[]{logicalStart, logicalEnd};
+
+        List<int[]> corePositions = new ArrayList<>();
+        for (RailSection section : sections) {
+            corePositions.add(new int[]{section.getStartRP().blockX, section.getStartRP().blockY, section.getStartRP().blockZ});
+        }
+        
+        for (RailSection section : sections) {
+            RailMapSection sectionMap = new RailMapSection(source, section.getStartRP(), section.getEndRP(),
+                    section.getStartRatio(), section.getEndRatio());
+            if (!sectionMap.canPlaceRail(world, isCreative, prop)) {
+                return false;
+            }
+        }
+        
+        source.prepareBaseBlocks(world, logicalStart.blockX, logicalStart.blockY, logicalStart.blockZ);
+        
+        for (RailSection section : sections) {
+            RailMapSection sectionMap = new RailMapSection(source, section.getStartRP(), section.getEndRP(),
+                    section.getStartRatio(), section.getEndRatio());
+            int[] corePos = new int[]{section.getStartRP().blockX, section.getStartRP().blockY, section.getStartRP().blockZ};
+            sectionMap.placeRailBlocks(world, RTMRail.largeRailBase, corePos[0], corePos[1], corePos[2], prop);
+        }
+        
+        for (RailSection section : sections) {
+            RailPosition sectionStart = copyRailPosition(section.getStartRP());
+            RailPosition sectionEnd = copyRailPosition(section.getEndRP());
+            int coreX = sectionStart.blockX;
+            int coreY = sectionStart.blockY;
+            int coreZ = sectionStart.blockZ;
+
+            BlockUtil.setBlock(world, coreX, coreY, coreZ, RTMRail.largeRailCore, 1, 3);
+            TileEntity tileEntity = BlockUtil.getTileEntity(world, coreX, coreY, coreZ);
+            if (!(tileEntity instanceof TileEntityLargeRailSectionCore)) {
+                return false;
+            }
+
+            TileEntityLargeRailSectionCore tile = (TileEntityLargeRailSectionCore) tileEntity;
+            tile.configureRailSection(groupId, logicalPositions, new RailPosition[]{sectionStart, sectionEnd},
+                    section.getStartRatio(), section.getEndRatio(), corePositions);
+            tile.getResourceState().readFromNBT(prop.writeToNBT());
+            tile.setStartPoint(coreX, coreY, coreZ);
+            tile.fixRTMRailMapVersion = source.fixRTMRailMapVersion;
+            tile.createRailMap();
+            tile.sendPacket();
+        }
+
+        if (BlockUtil.getBlock(world, logicalEnd.blockX, logicalEnd.blockY, logicalEnd.blockZ) instanceof BlockMarker) {
+            BlockUtil.setAir(world, logicalEnd.blockX, logicalEnd.blockY, logicalEnd.blockZ);
+        }
+        return true;
+    }
+
+    private static RailPosition copyRailPosition(RailPosition source) {
+        return RailPosition.readFromNBT(source.writeToNBT());
     }
 
     public static byte getMarkerDir(Block block, int meta) {

@@ -23,6 +23,7 @@ public class ResourceStateRail extends ResourceStateWithBlock<ModelSetRail> {
     public static final float INIT_HEIGHT = 0.0625F;
 
     public float blockHeight = INIT_HEIGHT;
+    public boolean autoSplit = true;
 
     public ResourceStateRail(ResourceType type, Object entity) {
         super(type, entity);
@@ -36,12 +37,14 @@ public class ResourceStateRail extends ResourceStateWithBlock<ModelSetRail> {
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
         this.setHeight(nbt.getFloat("BlockHeight"));
+        this.autoSplit = !nbt.hasKey("AutoSplit") || nbt.getBoolean("AutoSplit");
     }
 
     @Override
     public NBTTagCompound writeToNBT() {
         NBTTagCompound nbt = super.writeToNBT();
         nbt.setFloat("BlockHeight", this.blockHeight);
+        nbt.setBoolean("AutoSplit", this.autoSplit);
         return nbt;
     }
 
@@ -50,5 +53,6 @@ public class ResourceStateRail extends ResourceStateWithBlock<ModelSetRail> {
         super.setResourceToDefault();
         this.setBlock(Blocks.GRAVEL, 0);
         this.setHeight(0.0625F);
+        this.autoSplit = true;
     }
 }
