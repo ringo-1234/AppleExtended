@@ -32,13 +32,15 @@ public final class RailChunkSectioner {
     private RailChunkSectioner() {
     }
 
+    private static final double MIN_SECTION_LENGTH_METERS = 2.0D;
+
     public static List<RailSection> split(RailMapBasic source) {
         if (source.getLength() <= 0.0D) {
             return Collections.singletonList(
                     new RailSection(0.0D, 1.0D, copy(source.getStartRP()), copy(source.getEndRP())));
         }
 
-        List<Double> boundaries = findBoundaries(source);
+        List<Double> boundaries = enforceMinimumSectionLength(findBoundaries(source), source.getLength());
         if (boundaries.isEmpty()) {
             return Collections.singletonList(
                     new RailSection(0.0D, 1.0D, copy(source.getStartRP()), copy(source.getEndRP())));
@@ -271,5 +273,26 @@ public final class RailChunkSectioner {
         public int hashCode() {
             return (x * 31 + y) * 31 + z;
         }
+    }
+
+    private static List<Double> enforceMinimumSectionLength(List<Double> boundaries, double totalLength) {
+        if (boundaries.isEmpty() || totalLength <= 0.0D) {
+            return boundaries;
+        }
+        double minRatio = MIN_SECTION_LENGTH_METERS / totalLength;
+
+        List<Double> result = new ArrayList<>();
+        double lastRatio = 0.0D;
+        for (double boundary : boundaries) {
+            if (boundary - lastRatio >= minRatio) {
+                result.add(boundary);
+                lastRatio = boundary;
+            }
+        }
+        if (!result.isEmpty() && 1.0D - result.get(result.size() - 1) < minRatio) {
+            result.remove(result.size() - 1);
+        }
+
+        return result;
     }
 }
